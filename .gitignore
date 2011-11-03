@@ -1,0 +1,14 @@
+*.o
+*.os
+*.a
+*.os
+.sconsign.dblite
+redis_test
+redis_hash_test
+redis_monitor
+
+*.ncb
+*.suo
+*.user
+Debug
+Release

@@ -1,0 +1,17 @@
+This repository contains a C++ redis client of in Langtaojin Co., Ltd.
+
+
+DOC:
+There is no documentation now, please refer the test programs.
+
+
+BUILD and INSTALL:
+libredis depends on boost_thread, boost_system and gflags(tests).
+
+Building in linux requires SCons. While a solution of VS2008 is provided in win_proj. Other posix platforms maybe is easily ported to.
+
+
+AUTHORS:
+yafei.zhang@langtaojin.com
+zhibin.hu@langtaojin.com
+hai.zhao@langtaojin.com

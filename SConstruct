@@ -1,7 +1,6 @@
 env = Environment()
 env = env.Clone()
-#env.Append(CCFLAGS = Split('-Wall -g -O2 -finline-functions'))
-env.Append(CCFLAGS = Split('-Wall -g'))
+env.Append(CCFLAGS = Split('-Wall -g -O2'))
 env.Append(LIBPATH = '.')
 
 env.Append(LIBS = [

@@ -1,17 +1,13 @@
-This repository contains a C++ redis client of in Langtaojin Co., Ltd.
+A Redis client library for C++
 
+Author:
+zhangyafeikimi
 
-DOC:
-There is no documentation now, please refer the test programs.
+Features:
+1. all mode supported(pipeline, trasaction, subscribe, monitor)
+2. client connection pool
+3. fixed-size partition client
 
-
-BUILD and INSTALL:
-libredis depends on boost_thread, boost_system and gflags(tests).
-
-Building in linux requires SCons. While a solution of VS2008 is provided in win_proj. Other posix platforms maybe is easily ported to.
-
-
-AUTHORS:
-yafei.zhang@langtaojin.com
-zhibin.hu@langtaojin.com
-hai.zhao@langtaojin.com
+Build and Installation:
+1. librediscxx depends on boost and gflags(tests).
+2. Building in linux requires SCons. While a solution of VS2008 is provided.

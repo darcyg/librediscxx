@@ -5,15 +5,8 @@
 * @version
 *
 */
-#include <gflags/gflags.h>
-DEFINE_string(host, "localhost", "redis host.");
-DEFINE_string(port, "6379", "redis port.");
-DEFINE_string(host_list, "localhost", "redis host list.");
-DEFINE_string(port_list, "6379", "redis port list.");
-DEFINE_int32(db_index, 5, "redis db index.");
-DEFINE_int32(timeout, 2000, "timeout in ms.");
-
 #include <iostream>
+#include <boost/program_options.hpp>
 #include <boost/assign/std/vector.hpp>
 #include <boost/bind.hpp>
 #include <boost/date_time/microsec_time_clock.hpp>
@@ -33,6 +26,9 @@ USING_NAMESPACE
 using namespace std;
 using namespace boost::assign;
 
+std::string host, port, host_list, port_list;
+int db_index, timeout;
+
 namespace
 {
   size_t s_total = 0;
@@ -40,39 +36,39 @@ namespace
 
 #define VERIFY(exp)\
   do{\
-    bool x = (exp);\
-    s_total++;\
-    if (!x)\
-    {\
-      s_failed++;\
-      printf("%s(%d):\"%s\" fails\n", __FILE__, __LINE__, #exp);\
-      cout << __FUNCTION__ << " failed" << endl;\
-      return 1;\
-    }\
+  bool x = (exp);\
+  s_total++;\
+  if (!x)\
+  {\
+  s_failed++;\
+  cout << __FILE__ << "(" << __LINE__ << "):\"" << #exp << "\" fails" << endl;\
+  cout << __FUNCTION__ << " failed" << endl;\
+  return 1;\
+  }\
   }while(0)
 
 
 #define VERIFY_MSG(exp, client)\
   do{\
-    bool x = (exp);\
-    s_total++;\
-    if (!x)\
-    {\
-      s_failed++;\
-      printf("%s(%d):\"%s\" fails:%s\n", __FILE__, __LINE__, #exp, client.last_c_error());\
-      cout << __FUNCTION__ << " failed" << endl;\
-      return 1;\
-    }\
+  bool x = (exp);\
+  s_total++;\
+  if (!x)\
+  {\
+  s_failed++;\
+  cout << __FILE__ << "(" << __LINE__ << "):\"" << #exp << "\" fails:" << client.last_c_error() << endl;\
+  cout << __FUNCTION__ << " failed" << endl;\
+  return 1;\
+  }\
   }while(0)
 
 
 #define DUMP_TEST_RESULT()\
   do\
   {\
-    cout << "*************************" << endl;\
-    cout << "Total Checking Points: " << s_total << endl;\
-    cout << "Failure Checking Points: " << s_failed << endl;\
-    cout << "*************************" << endl;\
+  cout << "*************************" << endl;\
+  cout << "Total Checking Points: " << s_total << endl;\
+  cout << "Failure Checking Points: " << s_failed << endl;\
+  cout << "*************************" << endl;\
   }while (0)
 
 
@@ -81,7 +77,7 @@ namespace
 
   void get_redis_version()
   {
-    Redis2 r(FLAGS_host, FLAGS_port, FLAGS_db_index, FLAGS_timeout);
+    Redis2 r(host, port, db_index, timeout);
     std::string str;
 
     if (!r.info(&str))
@@ -181,7 +177,7 @@ namespace
     cout << "protocol_test..." << endl;
 
     RedisCommand command;
-    RedisProtocol rp(FLAGS_host, FLAGS_port, FLAGS_timeout);
+    RedisProtocol rp(host, port, timeout);
     VERIFY_MSG(rp.assure_connect(NULL), rp);
     VERIFY_MSG(rp.exec_command(&command, "PING", 0), rp);
 
@@ -919,8 +915,8 @@ namespace
 
       end = boost::posix_time::microsec_clock::local_time();
       boost::posix_time::time_duration td = end - begin;
-      printf("%d iterations(non pipeline) cost %d ms\n",
-        iteration, static_cast<int>(td.total_milliseconds()));
+      cout << iteration << " iterations(non-pipeline) cost "
+        << td.total_milliseconds() << " ms" << endl;
     }
 
     //pipeline
@@ -942,8 +938,9 @@ namespace
 
       end = boost::posix_time::microsec_clock::local_time();
       boost::posix_time::time_duration td = end - begin;
-      printf("%d iterations(pipeline) cost %d ms\n",
-        iteration, static_cast<int>(td.total_milliseconds()));
+
+      cout << iteration << " iterations(pipeline) cost "
+        << td.total_milliseconds() << " ms" << endl;
     }
 
     cout << "pipeline_test ok" << endl;
@@ -1017,7 +1014,41 @@ namespace
 
 int main(int argc, char * argv[])
 {
-  google::ParseCommandLineFlags(&argc, &argv, true);
+  try
+  {
+    namespace po = boost::program_options;
+    po::options_description desc("Options");
+    desc.add_options()
+      ("help", "produce help message")
+      ("host,h", po::value<std::string>()->default_value("localhost"), "redis host")
+      ("port,p", po::value<std::string>()->default_value("6379"), "redis port")
+      ("host_list", po::value<std::string>()->default_value("localhost"), "redis host list")
+      ("port_list", po::value<std::string>()->default_value("6379"), "redis port list")
+      ("db_index,i", po::value<int>()->default_value(5), "redis db index")
+      ("timeout,t", po::value<int>()->default_value(2000), "timeout in ms");
+
+    po::variables_map vm;
+    po::store(po::parse_command_line(argc, argv, desc), vm);
+    po::notify(vm);
+
+    if (vm.count("help"))
+    {
+      cout << desc << endl;
+      return 0;
+    }
+
+    host = vm["host"].as<std::string>();
+    port = vm["port"].as<std::string>();
+    host_list = vm["host_list"].as<std::string>();
+    port_list = vm["port_list"].as<std::string>();
+    db_index = vm["db_index"].as<int>();
+    timeout = vm["timeout"].as<int>();
+  }
+  catch (std::exception& e)
+  {
+    cout << "caught: " << e.what() << endl;
+    return 1;
+  }
 
   //host_resolver_test();
   os_test();
@@ -1025,7 +1056,7 @@ int main(int argc, char * argv[])
   get_redis_version();
 
   {
-    Redis2 r(FLAGS_host, FLAGS_port, FLAGS_db_index, FLAGS_timeout);
+    Redis2 r(host, port, db_index, timeout);
     basic_test(r);
     basic_single_test(r);
     pipeline_test(r);
@@ -1033,17 +1064,16 @@ int main(int argc, char * argv[])
   }
 
   {
-    Redis2P r(FLAGS_host_list, FLAGS_port_list, FLAGS_db_index, FLAGS_timeout);
+    Redis2P r(host_list, port_list, db_index, timeout);
     basic_test(r);
   }
 
   {
-    RedisTss r(FLAGS_host, FLAGS_port, FLAGS_db_index, 1, FLAGS_timeout, kNormal);
+    RedisTss r(host, port, db_index, 1, timeout, kNormal);
     redis_tss_test(r);
   }
 
   DUMP_TEST_RESULT();
 
-  google::ShutDownCommandLineFlags();
   return 0;
 }

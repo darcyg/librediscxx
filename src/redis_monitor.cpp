@@ -5,14 +5,13 @@
 * @version
 *
 */
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <signal.h>
 #include <errno.h>
 #include <map>
 #include <vector>
-#include <gflags/gflags.h>
+#include <boost/program_options.hpp>
 #include <boost/asio.hpp>
 #include <boost/date_time.hpp>
 #include <boost/date_time/c_local_time_adjustor.hpp>
@@ -20,11 +19,9 @@
 #include <boost/thread.hpp>
 #include "redis_protocol.h"
 
-DEFINE_bool(redis_monitor, false, "use command MONITOR");
-DEFINE_string(redis_host, "localhost", "redis host.");
-DEFINE_string(redis_port, "6379", "redis port.");
-DEFINE_int32(redis_timeout, 1000, "redis timeout in ms.");
-DEFINE_int32(update_cycle, 5, "update cycle in seconds.");
+bool redis_monitor;
+std::string redis_host, redis_port;
+int redis_timeout, update_cycle;
 
 typedef boost::asio::ip::tcp::socket tcp_socket;
 typedef boost::asio::deadline_timer deadline_timer;
@@ -49,11 +46,11 @@ namespace
 
   bool init_monitor()
   {
-    s_monitor.reset(new RedisProtocol(FLAGS_redis_host,
-      FLAGS_redis_port, FLAGS_redis_timeout));
+    s_monitor.reset(new RedisProtocol(redis_host,
+      redis_port, redis_timeout));
     if (!s_monitor->assure_connect(NULL))
     {
-      fprintf(stderr, "connection failed\n");
+      std::cerr << "connection failed" << std::endl;
       s_monitor.reset();
       return false;
     }
@@ -67,18 +64,18 @@ namespace
     if (!ret)
     {
       s_monitor.reset();
-      fprintf(stderr, "MONITOR failed\n");
+      std::cerr << "MONITOR failed" << std::endl;
       return false;
     }
 
     if (!command.out.is_status_ok())
     {
       s_monitor.reset();
-      fprintf(stderr, "MONITOR response is not OK\n");
+      std::cerr << "MONITOR response is not OK" << std::endl;
       return false;
     }
 
-    fprintf(stderr, "%s\n", command.out.ptr.status->c_str());
+    std::cerr << command.out.ptr.status->c_str() << std::endl;
     return true;
   }
 
@@ -103,7 +100,6 @@ namespace
       ret = pro->read_line(&line);
       if (ret)
       {
-        //printf("%s\n", line.c_str());
         //example:
         //+1317279070.687700 (db 1) "EXPIRE" "tag_pv2_de8c68" "3600"
         //+1317280373.276440 "MONITOR"
@@ -146,8 +142,8 @@ namespace
       cmd_db_map_t::const_iterator last = s_cmd_db_map.end();
       for (; first!=last; ++first)
       {
-        printf("[%s %d]:%d\n", (*first).first.first.c_str(),
-          (*first).first.second, (*first).second);
+        std::cout << "[" << (*first).first.first << " " << (*first).first.second << "]:"
+          << (*first).second << std::endl;
       }
       s_cmd_db_map.clear();
     }
@@ -157,7 +153,7 @@ namespace
       cmd_map_t::const_iterator last = s_cmd_map.end();
       for (; first!=last; ++first)
       {
-        printf("[%s]:%d\n", (*first).first.c_str(), (*first).second);
+        std::cout << "[" << (*first).first << "]:" << (*first).second << std::endl;
       }
       s_cmd_map.clear();
     }
@@ -166,11 +162,11 @@ namespace
 
   void init_info()
   {
-    s_info.reset(new RedisProtocol(FLAGS_redis_host,
-      FLAGS_redis_port, FLAGS_redis_timeout));
+    s_info.reset(new RedisProtocol(redis_host,
+      redis_port, redis_timeout));
     if (!s_info->assure_connect(NULL))
     {
-      fprintf(stderr, "connection failed\n");
+      std::cerr << "connection failed" << std::endl;
       s_info.reset();
       return;
     }
@@ -193,18 +189,18 @@ namespace
     if (!ret)
     {
       s_info.reset();
-      fprintf(stderr, "INFO failed\n");
+      std::cerr << "INFO failed" << std::endl;
       return;
     }
 
     if (!command.out.is_bulk())
     {
       s_info.reset();
-      fprintf(stderr, "INFO response is not OK\n");
+      std::cerr << "INFO response is not OK" << std::endl;
       return;
     }
 
-    printf("%s", command.out.ptr.bulk->c_str());
+    std::cout <<  command.out.ptr.bulk->c_str() << std::endl;
     //some useful infos:
     //connected_clients:859
     //used_memory:5923363536
@@ -249,14 +245,14 @@ namespace
       if (!ret)
       {
         s_info.reset();
-        fprintf(stderr, "PING failed\n");
+        std::cerr << "PING failed" << std::endl;
         return;
       }
 
       if (!command.out.is_status_pong())
       {
         s_info.reset();
-        fprintf(stderr, "PING response is not PONG\n");
+        std::cerr << "PING response is not PONG" << std::endl;
         return;
       }
     }
@@ -264,7 +260,7 @@ namespace
     end = boost::posix_time::microsec_clock::local_time();
     boost::posix_time::time_duration td = end - begin;
     int ms = static_cast<int>(td.total_milliseconds())/iteration;
-    printf("[PING]:%d\n", ms);
+    std::cout << "[PING]:" << ms << std::endl;
   }
 
 
@@ -279,21 +275,21 @@ namespace
     if (ec)
       return;
 
-    printf("{begin}\n");
-    printf("%lu\n", static_cast<unsigned long>(time(NULL)));
-    printf("%s:%s\n", FLAGS_redis_host.c_str(), FLAGS_redis_port.c_str());
-    if (FLAGS_redis_monitor)
+    std::cout << "{begin}" << std::endl;
+    std::cout << time(NULL) << std::endl;
+    std::cout << redis_host << ":" << redis_port << std::endl;
+    if (redis_monitor)
     {
       monitor();
       print_monitor();
     }
     info();
     ping();
-    printf("{end}\n");
+    std::cout << "{end}" << std::endl;
 
     boost::posix_time::ptime next = s_timer->expires_at();
     boost::posix_time::seconds cycle = boost::posix_time::seconds(
-      FLAGS_update_cycle);
+      update_cycle);
     while (next <= boost::asio::deadline_timer::traits_type::now())
       next = next + cycle;
 
@@ -311,21 +307,53 @@ namespace
 
 int main(int argc, char ** argv)
 {
-  google::ParseCommandLineFlags(&argc, &argv, true);
+  try
+  {
+    namespace po = boost::program_options;
+    po::options_description desc("Options");
+    desc.add_options()
+      ("help", "produce help message")
+      ("redis_monitor,m", po::value<bool>()->default_value(false), "use command MONITOR")
+      ("redis_host,h", po::value<std::string>()->default_value("localhost"), "redis host")
+      ("redis_port,p", po::value<std::string>()->default_value("6379"), "redis port")
+      ("redis_timeout,t", po::value<int>()->default_value(1000), "redis timeout in ms")
+      ("update_cycle,u", po::value<int>()->default_value(5), "update cycle in seconds");
+
+    po::variables_map vm;
+    po::store(po::parse_command_line(argc, argv, desc), vm);
+    po::notify(vm);
+
+    if (vm.count("help"))
+    {
+      std::cout << desc << std::endl;
+      return 0;
+    }
+
+    redis_monitor = vm["redis_monitor"].as<bool>();
+    redis_host = vm["redis_host"].as<std::string>();
+    redis_port = vm["redis_port"].as<std::string>();
+    redis_timeout = vm["redis_timeout"].as<int>();
+    update_cycle = vm["update_cycle"].as<int>();
+  }
+  catch (std::exception& e)
+  {
+    std::cout << "caught: " << e.what() << std::endl;
+    return 1;
+  }
 
   signal(SIGINT, signal_handler);
 
   s_timer.reset(new deadline_timer(s_ios));
-  if (FLAGS_redis_monitor)
+  if (redis_monitor)
     init_monitor();
   init_info();
 
-  printf("starting...\n");
+  std::cout << "starting..." << std::endl;
 
   time_t now = time(NULL);
-  now = now - (now % FLAGS_update_cycle) + FLAGS_update_cycle;
+  now = now - (now % update_cycle) + update_cycle;
   boost::posix_time::ptime next = boost::posix_time::from_time_t(now);
-  boost::posix_time::seconds cycle = boost::posix_time::seconds(FLAGS_update_cycle);
+  boost::posix_time::seconds cycle = boost::posix_time::seconds(update_cycle);
   while (next <= boost::asio::deadline_timer::traits_type::now())
     next = next + cycle;
 
@@ -335,12 +363,12 @@ int main(int argc, char ** argv)
   s_ios.reset();
   s_ios.run();
 
-  printf("exiting...\n");
+  std::cout << "exiting..." << std::endl;
 
   uninit_info();
-  if (FLAGS_redis_monitor)
+  if (redis_monitor)
     uninit_monitor();
   s_timer.reset();
-  google::ShutDownCommandLineFlags();
+
   return 0;
 }

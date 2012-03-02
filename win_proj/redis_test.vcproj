@@ -169,7 +169,7 @@
 	</References>
 	<Files>
 		<File
-			RelativePath="..\redis_test.cpp"
+			RelativePath="..\src\redis_test.cpp"
 			>
 		</File>
 	</Files>

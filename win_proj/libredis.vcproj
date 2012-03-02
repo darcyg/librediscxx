@@ -147,140 +147,84 @@
 	</References>
 	<Files>
 		<File
-			RelativePath="..\blocking_tcp_client.cpp"
+			RelativePath="..\src\blocking_tcp_client.cpp"
 			>
 		</File>
 		<File
-			RelativePath="..\blocking_tcp_client.h"
+			RelativePath="..\src\blocking_tcp_client.h"
 			>
 		</File>
 		<File
-			RelativePath="..\host_resolver.cpp"
+			RelativePath="..\src\host_resolver.cpp"
 			>
 		</File>
 		<File
-			RelativePath="..\host_resolver.h"
+			RelativePath="..\src\host_resolver.h"
 			>
 		</File>
 		<File
-			RelativePath="..\namespace.h"
+			RelativePath="..\src\namespace.h"
 			>
 		</File>
 		<File
-			RelativePath="..\os.cpp"
+			RelativePath="..\src\os.cpp"
 			>
 		</File>
 		<File
-			RelativePath="..\os.h"
-			>
-			<FileConfiguration
-				Name="Debug|Win32"
-				>
-				<Tool
-					Name="VCCustomBuildTool"
-				/>
-			</FileConfiguration>
-		</File>
-		<File
-			RelativePath="..\redis.cpp"
+			RelativePath="..\src\os.h"
 			>
 		</File>
 		<File
-			RelativePath="..\redis.h"
-			>
-			<FileConfiguration
-				Name="Debug|Win32"
-				>
-				<Tool
-					Name="VCCustomBuildTool"
-				/>
-			</FileConfiguration>
-		</File>
-		<File
-			RelativePath="..\redis_base.cpp"
+			RelativePath="..\src\redis.cpp"
 			>
 		</File>
 		<File
-			RelativePath="..\redis_base.h"
-			>
-			<FileConfiguration
-				Name="Debug|Win32"
-				>
-				<Tool
-					Name="VCCustomBuildTool"
-				/>
-			</FileConfiguration>
-		</File>
-		<File
-			RelativePath="..\redis_cmd.cpp"
+			RelativePath="..\src\redis.h"
 			>
 		</File>
 		<File
-			RelativePath="..\redis_cmd.h"
-			>
-			<FileConfiguration
-				Name="Debug|Win32"
-				>
-				<Tool
-					Name="VCCustomBuildTool"
-				/>
-			</FileConfiguration>
-		</File>
-		<File
-			RelativePath="..\redis_partition.cpp"
+			RelativePath="..\src\redis_base.cpp"
 			>
 		</File>
 		<File
-			RelativePath="..\redis_partition.h"
-			>
-			<FileConfiguration
-				Name="Debug|Win32"
-				>
-				<Tool
-					Name="VCCustomBuildTool"
-				/>
-			</FileConfiguration>
-		</File>
-		<File
-			RelativePath="..\redis_protocol.cpp"
+			RelativePath="..\src\redis_base.h"
 			>
 		</File>
 		<File
-			RelativePath="..\redis_protocol.h"
-			>
-			<FileConfiguration
-				Name="Debug|Win32"
-				>
-				<Tool
-					Name="VCCustomBuildTool"
-				/>
-			</FileConfiguration>
-		</File>
-		<File
-			RelativePath="..\redis_tss.cpp"
+			RelativePath="..\src\redis_cmd.cpp"
 			>
 		</File>
 		<File
-			RelativePath="..\redis_tss.h"
+			RelativePath="..\src\redis_cmd.h"
 			>
-			<FileConfiguration
-				Name="Debug|Win32"
-				>
-				<Tool
-					Name="VCCustomBuildTool"
-				/>
-			</FileConfiguration>
 		</File>
 		<File
-			RelativePath="..\tss.h"
+			RelativePath="..\src\redis_partition.cpp"
 			>
-			<FileConfiguration
-				Name="Debug|Win32"
-				>
-				<Tool
-					Name="VCCustomBuildTool"
-				/>
-			</FileConfiguration>
+		</File>
+		<File
+			RelativePath="..\src\redis_partition.h"
+			>
+		</File>
+		<File
+			RelativePath="..\src\redis_protocol.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\src\redis_protocol.h"
+			>
+		</File>
+		<File
+			RelativePath="..\src\redis_tss.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\src\redis_tss.h"
+			>
+		</File>
+		<File
+			RelativePath="..\src\tss.h"
+			>
 		</File>
 	</Files>
 	<Globals>

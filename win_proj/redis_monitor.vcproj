@@ -169,7 +169,7 @@
 	</References>
 	<Files>
 		<File
-			RelativePath="..\redis_monitor.cpp"
+			RelativePath="..\src\redis_monitor.cpp"
 			>
 		</File>
 	</Files>

@@ -3,15 +3,13 @@
 * @author yafei.zhang@langtaojin.com
 * @date
 * @version
-*
+* inner header
 */
 #ifndef _LANGTAOJIN_LIBREDIS_BLOCKING_TCP_CLIENT_H_
 #define _LANGTAOJIN_LIBREDIS_BLOCKING_TCP_CLIENT_H_
 
-#include <string>
-#include <boost/date_time.hpp>
+#include "redis_common.h"
 #include <boost/system/system_error.hpp>
-#include "namespace.h"
 
 NAMESPACE_BEGIN
 

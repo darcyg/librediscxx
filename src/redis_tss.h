@@ -9,9 +9,7 @@
 #ifndef _LANGTAOJIN_LIBREDIS_REDIS_TSS_H_
 #define _LANGTAOJIN_LIBREDIS_REDIS_TSS_H_
 
-#include <string>
 #include "redis_base.h"
-#include "namespace.h"
 
 NAMESPACE_BEGIN
 

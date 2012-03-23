@@ -5,6 +5,7 @@
 * @version
 *
 */
+#include "os.h"
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 # define WIN32_LEAN_AND_MEAN
 # include <Windows.h>
@@ -14,7 +15,6 @@
 # include <sys/syscall.h>
 # include <unistd.h>
 #endif
-#include "os.h"
 
 NAMESPACE_BEGIN
 

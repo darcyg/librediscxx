@@ -8,10 +8,7 @@
 #ifndef _LANGTAOJIN_LIBREDIS_REDIS_BASE_H_
 #define _LANGTAOJIN_LIBREDIS_REDIS_BASE_H_
 
-#include <string>
-#include <exception>
 #include "redis_cmd.h"
-#include "namespace.h"
 
 NAMESPACE_BEGIN
 

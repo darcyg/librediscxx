@@ -165,10 +165,6 @@
 			>
 		</File>
 		<File
-			RelativePath="..\src\namespace.h"
-			>
-		</File>
-		<File
 			RelativePath="..\src\os.cpp"
 			>
 		</File>
@@ -205,6 +201,10 @@
 		</File>
 		<File
 			RelativePath="..\src\redis_cmd.h"
+			>
+		</File>
+		<File
+			RelativePath="..\src\redis_common.h"
 			>
 		</File>
 		<File

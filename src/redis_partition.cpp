@@ -6,11 +6,11 @@
 * @version
 *
 */
+#include "redis_partition.h"
+#include "os.h"
 #include <assert.h>
 #include <boost/foreach.hpp>
 #include <boost/format.hpp>
-#include "os.h"
-#include "redis_partition.h"
 
 #define CHECK_PTR_PARAM(ptr) \
   if (ptr == NULL) {last_error("EINVAL");return false;}

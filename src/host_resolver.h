@@ -3,16 +3,14 @@
 * @author yafei.zhang@langtaojin.com
 * @date
 * @version
-*
+* inner header
 */
 #ifndef _LANGTAOJIN_LIBREDIS_HOST_RESOLVER_H_
 #define _LANGTAOJIN_LIBREDIS_HOST_RESOLVER_H_
 
-#include <string>
+#include "redis_common.h"
 #include <boost/asio.hpp>
-#include <boost/date_time.hpp>
 #include <boost/system/error_code.hpp>
-#include "namespace.h"
 
 NAMESPACE_BEGIN
 

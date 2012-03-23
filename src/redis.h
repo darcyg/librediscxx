@@ -8,7 +8,6 @@
 #ifndef _LANGTAOJIN_LIBREDIS_REDIS_H_
 #define _LANGTAOJIN_LIBREDIS_REDIS_H_
 
-#include <boost/shared_ptr.hpp>
 #include "redis_base.h"
 
 NAMESPACE_BEGIN

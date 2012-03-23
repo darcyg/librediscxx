@@ -8,10 +8,7 @@
 #ifndef _LANGTAOJIN_LIBREDIS_REDIS_PROTOCOL_H_
 #define _LANGTAOJIN_LIBREDIS_REDIS_PROTOCOL_H_
 
-#include <stdarg.h>
-#include <boost/date_time.hpp>
 #include "redis_cmd.h"
-#include "namespace.h"
 
 NAMESPACE_BEGIN
 

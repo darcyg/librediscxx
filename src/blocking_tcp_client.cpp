@@ -5,14 +5,13 @@
 * @version
 *
 */
+#include "blocking_tcp_client.h"
+#include "host_resolver.h"
 #include <assert.h>
 #include <time.h>
 #include <string.h>
-#include <vector>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
-#include "blocking_tcp_client.h"
-#include "host_resolver.h"
 
 NAMESPACE_BEGIN
 

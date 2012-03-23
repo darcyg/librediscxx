@@ -5,10 +5,10 @@
 * @version
 *
 */
+#include "redis.h"
+#include "redis_protocol.h"
 #include <boost/lexical_cast.hpp>
 #include <boost/format.hpp>
-#include "redis_protocol.h"
-#include "redis.h"
 
 #define CHECK_PTR_PARAM(ptr) \
   if (ptr == NULL) {last_error("EINVAL");return false;}

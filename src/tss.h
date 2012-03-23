@@ -3,14 +3,14 @@
 * @author yafei.zhang@langtaojin.com
 * @date
 * @version
-*
+* inner header
 */
 #ifndef _LANGTAOJIN_LIBREDIS_TSS_H_
 #define _LANGTAOJIN_LIBREDIS_TSS_H_
 
+#include "redis_common.h"
 #include <boost/function.hpp>
 #include <boost/thread/tss.hpp>
-#include "namespace.h"
 
 NAMESPACE_BEGIN
 

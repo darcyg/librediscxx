@@ -6,7 +6,12 @@
 * @version
 *
 */
-#include <vector>
+#include "redis_tss.h"
+#include "redis.h"
+#include "redis_protocol.h"
+#include "redis_partition.h"
+#include "tss.h"
+
 #include <set>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
@@ -14,11 +19,6 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/scoped_ptr.hpp>
 #include <boost/thread.hpp>
-#include "tss.h"
-#include "redis_protocol.h"
-#include "redis.h"
-#include "redis_partition.h"
-#include "redis_tss.h"
 
 NAMESPACE_BEGIN
 

@@ -5,12 +5,12 @@
 * @version
 *
 */
+#include "redis_cmd.h"
 #include <ctype.h>//toupper
 #include <algorithm>
 #include <boost/assign/list_of.hpp>
 #include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
-#include "redis_cmd.h"
 
 NAMESPACE_BEGIN
 

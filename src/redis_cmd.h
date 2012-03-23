@@ -8,23 +8,7 @@
 #ifndef _LANGTAOJIN_LIBREDIS_REDIS_CMD_H_
 #define _LANGTAOJIN_LIBREDIS_REDIS_CMD_H_
 
-#include <string>
-#include <vector>
-#include <map>
-#include <boost/cstdint.hpp>
-#include "namespace.h"
-
-typedef boost::int64_t int64_t;
-typedef boost::uint32_t uint32_t;
-
-//an "ECHO "macro may be disturbing
-#ifdef ECHO
-#undef ECHO
-#endif
-
-#ifdef setbit
-#undef setbit
-#endif
+#include "redis_common.h"
 
 NAMESPACE_BEGIN
 

@@ -5,7 +5,7 @@
 * @version
 *
 */
-#include <namespace.h>
+#include <redis_common.h>
 #include <blocking_tcp_client.h>
 #include <host_resolver.h>
 #include <os.h>

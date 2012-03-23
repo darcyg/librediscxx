@@ -3,13 +3,12 @@
 * @author yafei.zhang@langtaojin.com
 * @date
 * @version
-*
+* inner header
 */
 #ifndef _LANGTAOJIN_LIBREDIS_OS_H_
 #define _LANGTAOJIN_LIBREDIS_OS_H_
 
-#include <string>
-#include "namespace.h"
+#include "redis_common.h"
 
 NAMESPACE_BEGIN
 

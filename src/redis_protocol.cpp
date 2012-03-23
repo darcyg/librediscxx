@@ -5,6 +5,8 @@
 * @version
 *
 */
+#include "redis_protocol.h"
+#include "blocking_tcp_client.h"
 #include <assert.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -14,8 +16,6 @@
 #include <boost/format.hpp>
 #include <boost/foreach.hpp>
 #include <boost/system/system_error.hpp>
-#include "blocking_tcp_client.h"
-#include "redis_protocol.h"
 
 #define CHECK_PTR_PARAM(ptr) \
   if (ptr == NULL) {error_ = "EINVAL";return false;}

@@ -5,11 +5,11 @@
 * @version
 *
 */
+#include "redis_base.h"
 #include <assert.h>
 #include <boost/algorithm/string.hpp>
 #include <boost/foreach.hpp>
 #include <boost/format.hpp>
-#include "redis_base.h"
 
 NAMESPACE_BEGIN
 

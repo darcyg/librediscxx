@@ -10,6 +10,16 @@
 
 #include "redis_common.h"
 
+//an 'ECHO' macro may be disturbing
+#ifdef ECHO
+#undef ECHO
+#endif
+
+//a 'setbit' macro may be disturbing
+#ifdef setbit
+#undef setbit
+#endif
+
 NAMESPACE_BEGIN
 
 enum kCommand

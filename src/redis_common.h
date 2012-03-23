@@ -32,14 +32,4 @@
 typedef boost::int64_t int64_t;
 typedef boost::uint32_t uint32_t;
 
-//an 'ECHO' macro may be disturbing
-#ifdef ECHO
-#undef ECHO
-#endif
-
-//a 'setbit' macro may be disturbing
-#ifdef setbit
-#undef setbit
-#endif
-
 #endif //_LANGTAOJIN_LIBREDIS_REDIS_COMMON_H_

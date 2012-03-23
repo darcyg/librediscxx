@@ -23,6 +23,7 @@ if not have_boost:
 env = conf.Finish()
 
 env.Append(CCFLAGS = Split('-Wall -g -O2'))
+env.Append(CPPPATH = 'src')
 env.Append(LIBPATH = '.')
 
 COMMON_LIBS = [
@@ -53,13 +54,13 @@ env.StaticLibrary(
 )
 
 env.Program('redis_test',
-    Split('src/redis_test.cpp'),
+    Split('test/redis_test.cpp'),
 )
 
 env.Program('redis_hash_test',
-    Split('src/redis_hash_test.cpp'),
+    Split('tools/redis_hash_test.cpp'),
 )
 
 env.Program('redis_monitor',
-    Split('src/redis_monitor.cpp'),
+    Split('tools/redis_monitor.cpp'),
 )

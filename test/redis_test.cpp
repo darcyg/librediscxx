@@ -5,22 +5,23 @@
 * @version
 *
 */
+#include <namespace.h>
+#include <blocking_tcp_client.h>
+#include <host_resolver.h>
+#include <os.h>
+#include <redis_protocol.h>
+#include <redis_cmd.h>
+#include <redis_base.h>
+#include <redis.h>
+#include <redis_partition.h>
+#include <redis_tss.h>
+
 #include <iostream>
 #include <boost/program_options.hpp>
 #include <boost/assign/std/vector.hpp>
 #include <boost/bind.hpp>
 #include <boost/date_time/microsec_time_clock.hpp>
 #include <boost/thread.hpp>
-#include "namespace.h"
-#include "blocking_tcp_client.h"
-#include "host_resolver.h"
-#include "os.h"
-#include "redis_protocol.h"
-#include "redis_cmd.h"
-#include "redis_base.h"
-#include "redis.h"
-#include "redis_partition.h"
-#include "redis_tss.h"
 
 USING_NAMESPACE
 using namespace std;
@@ -105,55 +106,63 @@ namespace
     cout << "host_resolver_test..." << endl;
     HostResolver res;
     boost::asio::ip::tcp::resolver::iterator iter;
-    boost::posix_time::time_duration zero = boost::posix_time::seconds(0);
-    boost::posix_time::time_duration one = boost::posix_time::seconds(1);
+    boost::posix_time::time_duration _short = boost::posix_time::milliseconds(50);
+    boost::posix_time::time_duration _long = boost::posix_time::seconds(10);
     boost::system::error_code ec;
 
     std::string hosts[] =
     {
-      "www.google.com",
-      "www.j.cn",
-      "www.baidu.com",
-      "www.qq.com",
-      "w.w.w",
+//      "www.google.com",
+//      "www.j.cn",
+//      "www.baidu.com",
+//      "www.qq.com",
+//      "w.w.w",
+      "redis1",
+      "redis99",
+      "sdl-redis16",
+      "sdl-redis99",
     };
 
+//    for (size_t i=0; i<sizeof(hosts)/sizeof(hosts[0]); i++)
+//    {
+//      cout << "resolving host: " << hosts[i] << endl;
+//
+//      iter = res.resolve_host(hosts[i], "80", ec);
+//      if (iter != boost::asio::ip::tcp::resolver::iterator())
+//      {
+//        cout << "resolved host: " << hosts[i] << "=" << iter->endpoint() << endl;
+//      }
+//      else
+//      {
+//        cout << "resolve host: " << hosts[i] << " failed: " << ec.message() << endl;
+//      }
+//    }
+
     for (size_t i=0; i<sizeof(hosts)/sizeof(hosts[0]); i++)
     {
-      iter = res.resolve_host(hosts[i], "80", ec);
+      cout << "resolving host: " << hosts[i] << endl;
+      iter = res.resolve_host(hosts[i], "80", _short, ec);
       if (iter != boost::asio::ip::tcp::resolver::iterator())
       {
-        cout << "resolve_host(" << hosts[i] << ") : " << iter->endpoint() << endl;
+        cout << "resolved host: " << hosts[i] << "=" << iter->endpoint() << endl;
       }
       else
       {
-        cout << "resolve_host(" << hosts[i] << ") failed " << endl;
+        cout << "resolve host: " << hosts[i] << " failed: " << ec.message() << endl;
       }
     }
 
     for (size_t i=0; i<sizeof(hosts)/sizeof(hosts[0]); i++)
     {
-      iter = res.resolve_host(hosts[i], "80", one, ec);
+      cout << "resolving host: " << hosts[i] << endl;
+      iter = res.resolve_host(hosts[i], "80", _long, ec);
       if (iter != boost::asio::ip::tcp::resolver::iterator())
       {
-        cout << "resolve_host(" << hosts[i] << " one) : " << iter->endpoint() << endl;
+        cout << "resolved host: " << hosts[i] << "=" << iter->endpoint() << endl;
       }
       else
       {
-        cout << "resolve_host(" << hosts[i] << " one) failed " << endl;
-      }
-    }
-
-    for (size_t i=0; i<sizeof(hosts)/sizeof(hosts[0]); i++)
-    {
-      iter = res.resolve_host(hosts[i], "80", zero, ec);
-      if (iter != boost::asio::ip::tcp::resolver::iterator())
-      {
-        cout << "resolve_host(" << hosts[i] << " zero) : " << iter->endpoint() << endl;
-      }
-      else
-      {
-        cout << "resolve_host(" << hosts[i] << " zero) failed " << endl;
+        cout << "resolve host: " << hosts[i] << " failed: " << ec.message() << endl;
       }
     }
 
@@ -1050,28 +1059,28 @@ int main(int argc, char * argv[])
     return 1;
   }
 
-  //host_resolver_test();
-  os_test();
-  protocol_test();
-  get_redis_version();
-
-  {
-    Redis2 r(host, port, db_index, timeout);
-    basic_test(r);
-    basic_single_test(r);
-    pipeline_test(r);
-    transaction_test(r);
-  }
-
-  {
-    Redis2P r(host_list, port_list, db_index, timeout);
-    basic_test(r);
-  }
-
-  {
-    RedisTss r(host, port, db_index, 1, timeout, kNormal);
-    redis_tss_test(r);
-  }
+  host_resolver_test();
+//  os_test();
+//  protocol_test();
+//  get_redis_version();
+//
+//  {
+//    Redis2 r(host, port, db_index, timeout);
+//    basic_test(r);
+//    basic_single_test(r);
+//    pipeline_test(r);
+//    transaction_test(r);
+//  }
+//
+//  {
+//    Redis2P r(host_list, port_list, db_index, timeout);
+//    basic_test(r);
+//  }
+//
+//  {
+//    RedisTss r(host, port, db_index, 1, timeout, kNormal);
+//    redis_tss_test(r);
+//  }
 
   DUMP_TEST_RESULT();
 

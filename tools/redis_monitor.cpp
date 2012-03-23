@@ -5,6 +5,7 @@
 * @version
 *
 */
+#include <redis_protocol.h>
 #include <stdlib.h>
 #include <string.h>
 #include <signal.h>
@@ -17,7 +18,6 @@
 #include <boost/date_time/c_local_time_adjustor.hpp>
 #include <boost/scoped_ptr.hpp>
 #include <boost/thread.hpp>
-#include "redis_protocol.h"
 
 bool redis_monitor;
 std::string redis_host, redis_port;

@@ -112,11 +112,11 @@ namespace
 
     std::string hosts[] =
     {
-//      "www.google.com",
-//      "www.j.cn",
-//      "www.baidu.com",
-//      "www.qq.com",
-//      "w.w.w",
+      "www.google.com",
+      "www.j.cn",
+      "www.baidu.com",
+      "www.qq.com",
+      "w.w.w",
       "redis1",
       "redis99",
       "sdl-redis16",
@@ -136,6 +136,7 @@ namespace
 //      {
 //        cout << "resolve host: " << hosts[i] << " failed: " << ec.message() << endl;
 //      }
+//      cout << endl;
 //    }
 
     for (size_t i=0; i<sizeof(hosts)/sizeof(hosts[0]); i++)
@@ -150,6 +151,7 @@ namespace
       {
         cout << "resolve host: " << hosts[i] << " failed: " << ec.message() << endl;
       }
+      cout << endl;
     }
 
     for (size_t i=0; i<sizeof(hosts)/sizeof(hosts[0]); i++)
@@ -164,6 +166,7 @@ namespace
       {
         cout << "resolve host: " << hosts[i] << " failed: " << ec.message() << endl;
       }
+      cout << endl;
     }
 
     cout << "host_resolver_test ok" << endl;
@@ -1060,27 +1063,27 @@ int main(int argc, char * argv[])
   }
 
   host_resolver_test();
-//  os_test();
-//  protocol_test();
-//  get_redis_version();
-//
-//  {
-//    Redis2 r(host, port, db_index, timeout);
-//    basic_test(r);
-//    basic_single_test(r);
-//    pipeline_test(r);
-//    transaction_test(r);
-//  }
-//
-//  {
-//    Redis2P r(host_list, port_list, db_index, timeout);
-//    basic_test(r);
-//  }
-//
-//  {
-//    RedisTss r(host, port, db_index, 1, timeout, kNormal);
-//    redis_tss_test(r);
-//  }
+  os_test();
+  protocol_test();
+  get_redis_version();
+
+  {
+    Redis2 r(host, port, db_index, timeout);
+    basic_test(r);
+    basic_single_test(r);
+    pipeline_test(r);
+    transaction_test(r);
+  }
+
+  {
+    Redis2P r(host_list, port_list, db_index, timeout);
+    basic_test(r);
+  }
+
+  {
+    RedisTss r(host, port, db_index, 1, timeout, kNormal);
+    redis_tss_test(r);
+  }
 
   DUMP_TEST_RESULT();
 

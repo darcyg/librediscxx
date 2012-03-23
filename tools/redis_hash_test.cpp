@@ -21,7 +21,7 @@ int main(int argc, char * argv[])
     namespace po = boost::program_options;
     po::options_description desc("Options");
     desc.add_options()
-      ("help", "produce help message")
+      ("help,h", "produce help message")
       ("key,k", po::value<std::string>()->default_value("test string"), "key")
       ("group_number,g", po::value<int>()->default_value(16), "group number");
 

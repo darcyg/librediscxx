@@ -41,6 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+				AdditionalIncludeDirectories="..\src"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WIN32_WINNT=0x0501"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -106,6 +107,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
+				AdditionalIncludeDirectories="..\src"
 				PreprocessorDefinitions="WIN32;_WIN32_WINNT=0x0501"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
@@ -173,6 +175,13 @@
 		<File
 			RelativePath="..\src\os.h"
 			>
+			<FileConfiguration
+				Name="Debug|Win32"
+				>
+				<Tool
+					Name="VCCustomBuildTool"
+				/>
+			</FileConfiguration>
 		</File>
 		<File
 			RelativePath="..\src\redis.cpp"
@@ -225,6 +234,13 @@
 		<File
 			RelativePath="..\src\tss.h"
 			>
+			<FileConfiguration
+				Name="Debug|Win32"
+				>
+				<Tool
+					Name="VCCustomBuildTool"
+				/>
+			</FileConfiguration>
 		</File>
 	</Files>
 	<Globals>

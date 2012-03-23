@@ -5,8 +5,8 @@
 * @version
 *
 */
-#include <boost/bind.hpp>
 #include "host_resolver.h"
+#include <boost/bind.hpp>
 
 NAMESPACE_BEGIN
 
@@ -18,31 +18,49 @@ private:
   boost::asio::deadline_timer resolver_timer_;
 
 
-  void __resolve_timeout_handler()
+  void __resolve_timeout_handler(
+    const boost::system::error_code& ec,
+    boost::system::error_code * error_out)
   {
-    if (resolver_timer_.expires_at() <= boost::asio::deadline_timer::traits_type::now())
+    if (ec == boost::asio::error::operation_aborted)
     {
-      //The deadline has passed
+      // The timer was canceled, so the resolver is ok.
+    }
+    else
+    {
+      // The deadline has passed, cancel the resolver.
       resolver_.cancel();
 
-      resolver_timer_.expires_at(boost::posix_time::pos_infin);
+      // Unluckily, there is a bug that resolver's cancellation works unexpectedly:
+      // https://svn.boost.org/trac/boost/ticket/6138
+      // Wait for its patch.
+
+      // Temporarily, we assign 'error_out', and check it in '__resolve_handler'.
+      // But the cancellation is still not immediate.
+      *error_out = boost::asio::error::make_error_code(boost::asio::error::operation_aborted);
     }
-    resolver_timer_.async_wait(boost::bind(&HostResolver::Impl::__resolve_timeout_handler, this));
   }
 
 
   void __resolve_handler(
-    const boost::system::error_code& error,
+    const boost::system::error_code& ec,
     boost::asio::ip::tcp::resolver::iterator iterator,
     boost::system::error_code * error_out,
     boost::asio::ip::tcp::resolver::iterator * iterator_out)
   {
-    resolver_timer_.cancel();
+    if (*error_out == boost::asio::error::operation_aborted
+      || ec == boost::asio::error::operation_aborted)
+    {
+      // The resolver was canceled, timed out.
+    }
+    else
+    {
+      // The resolver is ok, cancel the timer.
+      resolver_timer_.cancel();
 
-    if (error_out)
-      *error_out = error;
-    if (iterator_out)
+      *error_out = ec;
       *iterator_out = iterator;
+    }
   }
 
 
@@ -93,10 +111,10 @@ public:
     //set timer
     resolver_timer_.expires_from_now(timeout);
     resolver_timer_.async_wait(
-      boost::bind(&HostResolver::Impl::__resolve_timeout_handler, this));
+      boost::bind(&HostResolver::Impl::__resolve_timeout_handler, this, _1, &ec));
 
-    do io_service_.run_one(); while (ec == boost::asio::error::would_block);
-
+    io_service_.reset();
+    io_service_.run();
     if (ec)
     {
       //return an invalid iterator

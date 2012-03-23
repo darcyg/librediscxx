@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories=""
+				AdditionalIncludeDirectories="..\src"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WIN32_WINNT=0x0501;GFLAGS_DLL_DECL="
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -115,7 +115,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories=""
+				AdditionalIncludeDirectories="..\src"
 				PreprocessorDefinitions="WIN32;_WIN32_WINNT=0x0501;GFLAGS_DLL_DECL="
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
@@ -169,7 +169,7 @@
 	</References>
 	<Files>
 		<File
-			RelativePath="..\src\redis_monitor.cpp"
+			RelativePath="..\tools\redis_monitor.cpp"
 			>
 		</File>
 	</Files>

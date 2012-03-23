@@ -187,8 +187,7 @@ private:
     const boost::system::error_code& error,
     boost::system::error_code * error_out)
   {
-    if (error_out)
-      *error_out = error;
+    *error_out = error;
   }
 
 
@@ -198,10 +197,8 @@ private:
     boost::system::error_code * error_out,
     size_t * size_out)
   {
-    if (error_out)
-      *error_out = error;
-    if (size_out)
-      *size_out = size;
+    *error_out = error;
+    *size_out = size;
   }
 
 
@@ -229,11 +226,11 @@ private:
   inline boost::asio::ip::tcp::resolver::iterator __resolve_host(
     const std::string& ip_or_host,
     const std::string& port_or_service,
-    boost::posix_time::time_duration /*timeout*/,
+    boost::posix_time::time_duration timeout,
     boost::system::error_code& ec)
   {
     HostResolver host_resolver;
-    return host_resolver.resolve_host(ip_or_host, port_or_service, ec);
+    return host_resolver.resolve_host(ip_or_host, port_or_service, timeout, ec);
   }
 
 
@@ -260,14 +257,16 @@ public:
     boost::posix_time::time_duration timeout,
     boost::system::error_code& ec)
   {
+    //adjust timeout
+    timeout /= kConnectTimeoutProportion;
+    if (timeout.total_milliseconds() == 0)
+      timeout = boost::posix_time::milliseconds(1);
+
     boost::asio::ip::tcp::resolver::iterator iter =
       __resolve_host(ip_or_host, port_or_service, timeout, ec);
-
     if (ec)
       return;
 
-    //adjust timeout
-    timeout /= kConnectTimeoutProportion;
     boost::posix_time::milliseconds min_timeout(kMinConnectTimeout);
     if (timeout < min_timeout)
       timeout = min_timeout;

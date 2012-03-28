@@ -23,7 +23,7 @@ enum
   kConnectTimeoutProportion = 5,
   kMinConnectTimeout = 10,
 
-  kCheckOpenInterval = 300,
+  kCheckOpenInterval = 180,
 };
 
 

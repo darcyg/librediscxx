@@ -278,6 +278,11 @@ public:
       close();
       io_service_.reset();
 
+      socket_.open(iter->endpoint().protocol());
+      // use non-block mode
+      boost::asio::socket_base::non_blocking_io command(true);
+      socket_.io_control(command);
+
       ec = boost::asio::error::would_block;
       socket_.async_connect(iter->endpoint(),
         boost::bind(&TcpClient::Impl::__connect_handler, this, _1, &ec));

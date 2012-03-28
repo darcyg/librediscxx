@@ -5,8 +5,8 @@ env = env.Clone()
 
 def CheckBoost(context):
     context.Message('Checking for C++ library boost...')
-    context.SetLIBS('boost_thread')
-    result = context.TryLink(
+#    context.SetLIBS('boost_thread')
+    result = context.TryCompile(
     """
     #include <boost/thread.hpp>
     int main(int argc, char **argv){return 0;}

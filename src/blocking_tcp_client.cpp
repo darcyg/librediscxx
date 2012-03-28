@@ -22,6 +22,8 @@ enum
 
   kConnectTimeoutProportion = 5,
   kMinConnectTimeout = 10,
+
+  kCheckOpenInterval = 300,
 };
 
 
@@ -178,7 +180,6 @@ private:
   TcpClientBuffer buffer_;
 
   mutable time_t last_check_open_time_;
-  const time_t check_open_interval_;
 
 
 private:
@@ -234,12 +235,11 @@ private:
 
 
 public:
-  explicit Impl(time_t check_open_interval)
+  Impl()
     :io_service_(),
     socket_(io_service_),
     socket_timer_(io_service_),
-    last_check_open_time_(0),
-    check_open_interval_(check_open_interval)
+    last_check_open_time_(0)
   {
     __init_socket_timer();
   }
@@ -466,7 +466,7 @@ public:
     //to detect the close of redis server
     time_t now;
     ::time(&now);
-    if (now - last_check_open_time_ > check_open_interval_)
+    if (now - last_check_open_time_ > kCheckOpenInterval)
     {
       last_check_open_time_ = now;
       char c;
@@ -507,9 +507,9 @@ public:
 /************************************************************************/
 /*TcpClient*/
 /************************************************************************/
-TcpClient::TcpClient(int check_open_interval)
+TcpClient::TcpClient()
 {
-  impl_ = new Impl(check_open_interval);
+  impl_ = new Impl;
 }
 
 

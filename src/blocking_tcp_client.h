@@ -21,9 +21,7 @@ private:
   Impl * impl_;
 
 public:
-  //for redis's timeout configuration, we must check the client's status
-  //check_open_interval is measured in seconds
-  TcpClient(int check_open_interval = 200);
+  TcpClient();
   ~TcpClient();
 
 

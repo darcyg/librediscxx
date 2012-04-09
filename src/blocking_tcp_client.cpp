@@ -278,7 +278,10 @@ public:
       close();
       io_service_.reset();
 
-      socket_.open(iter->endpoint().protocol());
+      socket_.open(iter->endpoint().protocol(), ec);
+      if (ec)
+        continue;
+
       // use non-block mode
       boost::asio::socket_base::non_blocking_io command(true);
       socket_.io_control(command);

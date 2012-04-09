@@ -22,7 +22,7 @@ if not have_boost:
     sys.exit()
 env = conf.Finish()
 
-env.Append(CCFLAGS = Split('-Wall -g -O2'))
+env.Append(CCFLAGS = Split('-Wall -g'))
 env.Append(CPPPATH = 'src')
 env.Append(LIBPATH = '.')
 

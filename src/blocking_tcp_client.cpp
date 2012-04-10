@@ -208,7 +208,8 @@ private:
     {
       //The deadline has passed
       //close();
-      socket_.close();
+      boost::system::error_code ec;
+      socket_.close(ec);
       socket_timer_.expires_at(boost::posix_time::pos_infin);
     }
     socket_timer_.async_wait(boost::bind(&TcpClient::Impl::__socket_timeout_handler, this));
@@ -279,12 +280,12 @@ public:
       io_service_.reset();
 
       socket_.open(iter->endpoint().protocol(), ec);
-      if (ec)
-        continue;
+      if (ec) continue;
 
       // use non-block mode
       boost::asio::socket_base::non_blocking_io command(true);
-      socket_.io_control(command);
+      socket_.io_control(command, ec);
+      if (ec) continue;
 
       ec = boost::asio::error::would_block;
       socket_.async_connect(iter->endpoint(),
@@ -456,7 +457,8 @@ public:
 
   inline void close()
   {
-    socket_.close();
+    boost::system::error_code ec;
+    socket_.close(ec);
     buffer_.clear();
   }
 

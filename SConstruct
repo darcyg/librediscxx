@@ -1,37 +1,37 @@
 import sys
+import os
+
+def FindStaticLib(libname, LIBRARY_PATH=os.environ.get('LIBRARY_PATH', '')):
+    path_list=['.']
+    if LIBRARY_PATH:
+        path_list += LIBRARY_PATH.split('::')
+    path_list += ['/lib', '/usr/lib', '/usr/local/lib']
+    for path in path_list:
+        fn = path + '/' + 'lib' + libname + '.a';
+        if os.path.isfile(fn):
+            return File(fn)
+    return libname
 
 env = Environment()
 env = env.Clone()
 
-def CheckBoost(context):
-    context.Message('Checking for C++ library boost...')
-#    context.SetLIBS('boost_thread')
-    result = context.TryCompile(
-    """
-    #include <boost/thread.hpp>
-    int main(int argc, char **argv){return 0;}
-    """, '.cpp')
-    context.Result(result)
-    return result
-
-conf = Configure(env, custom_tests = {'CheckBoost':CheckBoost})
+conf = Configure(env)
 conf.CheckCC()
-have_boost = conf.CheckBoost()
-if not have_boost:
+conf.CheckCXX()
+if not conf.CheckLibWithHeader('boost_thread', 'boost/thread.hpp', 'C++', autoadd=0):
     print 'Error: no boost'
     sys.exit()
 env = conf.Finish()
 
-env.Append(CCFLAGS = Split('-Wall -g'))
+env.Append(CCFLAGS = Split('-Wall -g -O2'))
 env.Append(CPPPATH = 'src')
-env.Append(LIBPATH = '.')
 
 COMMON_LIBS = [
     File('./libredis.a'),
-    File('/usr/lib/libboost_thread.a'),
-    File('/usr/lib/libboost_system.a'),
-    File('/usr/lib/libboost_date_time.a'),
-    File('/usr/lib/libboost_program_options.a'),
+    FindStaticLib('boost_thread'),
+    FindStaticLib('boost_system'),
+    FindStaticLib('boost_date_time'),
+    FindStaticLib('boost_program_options'),
     'pthread',
 ]
 env.Append(LIBS = COMMON_LIBS)

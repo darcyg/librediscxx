@@ -15,26 +15,26 @@ def FindStaticLib(libname, LIBRARY_PATH=os.environ.get('LIBRARY_PATH', '')):
 env = Environment()
 env = env.Clone()
 
-conf = Configure(env)
-conf.CheckCC()
-conf.CheckCXX()
-if not conf.CheckLibWithHeader('boost_thread', 'boost/thread.hpp', 'C++', autoadd=0):
-    print 'Error: no boost'
-    sys.exit()
-env = conf.Finish()
+if not env.GetOption('clean'):
+    conf = Configure(env)
+    conf.CheckCC()
+    conf.CheckCXX()
+    if not conf.CheckLibWithHeader('boost_thread', 'boost/thread.hpp', 'C++', autoadd=0):
+        print 'Error: no boost'
+        sys.exit()
+    env = conf.Finish()
 
 env.Append(CCFLAGS = Split('-Wall -g -O2'))
 env.Append(CPPPATH = 'src')
 
-COMMON_LIBS = [
+env.Append(LIBS = [
     File('./libredis.a'),
     FindStaticLib('boost_thread'),
     FindStaticLib('boost_system'),
     FindStaticLib('boost_date_time'),
     FindStaticLib('boost_program_options'),
     'pthread',
-]
-env.Append(LIBS = COMMON_LIBS)
+])
 
 LibrarySource = [
     'src/blocking_tcp_client.cpp',

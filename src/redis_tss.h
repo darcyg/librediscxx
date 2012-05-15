@@ -16,7 +16,7 @@ NAMESPACE_BEGIN
 enum kRedisClientType
 {
   kNormal = 0,//Redis2
-  kPartition,//Redis2P
+  kPartition//Redis2P
 };
 
 

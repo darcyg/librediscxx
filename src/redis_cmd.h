@@ -39,7 +39,10 @@ enum kCommand
   DECRBY,
   DEL,
   DISCARD,
+  DUMP,
   ECHO,
+  EVAL,
+  EVALSHA,
   EXEC,
   EXISTS,
   EXPIRE,
@@ -55,6 +58,7 @@ enum kCommand
   HGET,
   HGETALL,
   HINCRBY,
+  HINCRBYFLOAT,
   HKEYS,
   HLEN,
   HMGET,
@@ -64,6 +68,7 @@ enum kCommand
   HVALS,
   INCR,
   INCRBY,
+  INCRBYFLOAT,
   INFO,
   KEYS,
   LASTSAVE,
@@ -78,6 +83,7 @@ enum kCommand
   LSET,
   LTRIM,
   MGET,
+  MIGRATE,
   MONITOR,
   MOVE,
   MSET,
@@ -85,14 +91,19 @@ enum kCommand
   MULTI,
   OBJECT,
   PERSIST,
+  PEXPIRE,
+  PEXPIREAT,
   PING,
+  PSETEX,
   PSUBSCRIBE,
+  PTTL,
   PUBLISH,
   PUNSUBSCRIBE,
   QUIT,
   RANDOMKEY,
   RENAME,
   RENAMENX,
+  RESTORE,
   RPOP,
   RPOPLPUSH,
   RPUSH,
@@ -100,6 +111,7 @@ enum kCommand
   SADD,
   SAVE,
   SCARD,
+  SCRIPT,
   SDIFF,
   SDIFFSTORE,
   SELECT,
@@ -125,6 +137,7 @@ enum kCommand
   SUNION,
   SUNIONSTORE,
   SYNC,
+  TIME,
   TTL,
   TYPE,
   UNSUBSCRIBE,
@@ -146,7 +159,7 @@ enum kCommand
   ZREVRANK,
   ZSCORE,
   ZUNIONSTORE,
-  COMMAND_MAX,//place holder
+  COMMAND_MAX//place holder
 };
 
 
@@ -194,15 +207,11 @@ enum kReplyType
   //*-1\r\n   ---   nil multi bulk
   kMultiBulk,
 
-  //in multi bulk, there may be a an integer or a multi bulk
+  //in multi bulk, there may be a an integer or another multi bulk recursively
   kSpecialMultiBulk,
 
-  //like commands with subcommands:
-  //OBJECT refcount
-  //OBJECT encoding
-  //OBJECT idletime
-  //or like command: ZRANK, ZREVRANK
-  kDepends,
+  //return type is not certain
+  kDepends
 };
 
 
@@ -377,6 +386,7 @@ public:
     return args_;
   }
 
+  void clear_arg();
   void push_arg(const std::string& s);
   void push_arg(const char * s);
   void push_arg(const string_vector_t& sv);
@@ -688,6 +698,11 @@ struct RedisCommand
   const string_vector_t& args()const
   {
     return in.args();
+  }
+
+  void clear_arg()
+  {
+    in.clear_arg();
   }
 
   void push_arg(const std::string& s)

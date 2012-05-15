@@ -34,7 +34,10 @@ static const CommandInfo s_command_map[] =
   {DECRBY, "DECRBY", 2, kInteger},//
   {DEL, "DEL", -1, kInteger},//
   {DISCARD, "DISCARD", 0, kStatus},//
+  {DUMP, "DUMP", 1, kBulk},//
   {ECHO, "ECHO", 1, kBulk},//
+  {EVAL, "EVAL", -2, kDepends},//
+  {EVALSHA, "EVALSHA", -2, kDepends},//
   //EXEC may return a special multi bulk
   {EXEC, "EXEC", 0, kSpecialMultiBulk},//
   {EXISTS, "EXISTS", 1, kInteger},//
@@ -51,6 +54,7 @@ static const CommandInfo s_command_map[] =
   {HGET, "HGET", 2, kBulk},//
   {HGETALL, "HGETALL", 1, kMultiBulk},//
   {HINCRBY, "HINCRBY", 3, kInteger},//
+  {HINCRBYFLOAT, "HINCRBYFLOAT", 3, kBulk},//
   {HKEYS, "HKEYS", 1, kMultiBulk},//
   {HLEN, "HLEN", 1, kInteger},//
   {HMGET, "HMGET", -2, kMultiBulk},//
@@ -60,6 +64,7 @@ static const CommandInfo s_command_map[] =
   {HVALS, "HVALS", 1, kMultiBulk},//
   {INCR, "INCR", 1, kInteger},//
   {INCRBY, "INCRBY", 2, kInteger},//
+  {INCRBYFLOAT, "INCRBYFLOAT", 2, kBulk},//
   {INFO, "INFO", 0, kBulk},//
   {KEYS, "KEYS", 1, kMultiBulk},//
   {LASTSAVE, "LASTSAVE", 0, kInteger},//
@@ -74,6 +79,7 @@ static const CommandInfo s_command_map[] =
   {LSET, "LSET", 3, kStatus},//
   {LTRIM, "LTRIM", 3, kStatus},//
   {MGET, "MGET", -1, kMultiBulk},//
+  {MIGRATE, "MIGRATE", 5, kStatus},//
   {MONITOR, "MONITOR", 0, kDepends},//
   {MOVE, "MOVE", 2, kInteger},//
   {MSET, "MSET", -2, kStatus},//
@@ -81,9 +87,13 @@ static const CommandInfo s_command_map[] =
   {MULTI, "MULTI", 0, kStatus},//
   {OBJECT, "OBJECT", -1, kDepends},//
   {PERSIST, "PERSIST", 1, kInteger},//
+  {PEXPIRE, "PEXPIRE", 2, kStatus},//
+  {PEXPIREAT, "PEXPIREAT", 2, kStatus},//
   {PING, "PING", 0, kStatus},//
+  {PSETEX, "PSETEX", 3, kStatus},//
   //PSUBSCRIBE ... will return a special multi bulk,
   {PSUBSCRIBE, "PSUBSCRIBE", -1, kSpecialMultiBulk},//
+  {PTTL, "PTTL", 1, kInteger},//
   {PUBLISH, "PUBLISH", 2, kInteger},//
   //PUNSUBSCRIBE will block
   //PUNSUBSCRIBE ... will return a special multi bulk
@@ -92,6 +102,7 @@ static const CommandInfo s_command_map[] =
   {RANDOMKEY, "RANDOMKEY", 0, kBulk},//
   {RENAME, "RENAME", 2, kStatus},//
   {RENAMENX, "RENAMENX", 2, kInteger},//
+  {RESTORE, "RESTORE", 3, kStatus},//
   {RPOP, "RPOP", 1, kBulk},//
   {RPOPLPUSH, "RPOPLPUSH", 2, kBulk},//
   {RPUSH, "RPUSH", -2, kInteger},//
@@ -99,6 +110,7 @@ static const CommandInfo s_command_map[] =
   {SADD, "SADD", -2, kInteger},//
   {SAVE, "SAVE", 0, kDepends},//
   {SCARD, "SCARD", 1, kInteger},//
+  {SCRIPT, "SCRIPT", -1, kDepends},//
   {SDIFF, "SDIFF", -1, kMultiBulk},//
   {SDIFFSTORE, "SDIFFSTORE", -2, kInteger},//
   {SELECT, "SELECT", 1, kStatus},//
@@ -107,12 +119,12 @@ static const CommandInfo s_command_map[] =
   {SETEX, "SETEX", 3, kStatus},//
   {SETNX, "SETNX", 2, kInteger},//
   {SETRANGE, "SETRANGE", 3, kInteger},//
-  {SHUTDOWN, "SHUTDOWN", 0, kStatus},//
+  {SHUTDOWN, "SHUTDOWN", ARGC_NO_CHECKING, kStatus},//
   {SINTER, "SINTER", -1, kMultiBulk},//
   {SINTERSTORE, "SINTERSTORE", -2, kInteger},//
   {SISMEMBER, "SISMEMBER", 2, kInteger},//
   {SLAVEOF, "SLAVEOF", 2, kStatus},//
-  {SLOWLOG, "SLOWLOG", -1, kDepends},//
+  {SLOWLOG, "SLOWLOG", 1, kDepends},//
   {SMEMBERS, "SMEMBERS", 1, kMultiBulk},//
   {SMOVE, "SMOVE", 3, kInteger},//
   {SORT, "SORT", -1, kMultiBulk},//
@@ -125,6 +137,7 @@ static const CommandInfo s_command_map[] =
   {SUNION, "SUNION", -1, kMultiBulk},//
   {SUNIONSTORE, "SUNIONSTORE", -2, kInteger},//
   {SYNC, "SYNC", ARGC_NO_CHECKING, kDepends},//
+  {TIME, "TIME", 0, kMultiBulk},//
   {TTL, "TTL", 1, kInteger},//
   {TYPE, "TYPE", 1, kStatus},//
   //UNSUBSCRIBE will block
@@ -167,7 +180,10 @@ CommandRevMapType s_command_rev_map = boost::assign::map_list_of
 ("DECRBY",DECRBY)
 ("DEL",DEL)
 ("DISCARD",DISCARD)
+("DUMP",DUMP)
 ("ECHO",ECHO)
+("EVAL",EVAL)
+("EVALSHA",EVALSHA)
 ("EXEC",EXEC)
 ("EXISTS",EXISTS)
 ("EXPIRE",EXPIRE)
@@ -183,6 +199,7 @@ CommandRevMapType s_command_rev_map = boost::assign::map_list_of
 ("HGET",HGET)
 ("HGETALL",HGETALL)
 ("HINCRBY",HINCRBY)
+("HINCRBYFLOAT",HINCRBYFLOAT)
 ("HKEYS",HKEYS)
 ("HLEN",HLEN)
 ("HMGET",HMGET)
@@ -192,6 +209,7 @@ CommandRevMapType s_command_rev_map = boost::assign::map_list_of
 ("HVALS",HVALS)
 ("INCR",INCR)
 ("INCRBY",INCRBY)
+("INCRBYFLOAT",INCRBYFLOAT)
 ("INFO",INFO)
 ("KEYS",KEYS)
 ("LASTSAVE",LASTSAVE)
@@ -206,6 +224,7 @@ CommandRevMapType s_command_rev_map = boost::assign::map_list_of
 ("LSET",LSET)
 ("LTRIM",LTRIM)
 ("MGET",MGET)
+("MIGRATE",MIGRATE)
 ("MONITOR",MONITOR)
 ("MOVE",MOVE)
 ("MSET",MSET)
@@ -213,14 +232,19 @@ CommandRevMapType s_command_rev_map = boost::assign::map_list_of
 ("MULTI",MULTI)
 ("OBJECT",OBJECT)
 ("PERSIST",PERSIST)
+("PEXPIRE",PEXPIRE)
+("PEXPIREAT",PEXPIREAT)
 ("PING",PING)
+("PSETEX",PSETEX)
 ("PSUBSCRIBE",PSUBSCRIBE)
+("PTTL",PTTL)
 ("PUBLISH",PUBLISH)
 ("PUNSUBSCRIBE",PUNSUBSCRIBE)
 ("QUIT",QUIT)
 ("RANDOMKEY",RANDOMKEY)
 ("RENAME",RENAME)
 ("RENAMENX",RENAMENX)
+("RESTORE",RESTORE)
 ("RPOP",RPOP)
 ("RPOPLPUSH",RPOPLPUSH)
 ("RPUSH",RPUSH)
@@ -228,6 +252,7 @@ CommandRevMapType s_command_rev_map = boost::assign::map_list_of
 ("SADD",SADD)
 ("SAVE",SAVE)
 ("SCARD",SCARD)
+("SCRIPT",SCRIPT)
 ("SDIFF",SDIFF)
 ("SDIFFSTORE",SDIFFSTORE)
 ("SELECT",SELECT)
@@ -254,6 +279,7 @@ CommandRevMapType s_command_rev_map = boost::assign::map_list_of
 ("SUNIONSTORE",SUNIONSTORE)
 ("SYNC",SYNC)
 ("TTL",TTL)
+("TIME",TIME)
 ("TYPE",TYPE)
 ("UNSUBSCRIBE",UNSUBSCRIBE)
 ("UNWATCH",UNWATCH)
@@ -535,6 +561,11 @@ void RedisInput::swap(RedisInput& other)
   std::swap(command_, other.command_);
   std::swap(command_info_, other.command_info_);
   args_.swap(other.args_);
+}
+
+void RedisInput::clear_arg()
+{
+  args_.clear();
 }
 
 void RedisInput::push_arg(const std::string& s)

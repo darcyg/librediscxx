@@ -1,1 +1,3 @@
+support features of redis 2.6
+eliminate boost dependency
 consistent hash partitioned client

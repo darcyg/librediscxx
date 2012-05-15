@@ -192,6 +192,22 @@ bool Redis2::del(const string_vector_t& keys, int64_t * _return)
 }
 
 
+bool Redis2::dump(const std::string& key, std::string * _return, bool * is_nil)
+{
+  CHECK_PTR_PARAM(_return);
+
+  if (!assure_connect())
+    return false;
+
+  RedisCommand c(DUMP);
+  c.push_arg(key);
+  if (!proto_->exec_command(&c))
+    return false;
+
+  GET_BULK_REPLY();
+}
+
+
 bool Redis2::exists(const std::string& key, int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
@@ -278,58 +294,6 @@ bool Redis2::move(const std::string& key, int db,
 }
 
 
-bool Redis2::object_refcount(const std::string& key, int64_t * _return)
-{
-  CHECK_PTR_PARAM(_return);
-
-  if (!assure_connect())
-    return false;
-
-  RedisCommand c(OBJECT);
-  c.push_arg("REFCOUNT");
-  c.push_arg(key);
-  if (!proto_->exec_command(&c))
-    return false;
-
-  GET_INTEGER_REPLY();
-}
-
-
-bool Redis2::object_encoding(const std::string& key,
-                             std::string * _return)
-{
-  CHECK_PTR_PARAM(_return);
-
-  if (!assure_connect())
-    return false;
-
-  RedisCommand c(OBJECT);
-  c.push_arg("ENCODING");
-  c.push_arg(key);
-  if (!proto_->exec_command(&c))
-    return false;
-
-  GET_BULK_REPLY2();
-}
-
-
-bool Redis2::object_idletime(const std::string& key, int64_t * _return)
-{
-  CHECK_PTR_PARAM(_return);
-
-  if (!assure_connect())
-    return false;
-
-  RedisCommand c(OBJECT);
-  c.push_arg("IDLETIME");
-  c.push_arg(key);
-  if (!proto_->exec_command(&c))
-    return false;
-
-  GET_INTEGER_REPLY();
-}
-
-
 bool Redis2::persist(const std::string& key, int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
@@ -343,6 +307,68 @@ bool Redis2::persist(const std::string& key, int64_t * _return)
     return false;
 
   GET_INTEGER_REPLY();
+}
+
+bool Redis2::pexpire(const std::string& key, int64_t milliseconds, int64_t * _return)
+{
+  CHECK_PTR_PARAM(_return);
+
+  if (!assure_connect())
+    return false;
+
+  RedisCommand c(PEXPIRE);
+  c.push_arg(key);
+  c.push_arg(milliseconds);
+  if (!proto_->exec_command(&c))
+    return false;
+
+  GET_INTEGER_REPLY();
+}
+
+bool Redis2::pexpireat(const std::string& key, int64_t abs_milliseconds, int64_t * _return)
+{
+  CHECK_PTR_PARAM(_return);
+
+  if (!assure_connect())
+    return false;
+
+  RedisCommand c(PEXPIREAT);
+  c.push_arg(key);
+  c.push_arg(abs_milliseconds);
+  if (!proto_->exec_command(&c))
+    return false;
+
+  GET_INTEGER_REPLY();
+}
+
+bool Redis2::pttl(const std::string& key, int64_t * _return)
+{
+  CHECK_PTR_PARAM(_return);
+
+  if (!assure_connect())
+    return false;
+
+  RedisCommand c(PTTL);
+  c.push_arg(key);
+  if (!proto_->exec_command(&c))
+    return false;
+
+  GET_INTEGER_REPLY();
+}
+
+bool Redis2::restore(const std::string& key, int64_t ttl, const std::string& value)
+{
+  if (!assure_connect())
+    return false;
+
+  RedisCommand c(RESTORE);
+  c.push_arg(key);
+  c.push_arg(ttl);
+  c.push_arg(value);
+  if (!proto_->exec_command(&c))
+    return false;
+
+  CHECK_STATUS_OK();
 }
 
 
@@ -559,7 +585,6 @@ bool Redis2::incr(const std::string& key, int64_t * _return)
   GET_INTEGER_REPLY();
 }
 
-
 bool Redis2::incrby(const std::string& key, int64_t inc, int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
@@ -576,6 +601,21 @@ bool Redis2::incrby(const std::string& key, int64_t inc, int64_t * _return)
   GET_INTEGER_REPLY();
 }
 
+bool Redis2::incrbyfloat(const std::string& key, double inc, std::string * _return)
+{
+  CHECK_PTR_PARAM(_return);
+
+  if (!assure_connect())
+    return false;
+
+  RedisCommand c(INCRBYFLOAT);
+  c.push_arg(key);
+  c.push_arg(inc);
+  if (!proto_->exec_command(&c))
+    return false;
+
+  GET_BULK_REPLY2();
+}
 
 bool Redis2::mget(const string_vector_t& keys, mbulk_t * _return)
 {
@@ -612,6 +652,20 @@ bool Redis2::mset(const string_vector_t& keys, const string_vector_t& values)
   CHECK_STATUS_OK();
 }
 
+bool Redis2::psetex(const std::string& key, int64_t milliseconds, const std::string& value)
+{
+  if (!assure_connect())
+    return false;
+
+  RedisCommand c(PSETEX);
+  c.push_arg(key);
+  c.push_arg(milliseconds);
+  c.push_arg(value);
+  if (!proto_->exec_command(&c))
+    return false;
+
+  CHECK_STATUS_OK();
+}
 
 bool Redis2::set(const std::string& key, const std::string& value)
 {
@@ -831,6 +885,23 @@ bool Redis2::hincrby(const std::string& key, const std::string& field,
   GET_INTEGER_REPLY();
 }
 
+bool Redis2::hincrbyfloat(const std::string& key, const std::string& field,
+                          double inc, std::string * _return)
+{
+  CHECK_PTR_PARAM(_return);
+
+  if (!assure_connect())
+    return false;
+
+  RedisCommand c(HINCRBYFLOAT);
+  c.push_arg(key);
+  c.push_arg(field);
+  c.push_arg(inc);
+  if (!proto_->exec_command(&c))
+    return false;
+
+  GET_BULK_REPLY2();
+}
 
 bool Redis2::hkeys(const std::string& key, mbulk_t * _return)
 {
@@ -2308,7 +2379,6 @@ bool Redis2::discard()
   }
 }
 
-
 bool Redis2::ping()
 {
   if (!assure_connect())
@@ -2371,6 +2441,22 @@ bool Redis2::info(std::string * _return)
     return false;
 
   RedisCommand c(INFO);
+  if (!proto_->exec_command(&c))
+    return false;
+
+  GET_BULK_REPLY2();
+}
+
+
+bool Redis2::info(const std::string& type, std::string * _return)
+{
+  CHECK_PTR_PARAM(_return);
+
+  if (!assure_connect())
+    return false;
+
+  RedisCommand c(INFO);
+  c.push_arg(type);
   if (!proto_->exec_command(&c))
     return false;
 

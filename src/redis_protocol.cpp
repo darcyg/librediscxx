@@ -199,15 +199,14 @@ bool RedisProtocol::write_command(RedisCommand * command)
   if (!check_argc(command, given_argc))
     return false;
 
-  /*
-  Requests:
-
-  *<number of arguments> CR LF
-  $<number of bytes of argument 1> CR LF
-  <argument data> CR LF
-  ...
-  $<number of bytes of argument N> CR LF
-  <argument data> CR LF
+  /**
+  * Requests:
+  * *<number of arguments> CR LF
+  * $<number of bytes of argument 1> CR LF
+  * <argument data> CR LF
+  * ...
+  * $<number of bytes of argument N> CR LF
+  * <argument data> CR LF
   */
   ss << "*" << (given_argc+1) << s_redis_line_end;
 
@@ -346,21 +345,20 @@ bool RedisProtocol::__read_reply(RedisCommand * command, RedisOutput * output,
                                  bool check_reply_type)
 {
   assert(command && output);
-  /*
-  Replies:
+  /**
+  * Replies:
 
-  With a single line reply the first byte of the reply will be "+"
-  With an error message the first byte of the reply will be "-"
-  With an integer number the first byte of the reply will be ":"
-  With bulk reply the first byte of the reply will be "$"
-  With multi-bulk reply the first byte of the reply will be "*"
+  * With a single line reply the first byte of the reply will be "+"
+  * With an error message the first byte of the reply will be "-"
+  * With an integer number the first byte of the reply will be ":"
+  * With bulk reply the first byte of the reply will be "$"
+  * With multi-bulk reply the first byte of the reply will be "*"
   */
   std::string buf;
   kCommand cmd = command->in.command();
   kReplyType exp_reply_type = command->in.command_info().reply_type;
   if (check_reply_type && exp_reply_type == kDepends)
     check_reply_type = false;
-
 
   if (check_reply_type && transaction_mode_)
   {
@@ -377,7 +375,6 @@ bool RedisProtocol::__read_reply(RedisCommand * command, RedisOutput * output,
       break;
     }
   }
-
 
   if (!read_line(&buf))
   {
@@ -481,8 +478,7 @@ bool RedisProtocol::__read_reply(RedisCommand * command, RedisOutput * output,
       output->set_error(error_);
       return false;
     }
-    else if (exp_reply_type == kMultiBulk
-      || !check_reply_type)
+    else if (exp_reply_type == kMultiBulk)
     {
       mbulk_t mbulks;
       mbulk_t * out_mbulks;
@@ -500,8 +496,9 @@ bool RedisProtocol::__read_reply(RedisCommand * command, RedisOutput * output,
         return false;
       }
     }
-    else// if (exp_reply_type == kSpecialMultiBulk)
+    else
     {
+      // treat as kSpecialMultiBulk
       int64_t bulk_size;
       if (!parse_integer(buf, &bulk_size))
       {

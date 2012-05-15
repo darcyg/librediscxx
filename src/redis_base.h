@@ -23,12 +23,13 @@ enum kZUnionstoreAggregate
 {
   kSum,
   kMin,
-  kMax,
+  kMax
 };
 
 
 /************************************************************************/
-/*API interface design
+/**
+*                       API interface design
 * all commands return true for ok(got Non-Error reply),
 * return false for failure(Network error or got Error reply).
 *
@@ -37,6 +38,8 @@ enum kZUnionstoreAggregate
 * for Multi-bulk reply:
 *   reply may not contain a nil object: 'mbulk_t * _return' is the output
 *     NOTICE: 'mbulk_t * _return' must be 'clear_mbulks' or 'delete_mbulks'
+* for Special Multi-bulk reply:
+*   no interface supported, use exec_command smartly instead
 * for Bulk reply:
 *   1.replay may a nil object: 'std::string * _return, bool * is_nil' is the output
 *   2.replay may not a nil object: 'std::string * _return' is the output
@@ -54,7 +57,6 @@ public:
 
   /************************************************************************/
   /*old style API(to be deprecated)*/
-  /************************************************************************/
   //return 1 ok
   //return 0 if nil is returned
   //return -1 if failed
@@ -80,7 +82,8 @@ public:
   bool hgetall(const std::string& key, string_map_t * fields_and_values);
   bool hmset(const std::string& key, const string_pair_vector_t& fields_and_values);
   bool hmset(const std::string& key, const string_map_t& fields_and_values);
-
+  /*old style API(to be deprecated)*/
+  /************************************************************************/
 
 
   //NOTICE: all success operation will not clear previous errors,
@@ -96,32 +99,42 @@ public:
   //_return, the number of keys that were removed
   virtual bool del(const std::string& key, int64_t * _return) = 0;
   virtual bool del(const string_vector_t& keys, int64_t * _return) = 0;
+  //>= 2.6
+  //_return the serialized value
+  virtual bool dump(const std::string& key, std::string * _return, bool * is_nil) = 0;
   //_return 1, key exists
   //_return 0, key does not exist
   virtual bool exists(const std::string& key, int64_t * _return) = 0;
   //_return 1, the timeout was set
   //_return 0, key does not exist or the timeout could not be set
-  virtual bool expire(const std::string& key, int64_t seconds,
-    int64_t * _return) = 0;
-  virtual bool expireat(const std::string& key, int64_t abs_time,
-    int64_t * _return) = 0;
+  virtual bool expire(const std::string& key, int64_t seconds, int64_t * _return) = 0;
+  virtual bool expireat(const std::string& key, int64_t abs_time, int64_t * _return) = 0;
   virtual bool keys(const std::string& pattern, mbulk_t * _return) = 0;
   //_return 1, key was moved
   //_return 0, key was not moved
-  virtual bool move(const std::string& key, int db,
-    int64_t * _return) = 0;
-  //_return the refcount of key
-  virtual bool object_refcount(const std::string& key, int64_t * _return) = 0;
-  virtual bool object_encoding(const std::string& key,
-    std::string * _return) = 0;
-  //_return the idle time of key
-  virtual bool object_idletime(const std::string& key, int64_t * _return) = 0;
+  virtual bool move(const std::string& key, int db, int64_t * _return) = 0;
   //_return 1, the timeout was removed
   //_return 0, key does not exist or does not have an associated timeout
   virtual bool persist(const std::string& key, int64_t * _return) = 0;
+
+  //>= 2.6
+  //_return 1, the timeout was set
+  //_return 0, key does not exist or the timeout could not be set
+  virtual bool pexpire(const std::string& key, int64_t milliseconds, int64_t * _return) = 0;
+  //>= 2.6
+  virtual bool pexpireat(const std::string& key, int64_t abs_milliseconds, int64_t * _return) = 0;
+  //>= 2.6
+  //_return TTL, in milliseconds
+  //_return -1, key does not exist or does not have a timeout
+  virtual bool pttl(const std::string& key, int64_t * _return) = 0;
+
   virtual bool randomkey(std::string * _return, bool * is_nil) = 0;
+  //>= 2.6
+  virtual bool restore(const std::string& key, int64_t ttl, const std::string& value) = 0;
   virtual bool sort(const std::string& key, const string_vector_t * phrases,
     mbulk_t * _return) = 0;
+  //_return TTL, in seconds
+  //_return -1, key does not exist or does not have a timeout
   virtual bool ttl(const std::string& key, int64_t * _return) = 0;
   virtual bool type(const std::string& key, std::string * _return) = 0;
 
@@ -143,9 +156,14 @@ public:
   //_return the value of key after the increment
   virtual bool incr(const std::string& key, int64_t * _return) = 0;
   virtual bool incrby(const std::string& key, int64_t inc, int64_t * _return) = 0;
+  //>= 2.6
+  virtual bool incrbyfloat(const std::string& key, double inc, std::string * _return) = 0;
   //NOTICE: if return true, keys.size() == values->size()
   virtual bool mget(const string_vector_t& keys, mbulk_t * _return) = 0;
   virtual bool mset(const string_vector_t& keys, const string_vector_t& values) = 0;
+  //>= 2.6
+  virtual bool psetex(const std::string& key, int64_t milliseconds,
+    const std::string& value) = 0;
   virtual bool set(const std::string& key, const std::string& value) = 0;
   //_return the original bit value stored at offset
   virtual bool setbit(const std::string& key, int64_t offset, int64_t value,
@@ -185,6 +203,9 @@ public:
     int64_t * _return) = 0;
   virtual bool hincrby(const std::string& key, const std::string& field,
     int64_t inc, int64_t * _return) = 0;
+  //>= 2.6
+  virtual bool hincrbyfloat(const std::string& key, const std::string& field,
+    double inc, std::string * _return) = 0;
   virtual bool hkeys(const std::string& key, mbulk_t * _return) = 0;
   //_return number of fields in the hash
   //_return 0, key does not exist
@@ -352,6 +373,16 @@ public:
   virtual bool renamenx(const std::string& key, const std::string& newkey,
     int64_t * _return) = 0;
 
+  //the following commands are not implemented in interface:
+  //MIGRATE
+  //OBJECT
+
+  /************************************************************************/
+  /*String command*/
+  /************************************************************************/
+  //the following commands are not implemented in interface:
+  //MSETNX
+
   /************************************************************************/
   /*Lists command*/
   /************************************************************************/
@@ -402,10 +433,10 @@ public:
   //through inner socket ignoring the pipeline status
   virtual bool exec_command(RedisCommand * command) = 0;
 
-  //printf like(but it is text only and words are split by space,
-  //binary strings are not supported):
-  //RedisCommand cmd;
-  //r.exec_command(&cmd, "SET %s %s", "foo", "helloworld");
+  // NOTICE:
+  // printf like(but it is text only and words are split by space, binary strings are not supported):
+  // RedisCommand cmd;
+  // r.exec_command(&cmd, "SET %s %s", "foo", "helloworld");
   virtual bool exec_command(RedisCommand * command, const char * format, ...) = 0;
 
   //execute a set of commands in pipeline mode
@@ -418,16 +449,16 @@ public:
   virtual bool publish(const std::string& channel, const std::string& message,
     int64_t * _return) = 0;
 
-  //the following commands are not implemented in interface:
-  //PSUBSCRIBE pattern [pattern ...]
-  //PUNSUBSCRIBE [pattern [pattern ...]]
-  //SUBSCRIBE channel [channel ...]
-  //UNSUBSCRIBE [channel [channel ...]]
+  //the following commands are not implemented in interface
+  //for mode problem(commands may block or not, it is difficult to design a common interface):
+  //PSUBSCRIBE
+  //PUNSUBSCRIBE
+  //SUBSCRIBE
+  //UNSUBSCRIBE
 
   /************************************************************************/
   /*Transactions command*/
   /************************************************************************/
-  //the following commands are not implemented in interface:
   virtual bool multi() = 0;
   virtual bool unwatch() = 0;
   virtual bool watch(const string_vector_t& keys) = 0;
@@ -439,9 +470,24 @@ public:
   virtual bool discard() = 0;
 
   /************************************************************************/
+  /*Scripting command*/
+  /************************************************************************/
+  //the following commands are not implemented in interface
+  //for special multi-bulk problem(it is difficult to design a common interface):
+  //EVAL >= 2.6
+  //EVALSHA >= 2.6
+  //SCRIPT >= 2.6
+
+  /************************************************************************/
   /*Connection command*/
   /************************************************************************/
   virtual bool ping() = 0;
+
+  //the following commands are not implemented in interface
+  //because they are rarely used:
+  //AUTH
+  //ECHO
+  //QUIT
 
   /************************************************************************/
   /*Server command*/
@@ -450,20 +496,30 @@ public:
   virtual bool bgsave() = 0;
   virtual bool dbsize(int64_t * _return) = 0;
   virtual bool info(std::string * _return) = 0;
+  //>= 2.6
+  //type may be:
+  //  server
+  //  clients
+  //  memory
+  //  persistence
+  //  stats
+  //  replication
+  //  cpu
+  //  keyspace
+  //  commandstats
+  virtual bool info(const std::string& type, std::string * _return) = 0;
   virtual bool lastsave(int64_t * _return) = 0;
   virtual bool slaveof(const std::string& host, const std::string& port) = 0;
 
   //the following commands are not implemented in interface:
-  //AUTH
   //CONFIG
   //DEBUG
-  //ECHO
-  //MONITOR
-  //QUIT
+  //MONITOR, mode problem
   //SAVE
   //SHUTDOWN
   //SLOWLOG
   //SYNC
+  //TIME >= 2.6
 };
 
 

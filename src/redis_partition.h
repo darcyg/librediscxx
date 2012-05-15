@@ -69,6 +69,7 @@ public:
   /************************************************************************/
   virtual bool del(const std::string& key, int64_t * _return);
   virtual bool del(const string_vector_t& keys, int64_t * _return);
+  virtual bool dump(const std::string& key, std::string * _return, bool * is_nil);
   virtual bool exists(const std::string& key, int64_t * _return);
   virtual bool expire(const std::string& key, int64_t seconds,
     int64_t * _return);
@@ -77,12 +78,12 @@ public:
   virtual bool keys(const std::string& pattern, mbulk_t * _return);
   virtual bool move(const std::string& key, int db,
     int64_t * _return);
-  virtual bool object_refcount(const std::string& key, int64_t * _return);
-  virtual bool object_encoding(const std::string& key,
-    std::string * _return);
-  virtual bool object_idletime(const std::string& key, int64_t * _return);
   virtual bool persist(const std::string& key, int64_t * _return);
+  virtual bool pexpire(const std::string& key, int64_t milliseconds, int64_t * _return);
+  virtual bool pexpireat(const std::string& key, int64_t abs_milliseconds, int64_t * _return);
+  virtual bool pttl(const std::string& key, int64_t * _return);
   virtual bool randomkey(std::string * _return, bool * is_nil);
+  virtual bool restore(const std::string& key, int64_t ttl, const std::string& value);
   virtual bool sort(const std::string& key, const string_vector_t * phrases,
     mbulk_t * _return);
   virtual bool ttl(const std::string& key, int64_t * _return);
@@ -103,8 +104,10 @@ public:
     std::string * _return, bool * is_nil);
   virtual bool incr(const std::string& key, int64_t * _return);
   virtual bool incrby(const std::string& key, int64_t inc, int64_t * _return);
+  virtual bool incrbyfloat(const std::string& key, double inc, std::string * _return);
   virtual bool mget(const string_vector_t& keys, mbulk_t * _return);
   virtual bool mset(const string_vector_t& keys, const string_vector_t& values);
+  virtual bool psetex(const std::string& key, int64_t milliseconds, const std::string& value);
   virtual bool set(const std::string& key, const std::string& value);
   virtual bool setbit(const std::string& key, int64_t offset, int64_t value,
     int64_t * _return);
@@ -132,6 +135,8 @@ public:
     int64_t * _return);
   virtual bool hincrby(const std::string& key, const std::string& field,
     int64_t inc, int64_t * _return);
+  virtual bool hincrbyfloat(const std::string& key, const std::string& field,
+    double inc, std::string * _return);
   virtual bool hkeys(const std::string& key, mbulk_t * _return);
   virtual bool hlen(const std::string& key, int64_t * _return);
   virtual bool hmget(const std::string& key, const string_vector_t& fields,

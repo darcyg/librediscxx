@@ -26,35 +26,35 @@
   return false;\
   bool ret;\
   BOOST_FOREACH(size_t host_index, index_v)\
-{\
-  ret = redis2_sp_vector_[host_index]->func(__VA_ARGS__);\
-  if (!ret)\
-  {\
-  __set_index_error(host_index);\
-  return false;\
-  }\
-}\
-  return true;\
+    {\
+    ret = redis2_sp_vector_[host_index]->func(__VA_ARGS__);\
+    if (!ret)\
+      {\
+      __set_index_error(host_index);\
+      return false;\
+      }\
+    }\
+    return true;\
   } while (0)
 
 
 #define FOR_EACH_GROUP_READ(func, key, ...) \
   do\
-  {\
+{\
   size_t_vector_t index_v;\
   if (!__get_key_client(key, index_v))\
   return false;\
   bool ret;\
   BOOST_FOREACH(size_t host_index, index_v)\
-    {\
-    ret = redis2_sp_vector_[host_index]->func(__VA_ARGS__);\
-    if (!ret)\
-    __set_index_error(host_index);\
-      else\
-      return true;\
-    }\
-    return false;\
-  } while (0)
+  {\
+  ret = redis2_sp_vector_[host_index]->func(__VA_ARGS__);\
+  if (!ret)\
+  __set_index_error(host_index);\
+    else\
+    return true;\
+  }\
+  return false;\
+} while (0)
 
 
 NAMESPACE_BEGIN
@@ -354,6 +354,13 @@ error:
   return ret;
 }
 
+bool Redis2P::dump(const std::string& key, std::string * _return, bool * is_nil)
+{
+  CHECK_PTR_PARAM(_return);
+  CHECK_PTR_PARAM(is_nil);
+  FOR_EACH_GROUP_READ(dump, key, key, _return, is_nil);
+}
+
 bool Redis2P::exists(const std::string& key, int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
@@ -410,29 +417,33 @@ bool Redis2P::move(const std::string& key, int db,
   FOR_EACH_GROUP_WRITE(move, key, key, db, _return);
 }
 
-bool Redis2P::object_refcount(const std::string& key, int64_t * _return)
-{
-  CHECK_PTR_PARAM(_return);
-  FOR_EACH_GROUP_READ(object_refcount, key, key, _return);
-}
-
-bool Redis2P::object_encoding(const std::string& key,
-                              std::string * _return)
-{
-  CHECK_PTR_PARAM(_return);
-  FOR_EACH_GROUP_READ(object_encoding, key, key, _return);
-}
-
-bool Redis2P::object_idletime(const std::string& key, int64_t * _return)
-{
-  CHECK_PTR_PARAM(_return);
-  FOR_EACH_GROUP_READ(object_idletime, key, key, _return);
-}
-
 bool Redis2P::persist(const std::string& key, int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_WRITE(persist, key, key, _return);
+}
+
+bool Redis2P::pexpire(const std::string& key, int64_t milliseconds, int64_t * _return)
+{
+  CHECK_PTR_PARAM(_return);
+  FOR_EACH_GROUP_WRITE(pexpire, key, key, milliseconds, _return);
+}
+
+bool Redis2P::pexpireat(const std::string& key, int64_t abs_milliseconds, int64_t * _return)
+{
+  CHECK_PTR_PARAM(_return);
+  FOR_EACH_GROUP_WRITE(pexpireat, key, key, abs_milliseconds, _return);
+}
+
+bool Redis2P::pttl(const std::string& key, int64_t * _return)
+{
+  CHECK_PTR_PARAM(_return);
+  FOR_EACH_GROUP_READ(pttl, key, key, _return);
+}
+
+bool Redis2P::restore(const std::string& key, int64_t ttl, const std::string& value)
+{
+  FOR_EACH_GROUP_WRITE(restore, key, key, ttl, value);
 }
 
 bool Redis2P::randomkey(std::string * _return, bool * is_nil)
@@ -535,6 +546,12 @@ bool Redis2P::incrby(const std::string& key, int64_t inc, int64_t * _return)
   FOR_EACH_GROUP_WRITE(incrby, key, key, inc, _return);
 }
 
+bool Redis2P::incrbyfloat(const std::string& key, double inc, std::string * _return)
+{
+  CHECK_PTR_PARAM(_return);
+  FOR_EACH_GROUP_WRITE(incrbyfloat, key, key, inc, _return);
+}
+
 bool Redis2P::mget(const string_vector_t& keys, mbulk_t * _return)
 {
   CHECK_PTR_PARAM(_return);
@@ -586,6 +603,11 @@ bool Redis2P::mset(const string_vector_t& keys, const string_vector_t& values)
     }
   }
   return true;
+}
+
+bool Redis2P::psetex(const std::string& key, int64_t milliseconds, const std::string& value)
+{
+  FOR_EACH_GROUP_WRITE(psetex, key, key, milliseconds, value);
 }
 
 bool Redis2P::set(const std::string& key, const std::string& value)
@@ -672,6 +694,13 @@ bool Redis2P::hincrby(const std::string& key, const std::string& field,
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_WRITE(hincrby, key, key, field, inc, _return);
+}
+
+bool Redis2P::hincrbyfloat(const std::string& key, const std::string& field,
+                           double inc, std::string * _return)
+{
+  CHECK_PTR_PARAM(_return);
+  FOR_EACH_GROUP_WRITE(hincrbyfloat, key, key, field, inc, _return);
 }
 
 bool Redis2P::hkeys(const std::string& key, mbulk_t * _return)

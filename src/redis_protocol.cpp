@@ -1,10 +1,10 @@
 /** @file
-* @brief redis protocol operation
-* @author yafei.zhang@langtaojin.com
-* @date
-* @version
-*
-*/
+ * @brief redis protocol operation
+ * @author yafei.zhang@langtaojin.com
+ * @date
+ * @version
+ *
+ */
 #include "redis_protocol.h"
 #include "blocking_tcp_client.h"
 #include <assert.h>
@@ -20,15 +20,15 @@
 #define CHECK_PTR_PARAM(ptr) \
   if (ptr == NULL) {error_ = "EINVAL";return false;}
 
-NAMESPACE_BEGIN
+LIBREDIS_NAMESPACE_BEGIN
 
 static const std::string s_redis_line_end("\r\n");
 static const size_t s_redis_line_end_size = 2;
 
 RedisProtocol::RedisProtocol(const std::string& host, const std::string& port,
-                             int timeout_ms)
-                             :host_(host), port_(port), blocking_mode_(false),
-                             transaction_mode_(false)
+    int timeout_ms)
+:host_(host), port_(port), blocking_mode_(false),
+  transaction_mode_(false)
 {
   tcp_client_ = new TcpClient;
   timeout_ = boost::posix_time::milliseconds(timeout_ms);
@@ -74,7 +74,7 @@ bool RedisProtocol::connect()
   {
     close();
     error_ = str(boost::format("connect %s:%s failed, %s")
-      % host_ % port_ % ec.message());
+        % host_ % port_ % ec.message());
     return false;
   }
   return true;
@@ -126,7 +126,7 @@ bool RedisProtocol::exec_command(RedisCommand * command)
 
 
 bool RedisProtocol::exec_commandv(RedisCommand * command,
-                                  const char * format, va_list ap)
+    const char * format, va_list ap)
 {
   CHECK_PTR_PARAM(command);
 
@@ -140,7 +140,7 @@ bool RedisProtocol::exec_commandv(RedisCommand * command,
 
 
 bool RedisProtocol::exec_command(RedisCommand * command,
-                                 const char * format, ...)
+    const char * format, ...)
 {
   CHECK_PTR_PARAM(command);
 
@@ -200,14 +200,14 @@ bool RedisProtocol::write_command(RedisCommand * command)
     return false;
 
   /**
-  * Requests:
-  * *<number of arguments> CR LF
-  * $<number of bytes of argument 1> CR LF
-  * <argument data> CR LF
-  * ...
-  * $<number of bytes of argument N> CR LF
-  * <argument data> CR LF
-  */
+   * Requests:
+   * *<number of arguments> CR LF
+   * $<number of bytes of argument 1> CR LF
+   * <argument data> CR LF
+   * ...
+   * $<number of bytes of argument N> CR LF
+   * <argument data> CR LF
+   */
   ss << "*" << (given_argc+1) << s_redis_line_end;
 
   //write command
@@ -226,7 +226,7 @@ bool RedisProtocol::write_command(RedisCommand * command)
   {
     close();
     error_ = str(boost::format("write %s:%s failed, %s")
-      % host_ % port_ % ec.message());
+        % host_ % port_ % ec.message());
     command->out.set_error(error_);
     return false;
   }
@@ -244,7 +244,7 @@ struct is_empty_string
 
 
 bool RedisProtocol::write_commandv(RedisCommand * command,
-                                   const char * format, va_list ap)
+    const char * format, va_list ap)
 {
   CHECK_PTR_PARAM(command);
 
@@ -267,7 +267,7 @@ bool RedisProtocol::write_commandv(RedisCommand * command,
   boost::trim(buf);
   boost::split(command->in.args(), buf, boost::is_any_of(" "));
   command->in.args().erase(std::remove_if(command->in.args().begin(),
-    command->in.args().end(), is_empty_string()), command->in.args().end());
+        command->in.args().end(), is_empty_string()), command->in.args().end());
 
   std::stringstream ss;
   int given_argc = static_cast<int>(command->in.args().size());
@@ -293,15 +293,15 @@ bool RedisProtocol::write_commandv(RedisCommand * command,
     return false;
 
   /*
-  Requests:
+Requests:
 
-  *<number of arguments> CR LF
-  $<number of bytes of argument 1> CR LF
-  <argument data> CR LF
-  ...
-  $<number of bytes of argument N> CR LF
-  <argument data> CR LF
-  */
+   *<number of arguments> CR LF
+   $<number of bytes of argument 1> CR LF
+   <argument data> CR LF
+   ...
+   $<number of bytes of argument N> CR LF
+   <argument data> CR LF
+   */
   ss << "*" << given_argc << s_redis_line_end;
 
   //write command and args
@@ -316,7 +316,7 @@ bool RedisProtocol::write_commandv(RedisCommand * command,
   {
     close();
     error_ = str(boost::format("write %s:%s failed, %s")
-      % host_ % port_ % ec.message());
+        % host_ % port_ % ec.message());
     command->out.set_error(error_);
     return false;
   }
@@ -342,18 +342,18 @@ bool RedisProtocol::read_reply(RedisCommand * command)
 
 
 bool RedisProtocol::__read_reply(RedisCommand * command, RedisOutput * output,
-                                 bool check_reply_type)
+    bool check_reply_type)
 {
   assert(command && output);
   /**
-  * Replies:
+   * Replies:
 
-  * With a single line reply the first byte of the reply will be "+"
-  * With an error message the first byte of the reply will be "-"
-  * With an integer number the first byte of the reply will be ":"
-  * With bulk reply the first byte of the reply will be "$"
-  * With multi-bulk reply the first byte of the reply will be "*"
-  */
+   * With a single line reply the first byte of the reply will be "+"
+   * With an error message the first byte of the reply will be "-"
+   * With an integer number the first byte of the reply will be ":"
+   * With bulk reply the first byte of the reply will be "$"
+   * With multi-bulk reply the first byte of the reply will be "*"
+   */
   std::string buf;
   kCommand cmd = command->in.command();
   kReplyType exp_reply_type = command->in.command_info().reply_type;
@@ -364,15 +364,15 @@ bool RedisProtocol::__read_reply(RedisCommand * command, RedisOutput * output,
   {
     switch (cmd)
     {
-    case MULTI:
-    case DISCARD:
-    case EXEC:
-      //case WATCH://WATCH in MULTI shall generate an error, so ignore it
-      break;
-    default:
-      //in transaction mode, these commands always reply kStatus
-      exp_reply_type = kStatus;
-      break;
+      case MULTI:
+      case DISCARD:
+      case EXEC:
+        //case WATCH://WATCH in MULTI shall generate an error, so ignore it
+        break;
+      default:
+        //in transaction mode, these commands always reply kStatus
+        exp_reply_type = kStatus;
+        break;
     }
   }
 
@@ -385,157 +385,157 @@ bool RedisProtocol::__read_reply(RedisCommand * command, RedisOutput * output,
 
   switch (buf[0])
   {
-  case '-':
-    //no need to disconnect
-    //store the redis error string
-    error_ = buf.substr(1);
-    output->set_error(error_);
-    return false;
-
-  case '+':
-    if (check_reply_type && exp_reply_type != kStatus)
-    {
-      close();
-      error_ = str(boost::format("read %s:%s failed, reply type error +")
-        % host_ % port_);
+    case '-':
+      //no need to disconnect
+      //store the redis error string
+      error_ = buf.substr(1);
       output->set_error(error_);
       return false;
-    }
-    else
-    {
-      output->set_status(buf.substr(1));
 
-      if (!transaction_mode_ && cmd == MULTI)
-        transaction_mode_ = true;
-      else if (transaction_mode_ && cmd == DISCARD)
-        transaction_mode_ = false;
-
-      return true;
-    }
-
-  case ':':
-    if (check_reply_type && exp_reply_type != kInteger)
-    {
-      close();
-      error_ = str(boost::format("read %s:%s failed, reply type error :")
-        % host_ % port_);
-      output->set_error(error_);
-      return false;
-    }
-    else
-    {
-      int64_t i;
-      if (parse_integer(buf, &i))
-      {
-        output->set_i(i);
-      }
-      else
+    case '+':
+      if (check_reply_type && exp_reply_type != kStatus)
       {
         close();
-        error_ = str(boost::format("read %s:%s failed, integer error : %s")
-          % host_ % port_ % buf);
+        error_ = str(boost::format("read %s:%s failed, reply type error +")
+            % host_ % port_);
         output->set_error(error_);
         return false;
-      }
-      return true;
-    }
-
-  case '$':
-    if (check_reply_type && exp_reply_type != kBulk)
-    {
-      close();
-      error_ = str(boost::format("read %s:%s failed, reply type error $")
-        % host_ % port_);
-      output->set_error(error_);
-      return false;
-    }
-    else
-    {
-      std::string bulk;
-      std::string * out_bulk;
-      if (read_bulk_2(buf, &bulk, &out_bulk))
-      {
-        if (out_bulk)
-          output->set_bulk(*out_bulk);
-        else//nil
-          output->set_nil_bulk();
-        return true;
       }
       else
       {
-        output->set_error(error_);
-        return false;
-      }
-    }
+        output->set_status(buf.substr(1));
 
-  case '*':
-    if (check_reply_type && exp_reply_type != kMultiBulk
-      && exp_reply_type != kSpecialMultiBulk)
-    {
-      close();
-      error_ = str(boost::format("read %s:%s failed, reply type error *")
-        % host_ % port_);
-      output->set_error(error_);
-      return false;
-    }
-    else if (exp_reply_type == kMultiBulk)
-    {
-      mbulk_t mbulks;
-      mbulk_t * out_mbulks;
-      if (read_multi_bulk_2(buf, &mbulks, &out_mbulks))
-      {
-        if (out_mbulks)
-          output->set_mbulks(out_mbulks);
-        else//nil
-          output->set_nil_mbulks();
+        if (!transaction_mode_ && cmd == MULTI)
+          transaction_mode_ = true;
+        else if (transaction_mode_ && cmd == DISCARD)
+          transaction_mode_ = false;
+
         return true;
       }
-      else
-      {
-        output->set_error(error_);
-        return false;
-      }
-    }
-    else
-    {
-      // treat as kSpecialMultiBulk
-      int64_t bulk_size;
-      if (!parse_integer(buf, &bulk_size))
+
+    case ':':
+      if (check_reply_type && exp_reply_type != kInteger)
       {
         close();
-        error_ = str(boost::format("read %s:%s failed, integer error : %s")
-          % host_ % port_ % buf);
+        error_ = str(boost::format("read %s:%s failed, reply type error :")
+            % host_ % port_);
         output->set_error(error_);
         return false;
       }
-
-      smbulk_t smbulks;
-
-      for (int64_t i=0; i<bulk_size; i++)
+      else
       {
-        RedisOutput * output_child = new RedisOutput;
-        if (!__read_reply(command, output_child, false))
+        int64_t i;
+        if (parse_integer(buf, &i))
         {
-          delete output_child;
-          clear_smbulks(&smbulks);
+          output->set_i(i);
+        }
+        else
+        {
+          close();
+          error_ = str(boost::format("read %s:%s failed, integer error : %s")
+              % host_ % port_ % buf);
+          output->set_error(error_);
           return false;
         }
-        smbulks.push_back(output_child);
+        return true;
       }
 
-      output->set_smbulks(&smbulks);
-      clear_smbulks(&smbulks);
+    case '$':
+      if (check_reply_type && exp_reply_type != kBulk)
+      {
+        close();
+        error_ = str(boost::format("read %s:%s failed, reply type error $")
+            % host_ % port_);
+        output->set_error(error_);
+        return false;
+      }
+      else
+      {
+        std::string bulk;
+        std::string * out_bulk;
+        if (read_bulk_2(buf, &bulk, &out_bulk))
+        {
+          if (out_bulk)
+            output->set_bulk(*out_bulk);
+          else//nil
+            output->set_nil_bulk();
+          return true;
+        }
+        else
+        {
+          output->set_error(error_);
+          return false;
+        }
+      }
 
-      if (transaction_mode_ && cmd == EXEC && &command->out == output)
-        transaction_mode_ = false;
+    case '*':
+      if (check_reply_type && exp_reply_type != kMultiBulk
+          && exp_reply_type != kSpecialMultiBulk)
+      {
+        close();
+        error_ = str(boost::format("read %s:%s failed, reply type error *")
+            % host_ % port_);
+        output->set_error(error_);
+        return false;
+      }
+      else if (exp_reply_type == kMultiBulk)
+      {
+        mbulk_t mbulks;
+        mbulk_t * out_mbulks;
+        if (read_multi_bulk_2(buf, &mbulks, &out_mbulks))
+        {
+          if (out_mbulks)
+            output->set_mbulks(out_mbulks);
+          else//nil
+            output->set_nil_mbulks();
+          return true;
+        }
+        else
+        {
+          output->set_error(error_);
+          return false;
+        }
+      }
+      else
+      {
+        // treat as kSpecialMultiBulk
+        int64_t bulk_size;
+        if (!parse_integer(buf, &bulk_size))
+        {
+          close();
+          error_ = str(boost::format("read %s:%s failed, integer error : %s")
+              % host_ % port_ % buf);
+          output->set_error(error_);
+          return false;
+        }
 
-      return true;
-    }
+        smbulk_t smbulks;
+
+        for (int64_t i=0; i<bulk_size; i++)
+        {
+          RedisOutput * output_child = new RedisOutput;
+          if (!__read_reply(command, output_child, false))
+          {
+            delete output_child;
+            clear_smbulks(&smbulks);
+            return false;
+          }
+          smbulks.push_back(output_child);
+        }
+
+        output->set_smbulks(&smbulks);
+        clear_smbulks(&smbulks);
+
+        if (transaction_mode_ && cmd == EXEC && &command->out == output)
+          transaction_mode_ = false;
+
+        return true;
+      }
   }
 
   close();
   error_ = str(boost::format("read %s:%s failed, unexpected reply %s")
-    % host_ % port_ % buf);
+      % host_ % port_ % buf);
   output->set_error(error_);
   return false;
 }
@@ -547,13 +547,13 @@ bool RedisProtocol::read_line(std::string * line)
 
   boost::system::error_code ec;
   *line = tcp_client_->read_line(s_redis_line_end,
-    blocking_mode_?pos_infin_:timeout_, ec);
+      blocking_mode_?pos_infin_:timeout_, ec);
 
   if (ec)
   {
     close();
     error_ = str(boost::format("read %s:%s failed, %s")
-      % host_ % port_ % ec.message());
+        % host_ % port_ % ec.message());
     return false;
   }
 
@@ -574,13 +574,13 @@ bool RedisProtocol::read(size_t count, std::string * line)
 
   boost::system::error_code ec;
   *line = tcp_client_->read(count, s_redis_line_end,
-    blocking_mode_?pos_infin_:timeout_, ec);
+      blocking_mode_?pos_infin_:timeout_, ec);
 
   if (ec)
   {
     close();
     error_ = str(boost::format("read %s:%s failed, %s")
-      % host_ % port_ % ec.message());
+        % host_ % port_ % ec.message());
     return false;
   }
 
@@ -596,7 +596,7 @@ bool RedisProtocol::read(size_t count, std::string * line)
 
 
 bool RedisProtocol::read_bulk_2(const std::string& header,
-                                std::string * bulk, std::string ** out_bulk)
+    std::string * bulk, std::string ** out_bulk)
 {
   assert(bulk && out_bulk);
 
@@ -605,7 +605,7 @@ bool RedisProtocol::read_bulk_2(const std::string& header,
   {
     close();
     error_ = str(boost::format("read %s:%s failed, integer error : %s")
-      % host_ % port_ % header);
+        % host_ % port_ % header);
     return false;
   }
 
@@ -613,7 +613,7 @@ bool RedisProtocol::read_bulk_2(const std::string& header,
   {
     close();
     error_ = str(boost::format("read %s:%s failed, unexpected integer : %d")
-      % host_ % port_ % i);
+        % host_ % port_ % i);
     return false;
   }
   else if (i == -1)
@@ -634,7 +634,7 @@ bool RedisProtocol::read_bulk_2(const std::string& header,
     {
       close();
       error_ = str(boost::format("read %s:%s failed, unexpected reply %s")
-        % host_ % port_ % (*bulk));
+          % host_ % port_ % (*bulk));
       return false;
     }
 
@@ -645,7 +645,7 @@ bool RedisProtocol::read_bulk_2(const std::string& header,
 
 
 bool RedisProtocol::read_multi_bulk_2(const std::string& header,
-                                      mbulk_t * mbulks, mbulk_t ** out_mbulks)
+    mbulk_t * mbulks, mbulk_t ** out_mbulks)
 {
   assert(mbulks && out_mbulks);
 
@@ -655,7 +655,7 @@ bool RedisProtocol::read_multi_bulk_2(const std::string& header,
   {
     close();
     error_ = str(boost::format("read %s:%s failed, integer error : %s")
-      % host_ % port_ % header);
+        % host_ % port_ % header);
     return false;
   }
 
@@ -664,7 +664,7 @@ bool RedisProtocol::read_multi_bulk_2(const std::string& header,
   {
     close();
     error_ = str(boost::format("read %s:%s failed, unexpected integer : %d")
-      % host_ % port_ % i);
+        % host_ % port_ % i);
     return false;
   }
   else if (i == -1)
@@ -727,7 +727,7 @@ bool RedisProtocol::read_bulk(std::string ** bulk)
   {
     close();
     error_ = str(boost::format("read %s:%s failed, reply type error $")
-      % host_ % port_);
+        % host_ % port_);
     return false;
   }
 }
@@ -753,29 +753,29 @@ bool RedisProtocol::check_argc(RedisCommand * command, int given_argc)
 
   switch (argc)
   {
-  case ARGC_NO_CHECKING:
-    break;
-  default:
-    if (argc >= 0)
-    {
-      if (argc != given_argc)
-        goto err;
-    }
-    else
-    {
-      if (given_argc < -argc)
-        goto err;
-    }
-    break;
+    case ARGC_NO_CHECKING:
+      break;
+    default:
+      if (argc >= 0)
+      {
+        if (argc != given_argc)
+          goto err;
+      }
+      else
+      {
+        if (given_argc < -argc)
+          goto err;
+      }
+      break;
   }
 
   return true;
 
 err:
   error_ = str(boost::format("argc not matched, expect %d, given %d")
-    % argc % given_argc);
+      % argc % given_argc);
   command->out.set_error(error_);
   return false;
 }
 
-NAMESPACE_END
+LIBREDIS_NAMESPACE_END

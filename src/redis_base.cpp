@@ -1,17 +1,17 @@
 /** @file
-* @brief RedisBase2 : redis base interface
-* @author yafei.zhang@langtaojin.com
-* @date
-* @version
-*
-*/
+ * @brief RedisBase2 : redis base interface
+ * @author yafei.zhang@langtaojin.com
+ * @date
+ * @version
+ *
+ */
 #include "redis_base.h"
 #include <assert.h>
 #include <boost/algorithm/string.hpp>
 #include <boost/foreach.hpp>
 #include <boost/format.hpp>
 
-NAMESPACE_BEGIN
+LIBREDIS_NAMESPACE_BEGIN
 
 /************************************************************************/
 /*RedisBase2*/
@@ -85,7 +85,7 @@ int RedisBase2::hget(const std::string& key, const std::string& field, std::stri
 }
 
 bool RedisBase2::hset(const std::string& key, const std::string& field,
-                      const std::string& value)
+    const std::string& value)
 {
   int64_t _return;
   return hset(key, field, value, &_return);
@@ -207,7 +207,7 @@ bool RedisBase2Multi::__inner_init()
   if (hosts_.size() != ports_.size() && ports_.size() != 1)
   {
     error_ = (boost::format("the number of hosts and ports do not match: %lu vs %lu")
-      % hosts_.size() % ports_.size()).str();
+        % hosts_.size() % ports_.size()).str();
     return false;
   }
 
@@ -221,13 +221,13 @@ bool RedisBase2Multi::__inner_init()
 }
 
 RedisBase2Multi::RedisBase2Multi(const std::string& host_list,
-                                 const std::string& port_list,
-                                 int db_index,
-                                 int timeout_ms)
-                                 :host_list_(host_list),
-                                 port_list_(port_list),
-                                 db_index_(db_index),
-                                 timeout_ms_(timeout_ms)
+    const std::string& port_list,
+    int db_index,
+    int timeout_ms)
+:host_list_(host_list),
+  port_list_(port_list),
+  db_index_(db_index),
+  timeout_ms_(timeout_ms)
 {
   if (!__inner_init())
   {
@@ -266,7 +266,7 @@ RedisException::RedisException(const char * exception)
     exception_ = "redis exception";
 }
 
-RedisException::RedisException(const std::string& exception)
+  RedisException::RedisException(const std::string& exception)
 :exception_(exception)
 {
 
@@ -282,4 +282,4 @@ const char * RedisException::what() const throw()
   return exception_.c_str();
 }
 
-NAMESPACE_END
+LIBREDIS_NAMESPACE_END

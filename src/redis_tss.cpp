@@ -1,11 +1,11 @@
 /** @file
-* @brief RedisTss: thread specific storage support,
-*                  also can be used as a connection pool
-* @author yafei.zhang@langtaojin.com
-* @date
-* @version
-*
-*/
+ * @brief RedisTss: thread specific storage support,
+ *                  also can be used as a connection pool
+ * @author yafei.zhang@langtaojin.com
+ * @date
+ * @version
+ *
+ */
 #include "redis_tss.h"
 #include "redis.h"
 #include "redis_protocol.h"
@@ -20,126 +20,126 @@
 #include <boost/scoped_ptr.hpp>
 #include <boost/thread.hpp>
 
-NAMESPACE_BEGIN
+LIBREDIS_NAMESPACE_BEGIN
 
 class RedisTss::Impl
 {
-public:
-  Impl(const std::string& host, int port,
-    int db_index, int partitions,
-    int timeout_ms, kRedisClientType type,
-    size_t pool_size, size_t check_interval);
+  public:
+    Impl(const std::string& host, int port,
+        int db_index, int partitions,
+        int timeout_ms, kRedisClientType type,
+        size_t pool_size, size_t check_interval);
 
-  Impl(const std::string& host, const std::string& port,
-    int db_index, int partitions,
-    int timeout_ms, kRedisClientType type,
-    size_t pool_size, size_t check_interval);
+    Impl(const std::string& host, const std::string& port,
+        int db_index, int partitions,
+        int timeout_ms, kRedisClientType type,
+        size_t pool_size, size_t check_interval);
 
-  ~Impl();
+    ~Impl();
 
-  RedisBase2 * get();
+    RedisBase2 * get();
 
-private:
-  const std::string host_;
-  const std::string port_;
-  const int db_index_;
-  const int timeout_ms_;
-  const int partitions_;
-  const kRedisClientType type_;
-  const size_t pool_size_;
-  const size_t check_interval_;
+  private:
+    const std::string host_;
+    const std::string port_;
+    const int db_index_;
+    const int timeout_ms_;
+    const int partitions_;
+    const kRedisClientType type_;
+    const size_t pool_size_;
+    const size_t check_interval_;
 
-  std::vector<std::string> redis_hosts_;
+    std::vector<std::string> redis_hosts_;
 
-  boost::mutex invalid_redis_lock_;
-  std::set<size_t> invalid_redis_;
+    boost::mutex invalid_redis_lock_;
+    std::set<size_t> invalid_redis_;
 
-  boost::scoped_ptr<boost::thread> check_thread_;
-  boost::asio::io_service io_service_;
-  boost::asio::deadline_timer check_timer_;
+    boost::scoped_ptr<boost::thread> check_thread_;
+    boost::asio::io_service io_service_;
+    boost::asio::deadline_timer check_timer_;
 
-  boost::mutex free_redis_lock_;
-  std::vector<RedisBase2 *> free_redis_;
+    boost::mutex free_redis_lock_;
+    std::vector<RedisBase2 *> free_redis_;
 
-  //client_ must be the last one, constructed last and destroyed first.
-  //Because client_'s cleanup handler may use free_redis_lock_, free_redis_
-  //or some others members.
-  thread_specific_ptr<RedisBase2> client_;
+    //client_ must be the last one, constructed last and destroyed first.
+    //Because client_'s cleanup handler may use free_redis_lock_, free_redis_
+    //or some others members.
+    thread_specific_ptr<RedisBase2> client_;
 
-  void inner_init();
-  void check_invalid_redis();
-  void set_check();
-  void start_check();
-  void stop_check();
+    void inner_init();
+    void check_invalid_redis();
+    void set_check();
+    void start_check();
+    void stop_check();
 
 
-  void clear_free_redis()
-  {
-    boost::mutex::scoped_lock guard(free_redis_lock_);
-    for (size_t i=0; i<free_redis_.size(); i++)
+    void clear_free_redis()
     {
-      delete free_redis_[i];
+      boost::mutex::scoped_lock guard(free_redis_lock_);
+      for (size_t i=0; i<free_redis_.size(); i++)
+      {
+        delete free_redis_[i];
+      }
+      free_redis_.clear();
     }
-    free_redis_.clear();
-  }
 
 
-  RedisBase2 * get_free_redis()
-  {
-    boost::mutex::scoped_lock guard(free_redis_lock_);
-    if (free_redis_.empty())
-      return 0;
-
-    RedisBase2 * redis = free_redis_.back();
-    free_redis_.pop_back();
-    return redis;
-  }
-
-
-  void put_free_redis(RedisBase2 * redis)
-  {
-    if (redis == NULL)
-      return;
-
-    boost::mutex::scoped_lock guard(free_redis_lock_);
-    if (free_redis_.size() >= pool_size_)
+    RedisBase2 * get_free_redis()
     {
-      guard.unlock();
-      delete redis;
+      boost::mutex::scoped_lock guard(free_redis_lock_);
+      if (free_redis_.empty())
+        return 0;
+
+      RedisBase2 * redis = free_redis_.back();
+      free_redis_.pop_back();
+      return redis;
     }
-    else
+
+
+    void put_free_redis(RedisBase2 * redis)
     {
-      free_redis_.push_back(redis);
+      if (redis == NULL)
+        return;
+
+      boost::mutex::scoped_lock guard(free_redis_lock_);
+      if (free_redis_.size() >= pool_size_)
+      {
+        guard.unlock();
+        delete redis;
+      }
+      else
+      {
+        free_redis_.push_back(redis);
+      }
     }
-  }
 };
 
 
 RedisTss::Impl::Impl(const std::string& host, int port,
-                     int db_index, int partitions,
-                     int timeout_ms, kRedisClientType type,
-                     size_t pool_size, size_t check_interval)
-                     :host_(host), port_(boost::lexical_cast<std::string>(port)),
-                     db_index_(db_index), timeout_ms_(timeout_ms),
-                     partitions_(partitions), type_(type),
-                     pool_size_(pool_size), check_interval_(check_interval_),
-                     io_service_(), check_timer_(io_service_),
-                     client_(boost::bind(&RedisTss::Impl::put_free_redis, this, _1))
+    int db_index, int partitions,
+    int timeout_ms, kRedisClientType type,
+    size_t pool_size, size_t check_interval)
+:host_(host), port_(boost::lexical_cast<std::string>(port)),
+  db_index_(db_index), timeout_ms_(timeout_ms),
+  partitions_(partitions), type_(type),
+  pool_size_(pool_size), check_interval_(check_interval_),
+  io_service_(), check_timer_(io_service_),
+  client_(boost::bind(&RedisTss::Impl::put_free_redis, this, _1))
 {
   inner_init();
 }
 
 
 RedisTss::Impl::Impl(const std::string& host, const std::string& port,
-                     int db_index, int partitions,
-                     int timeout_ms, kRedisClientType type,
-                     size_t pool_size, size_t check_interval)
-                     :host_(host), port_(port),
-                     db_index_(db_index), timeout_ms_(timeout_ms),
-                     partitions_(partitions), type_(type),
-                     pool_size_(pool_size), check_interval_(check_interval_),
-                     io_service_(), check_timer_(io_service_),
-                     client_(boost::bind(&RedisTss::Impl::put_free_redis, this, _1))
+    int db_index, int partitions,
+    int timeout_ms, kRedisClientType type,
+    size_t pool_size, size_t check_interval)
+:host_(host), port_(port),
+  db_index_(db_index), timeout_ms_(timeout_ms),
+  partitions_(partitions), type_(type),
+  pool_size_(pool_size), check_interval_(check_interval_),
+  io_service_(), check_timer_(io_service_),
+  client_(boost::bind(&RedisTss::Impl::put_free_redis, this, _1))
 {
   inner_init();
 }
@@ -164,12 +164,12 @@ RedisBase2 * RedisTss::Impl::get()
     {
       switch (type_)
       {
-      case kNormal:
-        redis_ptr = new Redis2(host_, port_, db_index_, timeout_ms_);
-        break;
-      case kPartition:
-        redis_ptr = new Redis2P(host_, port_, db_index_, timeout_ms_, partitions_);
-        break;
+        case kNormal:
+          redis_ptr = new Redis2(host_, port_, db_index_, timeout_ms_);
+          break;
+        case kPartition:
+          redis_ptr = new Redis2P(host_, port_, db_index_, timeout_ms_, partitions_);
+          break;
       }
     }
 
@@ -246,7 +246,7 @@ void RedisTss::Impl::start_check()
 
     io_service_.reset();
     check_thread_.reset(new boost::thread
-      (boost::bind(&boost::asio::io_service::run, &io_service_)));
+        (boost::bind(&boost::asio::io_service::run, &io_service_)));
   }
 }
 
@@ -266,22 +266,22 @@ void RedisTss::Impl::stop_check()
 /*RedisTss*/
 /************************************************************************/
 RedisTss::RedisTss(const std::string& host, int port,
-                   int db_index, int partitions,
-                   int timeout_ms, kRedisClientType type,
-                   size_t pool_size, size_t check_interval)
+    int db_index, int partitions,
+    int timeout_ms, kRedisClientType type,
+    size_t pool_size, size_t check_interval)
 {
   impl_ = new Impl(host, port, db_index, partitions, timeout_ms, type,
-    pool_size, check_interval);
+      pool_size, check_interval);
 }
 
 
 RedisTss::RedisTss(const std::string& host, const std::string& port,
-                   int db_index, int partitions,
-                   int timeout_ms, kRedisClientType type,
-                   size_t pool_size, size_t check_interval)
+    int db_index, int partitions,
+    int timeout_ms, kRedisClientType type,
+    size_t pool_size, size_t check_interval)
 {
   impl_ = new Impl(host, port, db_index, partitions, timeout_ms, type,
-    pool_size, check_interval);
+      pool_size, check_interval);
 }
 
 
@@ -296,4 +296,4 @@ RedisBase2 * RedisTss::get()
   return impl_->get();
 }
 
-NAMESPACE_END
+LIBREDIS_NAMESPACE_END

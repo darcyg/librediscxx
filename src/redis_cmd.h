@@ -1,10 +1,10 @@
 /** @file
-* @brief redis command definition
-* @author yafei.zhang@langtaojin.com
-* @date
-* @version
-*
-*/
+ * @brief redis command definition
+ * @author yafei.zhang@langtaojin.com
+ * @date
+ * @version
+ *
+ */
 #ifndef _LANGTAOJIN_LIBREDIS_REDIS_CMD_H_
 #define _LANGTAOJIN_LIBREDIS_REDIS_CMD_H_
 
@@ -20,7 +20,7 @@
 #undef setbit
 #endif
 
-NAMESPACE_BEGIN
+LIBREDIS_NAMESPACE_BEGIN
 
 enum kCommand
 {
@@ -183,26 +183,26 @@ enum kReplyType
   kBulk,
 
   /*
-  *4\r\n
-  $3\r\n
-  foo\r\n
-  $3\r\n
-  bar\r\n
-  $5\r\n
-  Hello\r\n
-  $5\r\n
-  World\r\n
-  */
+   *4\r\n
+   $3\r\n
+   foo\r\n
+   $3\r\n
+   bar\r\n
+   $5\r\n
+   Hello\r\n
+   $5\r\n
+   World\r\n
+   */
   /*
-  *4\r\n
-  $3\r\n
-  foo\r\n
-  $3\r\n
-  bar\r\n
-  $-1\r\n   ---   nil bulk
-  $5\r\n
-  World\r\n
-  */
+   *4\r\n
+   $3\r\n
+   foo\r\n
+   $3\r\n
+   bar\r\n
+   $-1\r\n   ---   nil bulk
+   $5\r\n
+   World\r\n
+   */
   //*0\r\n   ---   empty multi bulk
   //*-1\r\n   ---   nil multi bulk
   kMultiBulk,
@@ -310,40 +310,40 @@ inline void _delete(redis_command_vector_t * commands)
 template <class T>
 class ClearGuard
 {
-private:
-  T * t_;
+  private:
+    T * t_;
 
-public:
-  ClearGuard(T * t)
-    :t_(t)
-  {
-  }
+  public:
+    ClearGuard(T * t)
+      :t_(t)
+    {
+    }
 
-  ~ClearGuard()
-  {
-    if (t_)
-      clear(t_);
-  }
+    ~ClearGuard()
+    {
+      if (t_)
+        clear(t_);
+    }
 };
 
 
 template <class T>
 class DeleteGuard
 {
-private:
-  T * t_;
+  private:
+    T * t_;
 
-public:
-  DeleteGuard(T * t)
-    :t_(t)
-  {
-  }
+  public:
+    DeleteGuard(T * t)
+      :t_(t)
+    {
+    }
 
-  ~DeleteGuard()
-  {
-    if (t_)
-      _delete(t_);
-  }
+    ~DeleteGuard()
+    {
+      if (t_)
+        _delete(t_);
+    }
 };
 
 
@@ -352,50 +352,50 @@ public:
 /************************************************************************/
 class RedisInput
 {
-private:
-  kCommand command_;
-  const CommandInfo * command_info_;
-  string_vector_t args_;
+  private:
+    kCommand command_;
+    const CommandInfo * command_info_;
+    string_vector_t args_;
 
-public:
-  RedisInput();
-  explicit RedisInput(kCommand cmd);
-  explicit RedisInput(const std::string& cmd);
+  public:
+    RedisInput();
+    explicit RedisInput(kCommand cmd);
+    explicit RedisInput(const std::string& cmd);
 
-  void set_command(kCommand cmd);
-  void set_command(const std::string& cmd);
-  void swap(RedisInput& other);
+    void set_command(kCommand cmd);
+    void set_command(const std::string& cmd);
+    void swap(RedisInput& other);
 
-  const kCommand& command()const
-  {
-    return command_;
-  }
+    const kCommand& command()const
+    {
+      return command_;
+    }
 
-  const CommandInfo& command_info()const
-  {
-    return *command_info_;
-  }
+    const CommandInfo& command_info()const
+    {
+      return *command_info_;
+    }
 
-  string_vector_t& args()
-  {
-    return args_;
-  }
+    string_vector_t& args()
+    {
+      return args_;
+    }
 
-  const string_vector_t& args()const
-  {
-    return args_;
-  }
+    const string_vector_t& args()const
+    {
+      return args_;
+    }
 
-  void clear_arg();
-  void push_arg(const std::string& s);
-  void push_arg(const char * s);
-  void push_arg(const string_vector_t& sv);
-  void push_arg(int64_t i);
-  void push_arg(size_t i);
-  void push_arg(int i);
-  void push_arg(const std::vector<int64_t>& iv);
-  void push_arg(double d);
-  void push_arg(const std::vector<double>& dv);
+    void clear_arg();
+    void push_arg(const std::string& s);
+    void push_arg(const char * s);
+    void push_arg(const string_vector_t& sv);
+    void push_arg(int64_t i);
+    void push_arg(size_t i);
+    void push_arg(int i);
+    void push_arg(const std::vector<int64_t>& iv);
+    void push_arg(double d);
+    void push_arg(const std::vector<double>& dv);
 };
 
 
@@ -434,7 +434,7 @@ struct RedisOutput
 
   kReplyType reply_type;
 
-public:
+  public:
   RedisOutput();
   ~RedisOutput();
 
@@ -751,6 +751,6 @@ struct RedisCommand
   }
 };
 
-NAMESPACE_END
+LIBREDIS_NAMESPACE_END
 
 #endif //_LANGTAOJIN_LIBREDIS_REDIS_CMD_H_

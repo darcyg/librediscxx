@@ -1,15 +1,15 @@
 /** @file
-* @brief libredis hash test
-* @author yafei.zhang@langtaojin.com
-* @date
-* @version
-*
-*/
+ * @brief libredis hash test
+ * @author yafei.zhang@langtaojin.com
+ * @date
+ * @version
+ *
+ */
 #include <redis_cmd.h>
 #include <iostream>
 #include <boost/program_options.hpp>
 
-using namespace com::langtaojin::adgaga;
+USING_LIBREDIS_NAMESPACE
 
 int main(int argc, char * argv[])
 {

@@ -1,10 +1,10 @@
 /** @file
-* @brief os adapter
-* @author yafei.zhang@langtaojin.com
-* @date
-* @version
-*
-*/
+ * @brief os adapter
+ * @author yafei.zhang@langtaojin.com
+ * @date
+ * @version
+ *
+ */
 #include "os.h"
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 # define WIN32_LEAN_AND_MEAN
@@ -16,7 +16,7 @@
 # include <unistd.h>
 #endif
 
-NAMESPACE_BEGIN
+LIBREDIS_NAMESPACE_BEGIN
 
 #ifndef WIN32
 int get_thread_id()
@@ -44,4 +44,4 @@ std::string get_host_name()
   return std::string(buf);
 }
 
-NAMESPACE_END
+LIBREDIS_NAMESPACE_END

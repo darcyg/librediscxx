@@ -1,10 +1,10 @@
 /** @file
-* @brief Redis2 : a normal redis client for one server
-* @author yafei.zhang@langtaojin.com
-* @date
-* @version
-*
-*/
+ * @brief Redis2 : a normal redis client for one server
+ * @author yafei.zhang@langtaojin.com
+ * @date
+ * @version
+ *
+ */
 #include "redis.h"
 #include "redis_protocol.h"
 #include <boost/lexical_cast.hpp>
@@ -18,30 +18,30 @@
 
 #define CHECK_STATUS_OK() \
   if (c.out.is_status_ok()) return true;\
-  else {on_reply_type_error(&c);return false;}
+else {on_reply_type_error(&c);return false;}
 
 #define CHECK_STATUS_PONG() \
   if (c.out.is_status_pong()) return true;\
-  else {on_reply_type_error(&c);return false;}
+else {on_reply_type_error(&c);return false;}
 
 #define GET_INTEGER_REPLY() \
   if (c.out.get_i(_return)) return true;\
-  else {on_reply_type_error(&c);return false;}
+else {on_reply_type_error(&c);return false;}
 
 #define GET_BULK_REPLY() \
   if (c.out.get_bulk(_return)) {*is_nil = false;return true;}\
-  else if (c.out.is_nil_bulk()) {*is_nil = true;return true;}\
-  else {on_reply_type_error(&c);return false;}
+else if (c.out.is_nil_bulk()) {*is_nil = true;return true;}\
+else {on_reply_type_error(&c);return false;}
 
 #define GET_BULK_REPLY2() \
   if (c.out.get_bulk(_return)) return true;\
-  else {on_reply_type_error(&c);return false;}
+else {on_reply_type_error(&c);return false;}
 
 #define GET_MBULKS_REPLY() \
   if (c.out.get_mbulks(_return)) return true;\
-  else {on_reply_type_error(&c);return false;}
+else {on_reply_type_error(&c);return false;}
 
-NAMESPACE_BEGIN
+LIBREDIS_NAMESPACE_BEGIN
 
 void Redis2::on_reset()
 {
@@ -55,8 +55,8 @@ void Redis2::on_reply_type_error(RedisCommand * command)
   assert(command);
 
   last_error(str(boost::format("expect %s, but got %s")
-    % to_string(command->in.command_info().reply_type)
-    % to_string(command->out.reply_type)));
+        % to_string(command->in.command_info().reply_type)
+        % to_string(command->out.reply_type)));
 
   //no need to disconnect
 }
@@ -131,8 +131,8 @@ bool Redis2::get_transaction_mode()const
 
 
 Redis2::Redis2(const std::string& host, const std::string& port, int db_index,
-               int timeout_ms)
-               :db_index_(db_index), db_index_select_failure_(true)
+    int timeout_ms)
+:db_index_(db_index), db_index_select_failure_(true)
 {
   proto_ = new RedisProtocol(host, port, timeout_ms);
 }
@@ -225,7 +225,7 @@ bool Redis2::exists(const std::string& key, int64_t * _return)
 
 
 bool Redis2::expire(const std::string& key, int64_t seconds,
-                    int64_t * _return)
+    int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
 
@@ -243,7 +243,7 @@ bool Redis2::expire(const std::string& key, int64_t seconds,
 
 
 bool Redis2::expireat(const std::string& key, int64_t abs_time,
-                      int64_t * _return)
+    int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
 
@@ -277,7 +277,7 @@ bool Redis2::keys(const std::string& pattern, mbulk_t * _return)
 
 
 bool Redis2::move(const std::string& key, int db,
-                  int64_t * _return)
+    int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
 
@@ -389,7 +389,7 @@ bool Redis2::randomkey(std::string * _return, bool * is_nil)
 
 
 bool Redis2::sort(const std::string& key, const string_vector_t * phrases,
-                  mbulk_t * _return)
+    mbulk_t * _return)
 
 {
   CHECK_PTR_PARAM(_return);
@@ -447,7 +447,7 @@ bool Redis2::type(const std::string& key, std::string * _return)
 
 
 bool Redis2::append(const std::string& key, const std::string& value,
-                    int64_t * _return)
+    int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
 
@@ -532,7 +532,7 @@ bool Redis2::getbit(const std::string& key, int64_t offset, int64_t * _return)
 
 
 bool Redis2::getrange(const std::string& key, int64_t start, int64_t end,
-                      std::string * _return, bool * is_nil)
+    std::string * _return, bool * is_nil)
 {
   CHECK_PTR_PARAM(_return);
   CHECK_PTR_PARAM(is_nil);
@@ -552,7 +552,7 @@ bool Redis2::getrange(const std::string& key, int64_t start, int64_t end,
 
 
 bool Redis2::getset(const std::string& key, const std::string& value,
-                    std::string * _return, bool * is_nil)
+    std::string * _return, bool * is_nil)
 {
   CHECK_PTR_PARAM(_return);
   CHECK_PTR_PARAM(is_nil);
@@ -683,7 +683,7 @@ bool Redis2::set(const std::string& key, const std::string& value)
 
 
 bool Redis2::setbit(const std::string& key, int64_t offset, int64_t value,
-                    int64_t * _return)
+    int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
 
@@ -702,7 +702,7 @@ bool Redis2::setbit(const std::string& key, int64_t offset, int64_t value,
 
 
 bool Redis2::setex(const std::string& key, int64_t seconds,
-                   const std::string& value)
+    const std::string& value)
 {
   if (!assure_connect())
     return false;
@@ -719,7 +719,7 @@ bool Redis2::setex(const std::string& key, int64_t seconds,
 
 
 bool Redis2::setnx(const std::string& key, const std::string& value,
-                   int64_t * _return)
+    int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
 
@@ -737,7 +737,7 @@ bool Redis2::setnx(const std::string& key, const std::string& value,
 
 
 bool Redis2::setrange(const std::string& key, int64_t offset,
-                      const std::string& value, int64_t * _return)
+    const std::string& value, int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
 
@@ -772,7 +772,7 @@ bool Redis2::strlen(const std::string& key, int64_t * _return)
 
 
 bool Redis2::hdel(const std::string& key, const std::string& field,
-                  int64_t * _return)
+    int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
 
@@ -790,7 +790,7 @@ bool Redis2::hdel(const std::string& key, const std::string& field,
 
 
 bool Redis2::hdel(const std::string& key, const string_vector_t& fields,
-                  int64_t * _return)
+    int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
 
@@ -808,7 +808,7 @@ bool Redis2::hdel(const std::string& key, const string_vector_t& fields,
 
 
 bool Redis2::hexists(const std::string& key, const std::string& field,
-                     int64_t * _return)
+    int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
 
@@ -826,7 +826,7 @@ bool Redis2::hexists(const std::string& key, const std::string& field,
 
 
 bool Redis2::hget(const std::string& key, const std::string& field,
-                  std::string * _return, bool * is_nil)
+    std::string * _return, bool * is_nil)
 {
   CHECK_PTR_PARAM(_return);
   CHECK_PTR_PARAM(is_nil);
@@ -861,14 +861,14 @@ bool Redis2::hgetall(const std::string& key, mbulk_t * _return)
 
 
 bool Redis2::hincr(const std::string& key, const std::string& field,
-                   int64_t * _return)
+    int64_t * _return)
 {
   return hincrby(key, field, 1, _return);
 }
 
 
 bool Redis2::hincrby(const std::string& key, const std::string& field,
-                     int64_t inc, int64_t * _return)
+    int64_t inc, int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
 
@@ -886,7 +886,7 @@ bool Redis2::hincrby(const std::string& key, const std::string& field,
 }
 
 bool Redis2::hincrbyfloat(const std::string& key, const std::string& field,
-                          double inc, std::string * _return)
+    double inc, std::string * _return)
 {
   CHECK_PTR_PARAM(_return);
 
@@ -936,7 +936,7 @@ bool Redis2::hlen(const std::string& key, int64_t * _return)
 
 
 bool Redis2::hmget(const std::string& key, const string_vector_t& fields,
-                   mbulk_t * _return)
+    mbulk_t * _return)
 {
   CHECK_PTR_PARAM(_return);
 
@@ -954,7 +954,7 @@ bool Redis2::hmget(const std::string& key, const string_vector_t& fields,
 
 
 bool Redis2::hmset(const std::string& key,
-                   const string_vector_t& fields, const string_vector_t& values)
+    const string_vector_t& fields, const string_vector_t& values)
 {
   CHECK_EXPR(fields.size() == values.size());
 
@@ -976,7 +976,7 @@ bool Redis2::hmset(const std::string& key,
 
 
 bool Redis2::hset(const std::string& key, const std::string& field,
-                  const std::string& value, int64_t * _return)
+    const std::string& value, int64_t * _return)
 {
   if (!assure_connect())
     return false;
@@ -993,7 +993,7 @@ bool Redis2::hset(const std::string& key, const std::string& field,
 
 
 bool Redis2::hsetnx(const std::string& key, const std::string& field,
-                    const std::string& value, int64_t * _return)
+    const std::string& value, int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
 
@@ -1028,7 +1028,7 @@ bool Redis2::hvals(const std::string& key, mbulk_t * _return)
 
 
 bool Redis2::bxpop(bool is_blpop, const string_vector_t& keys, int64_t timeout,
-                   std::string * key, std::string * member, bool * expired)
+    std::string * key, std::string * member, bool * expired)
 {
   CHECK_PTR_PARAM(key);
   CHECK_PTR_PARAM(member);
@@ -1050,7 +1050,7 @@ bool Redis2::bxpop(bool is_blpop, const string_vector_t& keys, int64_t timeout,
 
   mbulk_t mb;
   if (c.out.get_mbulks(&mb)
-    && mb.size() == 2 && mb[0] && mb[1])
+      && mb.size() == 2 && mb[0] && mb[1])
   {
     key->swap(*mb[0]);
     member->swap(*mb[1]);
@@ -1073,7 +1073,7 @@ bool Redis2::bxpop(bool is_blpop, const string_vector_t& keys, int64_t timeout,
 
 
 bool Redis2::lindex(const std::string& key, int64_t index,
-                    std::string * _return, bool * is_nil)
+    std::string * _return, bool * is_nil)
 {
   CHECK_PTR_PARAM(_return);
   CHECK_PTR_PARAM(is_nil);
@@ -1092,8 +1092,8 @@ bool Redis2::lindex(const std::string& key, int64_t index,
 
 
 bool Redis2::linsert(const std::string& key, bool before,
-                     const std::string& pivot, const std::string& value,
-                     int64_t * _return)
+    const std::string& pivot, const std::string& value,
+    int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
 
@@ -1146,7 +1146,7 @@ bool Redis2::lpop(const std::string& key, std::string * _return, bool * is_nil)
 
 
 bool Redis2::lpush(const std::string& key, const std::string& value,
-                   int64_t * _return)
+    int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
 
@@ -1164,7 +1164,7 @@ bool Redis2::lpush(const std::string& key, const std::string& value,
 
 
 bool Redis2::lpush(const std::string& key, const string_vector_t& values,
-                   int64_t * _return)
+    int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
 
@@ -1182,7 +1182,7 @@ bool Redis2::lpush(const std::string& key, const string_vector_t& values,
 
 
 bool Redis2::lpushx(const std::string& key, const std::string& value,
-                    int64_t * _return)
+    int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
 
@@ -1200,7 +1200,7 @@ bool Redis2::lpushx(const std::string& key, const std::string& value,
 
 
 bool Redis2::lrange(const std::string& key, int64_t start, int64_t stop,
-                    mbulk_t * _return)
+    mbulk_t * _return)
 {
   CHECK_PTR_PARAM(_return);
 
@@ -1219,7 +1219,7 @@ bool Redis2::lrange(const std::string& key, int64_t start, int64_t stop,
 
 
 bool Redis2::lrem(const std::string& key, int64_t count, const std::string& value,
-                  int64_t * _return)
+    int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
 
@@ -1238,7 +1238,7 @@ bool Redis2::lrem(const std::string& key, int64_t count, const std::string& valu
 
 
 bool Redis2::lset(const std::string& key, int64_t index,
-                  const std::string& value)
+    const std::string& value)
 {
   if (!assure_connect())
     return false;
@@ -1288,7 +1288,7 @@ bool Redis2::rpop(const std::string& key, std::string * _return, bool * is_nil)
 
 
 bool Redis2::rpush(const std::string& key, const std::string& value,
-                   int64_t * _return)
+    int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
 
@@ -1306,7 +1306,7 @@ bool Redis2::rpush(const std::string& key, const std::string& value,
 
 
 bool Redis2::rpush(const std::string& key, const string_vector_t& values,
-                   int64_t * _return)
+    int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
 
@@ -1324,7 +1324,7 @@ bool Redis2::rpush(const std::string& key, const string_vector_t& values,
 
 
 bool Redis2::rpushx(const std::string& key, const std::string& value,
-                    int64_t * _return)
+    int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
 
@@ -1342,7 +1342,7 @@ bool Redis2::rpushx(const std::string& key, const std::string& value,
 
 
 bool Redis2::sadd(const std::string& key, const std::string& member,
-                  int64_t * _return)
+    int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
 
@@ -1360,7 +1360,7 @@ bool Redis2::sadd(const std::string& key, const std::string& member,
 
 
 bool Redis2::sadd(const std::string& key, const string_vector_t& members,
-                  int64_t * _return)
+    int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
 
@@ -1394,7 +1394,7 @@ bool Redis2::scard(const std::string& key, int64_t * _return)
 
 
 bool Redis2::sismember(const std::string& key, const std::string& member,
-                       int64_t * _return)
+    int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
 
@@ -1445,7 +1445,7 @@ bool Redis2::spop(const std::string& key, std::string * _return, bool * is_nil)
 
 
 bool Redis2::srandmember(const std::string& key,
-                         std::string * _return, bool * is_nil)
+    std::string * _return, bool * is_nil)
 {
   CHECK_PTR_PARAM(_return);
   CHECK_PTR_PARAM(is_nil);
@@ -1463,7 +1463,7 @@ bool Redis2::srandmember(const std::string& key,
 
 
 bool Redis2::srem(const std::string& key, const std::string& member,
-                  int64_t * _return)
+    int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
 
@@ -1481,7 +1481,7 @@ bool Redis2::srem(const std::string& key, const std::string& member,
 
 
 bool Redis2::srem(const std::string& key, const string_vector_t& members,
-                  int64_t * _return)
+    int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
 
@@ -1499,7 +1499,7 @@ bool Redis2::srem(const std::string& key, const string_vector_t& members,
 
 
 bool Redis2::zadd(const std::string& key, double score,
-                  const std::string& member, int64_t * _return)
+    const std::string& member, int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
 
@@ -1518,7 +1518,7 @@ bool Redis2::zadd(const std::string& key, double score,
 
 
 bool Redis2::zadd(const std::string& key, std::vector<double>& scores,
-                  const string_vector_t& members, int64_t * _return)
+    const string_vector_t& members, int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   CHECK_EXPR(scores.size() == members.size());
@@ -1557,8 +1557,8 @@ bool Redis2::zcard(const std::string& key, int64_t * _return)
 
 
 bool Redis2::zcount(const std::string& key,
-                    const std::string& _min, const std::string& _max,
-                    int64_t * _return)
+    const std::string& _min, const std::string& _max,
+    int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
 
@@ -1577,7 +1577,7 @@ bool Redis2::zcount(const std::string& key,
 
 
 bool Redis2::zincrby(const std::string& key, double increment,
-                     const std::string& member, double * _return)
+    const std::string& member, double * _return)
 {
   CHECK_PTR_PARAM(_return);
 
@@ -1606,8 +1606,8 @@ bool Redis2::zincrby(const std::string& key, double increment,
 
 
 bool Redis2::zxxxrange(bool rev,
-                       const std::string& key, int64_t start, int64_t stop,
-                       bool withscores, mbulk_t * _return)
+    const std::string& key, int64_t start, int64_t stop,
+    bool withscores, mbulk_t * _return)
 {
   CHECK_PTR_PARAM(_return);
 
@@ -1628,23 +1628,23 @@ bool Redis2::zxxxrange(bool rev,
 
 
 bool Redis2::zrange(const std::string& key, int64_t start, int64_t stop,
-                    bool withscores, mbulk_t * _return)
+    bool withscores, mbulk_t * _return)
 {
   return zxxxrange(false, key, start, stop, withscores, _return);
 }
 
 
 bool Redis2::zrevrange(const std::string& key, int64_t start, int64_t stop,
-                       bool withscores, mbulk_t * _return)
+    bool withscores, mbulk_t * _return)
 {
   return zxxxrange(true, key, start, stop, withscores, _return);
 }
 
 
 bool Redis2::zxxxrangebyscore(bool rev, const std::string& key,
-                              const std::string& _min, const std::string& _max,
-                              bool withscores, const ZRangebyscoreLimit * limit,
-                              mbulk_t * _return)
+    const std::string& _min, const std::string& _max,
+    bool withscores, const ZRangebyscoreLimit * limit,
+    mbulk_t * _return)
 {
   CHECK_PTR_PARAM(_return);
 
@@ -1671,25 +1671,25 @@ bool Redis2::zxxxrangebyscore(bool rev, const std::string& key,
 
 
 bool Redis2::zrangebyscore(const std::string& key,
-                           const std::string& _min, const std::string& _max,
-                           bool withscores, const ZRangebyscoreLimit * limit,
-                           mbulk_t * _return)
+    const std::string& _min, const std::string& _max,
+    bool withscores, const ZRangebyscoreLimit * limit,
+    mbulk_t * _return)
 {
   return zxxxrangebyscore(false, key, _min, _max, withscores, limit, _return);
 }
 
 
 bool Redis2::zrevrangebyscore(const std::string& key,
-                              const std::string& _max, const std::string& _min,
-                              bool withscores, const ZRangebyscoreLimit * limit,
-                              mbulk_t * _return)
+    const std::string& _max, const std::string& _min,
+    bool withscores, const ZRangebyscoreLimit * limit,
+    mbulk_t * _return)
 {
   return zxxxrangebyscore(true, key, _max, _min, withscores, limit, _return);
 }
 
 
 bool Redis2::zxxxrank(bool rev, const std::string& key, const std::string& member,
-                      int64_t * _return, bool * not_exists)
+    int64_t * _return, bool * not_exists)
 {
   CHECK_PTR_PARAM(_return);
   CHECK_PTR_PARAM(not_exists);
@@ -1722,21 +1722,21 @@ bool Redis2::zxxxrank(bool rev, const std::string& key, const std::string& membe
 
 
 bool Redis2::zrank(const std::string& key, const std::string& member,
-                   int64_t * _return, bool * not_exists)
+    int64_t * _return, bool * not_exists)
 {
   return zxxxrank(false, key, member, _return, not_exists);
 }
 
 
 bool Redis2::zrevrank(const std::string& key, const std::string& member,
-                      int64_t * _return, bool * not_exists)
+    int64_t * _return, bool * not_exists)
 {
   return zxxxrank(true, key, member, _return, not_exists);
 }
 
 
 bool Redis2::zrem(const std::string& key, const std::string& member,
-                  int64_t * _return)
+    int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
 
@@ -1754,7 +1754,7 @@ bool Redis2::zrem(const std::string& key, const std::string& member,
 
 
 bool Redis2::zrem(const std::string& key, const string_vector_t& members,
-                  int64_t * _return)
+    int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
 
@@ -1773,7 +1773,7 @@ bool Redis2::zrem(const std::string& key, const string_vector_t& members,
 
 
 bool Redis2::zremrangebyrank(const std::string& key,
-                             int64_t start, int64_t stop, int64_t * _return)
+    int64_t start, int64_t stop, int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
 
@@ -1792,8 +1792,8 @@ bool Redis2::zremrangebyrank(const std::string& key,
 
 
 bool Redis2::zremrangebyscore(const std::string& key,
-                              const std::string& _min, const std::string& _max,
-                              int64_t * _return)
+    const std::string& _min, const std::string& _max,
+    int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
 
@@ -1812,7 +1812,7 @@ bool Redis2::zremrangebyscore(const std::string& key,
 
 
 bool Redis2::zscore(const std::string& key, const std::string& member,
-                    double * _return, bool * is_nil)
+    double * _return, bool * is_nil)
 {
   CHECK_PTR_PARAM(_return);
   CHECK_PTR_PARAM(is_nil);
@@ -1914,7 +1914,7 @@ bool Redis2::rename(const std::string& key, const std::string& newkey)
 
 
 bool Redis2::renamenx(const std::string& key, const std::string& newkey,
-                      int64_t * _return)
+    int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
 
@@ -1932,21 +1932,21 @@ bool Redis2::renamenx(const std::string& key, const std::string& newkey,
 
 
 bool Redis2::blpop(const string_vector_t& keys, int64_t timeout,
-                   std::string * key, std::string * member, bool * expired)
+    std::string * key, std::string * member, bool * expired)
 {
   return bxpop(true, keys, timeout, key, member, expired);
 }
 
 
 bool Redis2::brpop(const string_vector_t& keys, int64_t timeout,
-                   std::string * key, std::string * member, bool * expired)
+    std::string * key, std::string * member, bool * expired)
 {
   return bxpop(false, keys, timeout, key, member, expired);
 }
 
 
 bool Redis2::brpoplpush(const std::string& source, const std::string& destination,
-                        int64_t timeout, std::string * member, bool * expired)
+    int64_t timeout, std::string * member, bool * expired)
 {
   CHECK_PTR_PARAM(member);
   CHECK_PTR_PARAM(expired);
@@ -1985,7 +1985,7 @@ bool Redis2::brpoplpush(const std::string& source, const std::string& destinatio
 
 
 bool Redis2::rpoplpush(const std::string& source, const std::string& destination,
-                       std::string * _return, bool * is_nil)
+    std::string * _return, bool * is_nil)
 {
   CHECK_PTR_PARAM(_return);
   CHECK_PTR_PARAM(is_nil);
@@ -2020,7 +2020,7 @@ bool Redis2::sdiff(const string_vector_t& keys, mbulk_t * _return)
 
 
 bool Redis2::sdiffstore(const std::string& destination,
-                        const string_vector_t& keys, int64_t * _return)
+    const string_vector_t& keys, int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
 
@@ -2054,7 +2054,7 @@ bool Redis2::sinter(const string_vector_t& keys, mbulk_t * _return)
 
 
 bool Redis2::sinterstore(const std::string& destination,
-                         const string_vector_t& keys, int64_t * _return)
+    const string_vector_t& keys, int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
 
@@ -2072,8 +2072,8 @@ bool Redis2::sinterstore(const std::string& destination,
 
 
 bool Redis2::smove(const std::string& source,
-                   const std::string& destination, const std::string& member,
-                   int64_t * _return)
+    const std::string& destination, const std::string& member,
+    int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
 
@@ -2108,7 +2108,7 @@ bool Redis2::sunion(const string_vector_t& keys, mbulk_t * _return)
 
 
 bool Redis2::sunionstore(const std::string& destination,
-                         const string_vector_t& keys, int64_t * _return)
+    const string_vector_t& keys, int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
 
@@ -2126,10 +2126,10 @@ bool Redis2::sunionstore(const std::string& destination,
 
 
 bool Redis2::zxxxxxstore(bool is_zinterstore,
-                         const std::string& destination,
-                         const string_vector_t& keys,
-                         const std::vector<double> * weights,
-                         kZUnionstoreAggregate agg, int64_t * _return)
+    const std::string& destination,
+    const string_vector_t& keys,
+    const std::vector<double> * weights,
+    kZUnionstoreAggregate agg, int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
 
@@ -2163,18 +2163,18 @@ bool Redis2::zxxxxxstore(bool is_zinterstore,
 
 
 bool Redis2::zinterstore(const std::string& destination,
-                         const string_vector_t& keys,
-                         const std::vector<double> * weights,
-                         kZUnionstoreAggregate agg, int64_t * _return)
+    const string_vector_t& keys,
+    const std::vector<double> * weights,
+    kZUnionstoreAggregate agg, int64_t * _return)
 {
   return zxxxxxstore(true, destination, keys, weights, agg, _return);
 }
 
 
 bool Redis2::zunionstore(const std::string& destination,
-                         const string_vector_t& keys,
-                         const std::vector<double> * weights,
-                         kZUnionstoreAggregate agg, int64_t * _return)
+    const string_vector_t& keys,
+    const std::vector<double> * weights,
+    kZUnionstoreAggregate agg, int64_t * _return)
 {
   return zxxxxxstore(false, destination, keys, weights, agg, _return);
 }
@@ -2218,7 +2218,7 @@ bool Redis2::exec_pipeline(redis_command_vector_t * commands)
 
 
 bool Redis2::publish(const std::string& channel, const std::string& message,
-                     int64_t * _return)
+    int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
 
@@ -2328,7 +2328,7 @@ bool Redis2::exec(redis_command_vector_t * commands)
 
   smbulk_t smb;
   if (c.out.get_smbulks(&smb)
-    && smb.size() == transaction_cmds_.size())
+      && smb.size() == transaction_cmds_.size())
   {
     for (size_t i=0; i<smb.size(); i++)
     {
@@ -2337,8 +2337,8 @@ bool Redis2::exec(redis_command_vector_t * commands)
 
       RedisOutput& out = transaction_cmds_[i]->out;
       if (out.reply_type == kSpecialMultiBulk
-        && out.ptr.smbulks
-        && convertible_2_mbulks(*out.ptr.smbulks))
+          && out.ptr.smbulks
+          && convertible_2_mbulks(*out.ptr.smbulks))
       {
         mbulk_t mb;
         convert(out.ptr.smbulks, &mb);
@@ -2494,4 +2494,4 @@ bool Redis2::slaveof(const std::string& host, const std::string& port)
 }
 
 
-NAMESPACE_END
+LIBREDIS_NAMESPACE_END

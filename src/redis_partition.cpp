@@ -1,11 +1,11 @@
 /** @file
-* @brief Redis2P : a redis client for fixed-size partitions of servers,
-*                  where there is no consistent hash
-* @author yafei.zhang@langtaojin.com
-* @date
-* @version
-*
-*/
+ * @brief Redis2P : a redis client for fixed-size partitions of servers,
+ *                  where there is no consistent hash
+ * @author yafei.zhang@langtaojin.com
+ * @date
+ * @version
+ *
+ */
 #include "redis_partition.h"
 #include "os.h"
 #include <assert.h>
@@ -21,17 +21,17 @@
 
 #define FOR_EACH_GROUP_WRITE(func, key, ...) \
   do {\
-  size_t_vector_t index_v;\
-  if (!__get_key_client(key, index_v))\
-  return false;\
-  bool ret;\
-  BOOST_FOREACH(size_t host_index, index_v)\
+    size_t_vector_t index_v;\
+    if (!__get_key_client(key, index_v))\
+    return false;\
+    bool ret;\
+    BOOST_FOREACH(size_t host_index, index_v)\
     {\
-    ret = redis2_sp_vector_[host_index]->func(__VA_ARGS__);\
-    if (!ret)\
+      ret = redis2_sp_vector_[host_index]->func(__VA_ARGS__);\
+      if (!ret)\
       {\
-      __set_index_error(host_index);\
-      return false;\
+        __set_index_error(host_index);\
+        return false;\
       }\
     }\
     return true;\
@@ -47,9 +47,9 @@
   bool ret;\
   BOOST_FOREACH(size_t host_index, index_v)\
   {\
-  ret = redis2_sp_vector_[host_index]->func(__VA_ARGS__);\
-  if (!ret)\
-  __set_index_error(host_index);\
+    ret = redis2_sp_vector_[host_index]->func(__VA_ARGS__);\
+    if (!ret)\
+    __set_index_error(host_index);\
     else\
     return true;\
   }\
@@ -57,7 +57,7 @@
 } while (0)
 
 
-NAMESPACE_BEGIN
+LIBREDIS_NAMESPACE_BEGIN
 
 static inline size_t __get_seed()
 {
@@ -83,15 +83,15 @@ bool Redis2P::__inner_init()
   if (hosts_.size() % groups_ != 0)
   {
     error_ = str(boost::format(
-      "invalid group number, hosts: %lu, groups: %lu, partitions: %lu")
-      % hosts_.size() % groups_ % partitions_);
+          "invalid group number, hosts: %lu, groups: %lu, partitions: %lu")
+        % hosts_.size() % groups_ % partitions_);
     return false;
   }
 
   for (size_t i=0 ; i<hosts_.size(); i++)
   {
     redis2_sp_vector_.push_back(redis2_sp_t(
-      new Redis2(hosts_[i], ports_[i], db_index_, timeout_ms_)));
+          new Redis2(hosts_[i], ports_[i], db_index_, timeout_ms_)));
   }
 
   return true;
@@ -105,8 +105,8 @@ bool Redis2P::is_invalid(size_t index)const
 
 
 bool Redis2P::__get_key_client(const std::string& key,
-                               size_t_vector_t& index_v,
-                               bool write)
+    size_t_vector_t& index_v,
+    bool write)
 {
   size_t host_num = redis2_sp_vector_.size() / groups_;
   size_t host_index = __get_key_host_index(key);
@@ -144,8 +144,8 @@ bool Redis2P::__get_key_client(const std::string& key,
 
 
 bool Redis2P::__get_keys_client(const string_vector_t& keys,
-                                size_t_vector_vector_t& index_v,
-                                bool write)
+    size_t_vector_vector_t& index_v,
+    bool write)
 {
   size_t host_num = redis2_sp_vector_.size() / groups_;
   size_t host_index;
@@ -226,14 +226,14 @@ void Redis2P::__set_index_error(size_t host_index)
 {
   assert(host_index < redis2_sp_vector_.size());
   error_ = str(boost::format("[%s:%s] %s")
-    % hosts_[host_index] % ports_[host_index] % redis2_sp_vector_[host_index]->last_error());
+      % hosts_[host_index] % ports_[host_index] % redis2_sp_vector_[host_index]->last_error());
 }
 
 
 void Redis2P::__set_host_error(const Redis2& host)
 {
   error_ = str(boost::format("[%s:%s] %s")
-    % host.get_host() % host.get_port() % host.last_error());
+      % host.get_host() % host.get_port() % host.last_error());
 }
 
 
@@ -244,14 +244,14 @@ size_t Redis2P::__get_key_host_index(const std::string& key)const
 
 
 Redis2P::Redis2P(const std::string& host_list,
-                 const std::string& port_list,
-                 int db_index,
-                 int timeout_ms,
-                 int partitions,
-                 key_hasher fn)
-                 :RedisBase2Multi(host_list, port_list, db_index, timeout_ms),
-                 partitions_(partitions),
-                 hash_fn_(fn)
+    const std::string& port_list,
+    int db_index,
+    int timeout_ms,
+    int partitions,
+    key_hasher fn)
+:RedisBase2Multi(host_list, port_list, db_index, timeout_ms),
+  partitions_(partitions),
+  hash_fn_(fn)
 {
   if (!__inner_init())
   {
@@ -369,14 +369,14 @@ bool Redis2P::exists(const std::string& key, int64_t * _return)
 }
 
 bool Redis2P::expire(const std::string& key, int64_t seconds,
-                     int64_t * _return)
+    int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_WRITE(expire, key, key, seconds, _return);
 }
 
 bool Redis2P::expireat(const std::string& key, int64_t abs_time,
-                       int64_t * _return)
+    int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_WRITE(expireat, key, key, abs_time, _return);
@@ -412,7 +412,7 @@ bool Redis2P::keys(const std::string& pattern, mbulk_t * _return)
 }
 
 bool Redis2P::move(const std::string& key, int db,
-                   int64_t * _return)
+    int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_WRITE(move, key, key, db, _return);
@@ -470,7 +470,7 @@ bool Redis2P::randomkey(std::string * _return, bool * is_nil)
 }
 
 bool Redis2P::sort(const std::string& key, const string_vector_t * phrases,
-                   mbulk_t * _return)
+    mbulk_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_READ(sort, key, key, phrases, _return);
@@ -489,7 +489,7 @@ bool Redis2P::type(const std::string& key, std::string * _return)
 }
 
 bool Redis2P::append(const std::string& key, const std::string& value,
-                     int64_t * _return)
+    int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_WRITE(append, key, key, value, _return);
@@ -521,7 +521,7 @@ bool Redis2P::getbit(const std::string& key, int64_t offset, int64_t * _return)
 }
 
 bool Redis2P::getrange(const std::string& key, int64_t start, int64_t end,
-                       std::string * _return, bool * is_nil)
+    std::string * _return, bool * is_nil)
 {
   CHECK_PTR_PARAM(_return);
   CHECK_PTR_PARAM(is_nil);
@@ -529,7 +529,7 @@ bool Redis2P::getrange(const std::string& key, int64_t start, int64_t end,
 }
 
 bool Redis2P::getset(const std::string& key, const std::string& value,
-                     std::string * _return, bool * is_nil)
+    std::string * _return, bool * is_nil)
 {
   CHECK_PTR_PARAM(_return);
   CHECK_PTR_PARAM(is_nil);
@@ -617,27 +617,27 @@ bool Redis2P::set(const std::string& key, const std::string& value)
 }
 
 bool Redis2P::setbit(const std::string& key, int64_t offset, int64_t value,
-                     int64_t * _return)
+    int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_WRITE(setbit, key, key, offset, value, _return);
 }
 
 bool Redis2P::setex(const std::string& key, int64_t seconds,
-                    const std::string& value)
+    const std::string& value)
 {
   FOR_EACH_GROUP_WRITE(setex, key, key, seconds, value);
 }
 
 bool Redis2P::setnx(const std::string& key, const std::string& value,
-                    int64_t * _return)
+    int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_WRITE(setnx, key, key, value, _return);
 }
 
 bool Redis2P::setrange(const std::string& key, int64_t offset,
-                       const std::string& value, int64_t * _return)
+    const std::string& value, int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_WRITE(setrange, key, key, offset, value, _return);
@@ -650,28 +650,28 @@ bool Redis2P::strlen(const std::string& key, int64_t * _return)
 }
 
 bool Redis2P::hdel(const std::string& key, const std::string& field,
-                   int64_t * _return)
+    int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_WRITE(hdel, key, key, field, _return);
 }
 
 bool Redis2P::hdel(const std::string& key, const string_vector_t& fields,
-                   int64_t * _return)
+    int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_WRITE(hdel, key, key, fields, _return);
 }
 
 bool Redis2P::hexists(const std::string& key, const std::string& field,
-                      int64_t * _return)
+    int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_READ(hexists, key, key, field, _return);
 }
 
 bool Redis2P::hget(const std::string& key, const std::string& field,
-                   std::string * _return, bool * is_nil)
+    std::string * _return, bool * is_nil)
 {
   CHECK_PTR_PARAM(_return);
   CHECK_PTR_PARAM(is_nil);
@@ -685,20 +685,20 @@ bool Redis2P::hgetall(const std::string& key, mbulk_t * _return)
 }
 
 bool Redis2P::hincr(const std::string& key, const std::string& field,
-                    int64_t * _return)
+    int64_t * _return)
 {
   FOR_EACH_GROUP_WRITE(hincr, key, key, field, _return);
 }
 
 bool Redis2P::hincrby(const std::string& key, const std::string& field,
-                      int64_t inc, int64_t * _return)
+    int64_t inc, int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_WRITE(hincrby, key, key, field, inc, _return);
 }
 
 bool Redis2P::hincrbyfloat(const std::string& key, const std::string& field,
-                           double inc, std::string * _return)
+    double inc, std::string * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_WRITE(hincrbyfloat, key, key, field, inc, _return);
@@ -717,28 +717,28 @@ bool Redis2P::hlen(const std::string& key, int64_t * _return)
 }
 
 bool Redis2P::hmget(const std::string& key, const string_vector_t& fields,
-                    mbulk_t * _return)
+    mbulk_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_READ(hmget, key, key, fields, _return);
 }
 
 bool Redis2P::hmset(const std::string& key,
-                    const string_vector_t& fields, const string_vector_t& values)
+    const string_vector_t& fields, const string_vector_t& values)
 {
   CHECK_EXPR(fields.size() == values.size());
   FOR_EACH_GROUP_WRITE(hmset, key, key, fields, values);
 }
 
 bool Redis2P::hset(const std::string& key, const std::string& field,
-                   const std::string& value, int64_t * _return)
+    const std::string& value, int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_WRITE(hset, key, key, field, value, _return);
 }
 
 bool Redis2P::hsetnx(const std::string& key, const std::string& field,
-                     const std::string& value, int64_t * _return)
+    const std::string& value, int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_WRITE(hset, key, key, field, value, _return);
@@ -751,7 +751,7 @@ bool Redis2P::hvals(const std::string& key, mbulk_t * _return)
 }
 
 bool Redis2P::lindex(const std::string& key, int64_t index,
-                     std::string * _return, bool * is_nil)
+    std::string * _return, bool * is_nil)
 {
   CHECK_PTR_PARAM(_return);
   CHECK_PTR_PARAM(is_nil);
@@ -759,7 +759,7 @@ bool Redis2P::lindex(const std::string& key, int64_t index,
 }
 
 bool Redis2P::linsert(const std::string& key, bool before,
-                      const std::string& pivot, const std::string& value, int64_t * _return)
+    const std::string& pivot, const std::string& value, int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_WRITE(linsert, key, key, before, pivot, value, _return);
@@ -779,42 +779,42 @@ bool Redis2P::lpop(const std::string& key, std::string * _return, bool * is_nil)
 }
 
 bool Redis2P::lpush(const std::string& key, const std::string& value,
-                    int64_t * _return)
+    int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_WRITE(lpush, key, key, value, _return);
 }
 
 bool Redis2P::lpush(const std::string& key, const string_vector_t& values,
-                    int64_t * _return)
+    int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_WRITE(lpush, key, key, values, _return);
 }
 
 bool Redis2P::lpushx(const std::string& key, const std::string& value,
-                     int64_t * _return)
+    int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_WRITE(lpushx, key, key, value, _return);
 }
 
 bool Redis2P::lrange(const std::string& key, int64_t start, int64_t stop,
-                     mbulk_t * _return)
+    mbulk_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_READ(lrange, key, key, start, stop, _return);
 }
 
 bool Redis2P::lrem(const std::string& key, int64_t count, const std::string& value,
-                   int64_t * _return)
+    int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_WRITE(lrem, key, key, count, value, _return);
 }
 
 bool Redis2P::lset(const std::string& key, int64_t index,
-                   const std::string& value)
+    const std::string& value)
 {
   FOR_EACH_GROUP_WRITE(lset, key, key, index, value);
 }
@@ -832,35 +832,35 @@ bool Redis2P::rpop(const std::string& key, std::string * _return, bool * is_nil)
 }
 
 bool Redis2P::rpush(const std::string& key, const std::string& value,
-                    int64_t * _return)
+    int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_WRITE(rpush, key, key, value, _return);
 }
 
 bool Redis2P::rpush(const std::string& key, const string_vector_t& values,
-                    int64_t * _return)
+    int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_WRITE(rpush, key, key, values, _return);
 }
 
 bool Redis2P::rpushx(const std::string& key, const std::string& value,
-                     int64_t * _return)
+    int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_WRITE(rpushx, key, key, value, _return);
 }
 
 bool Redis2P::sadd(const std::string& key, const std::string& member,
-                   int64_t * _return)
+    int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_WRITE(sadd, key, key, member, _return);
 }
 
 bool Redis2P::sadd(const std::string& key, const string_vector_t& members,
-                   int64_t * _return)
+    int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_WRITE(sadd, key, key, members, _return);
@@ -873,7 +873,7 @@ bool Redis2P::scard(const std::string& key, int64_t * _return)
 }
 
 bool Redis2P::sismember(const std::string& key, const std::string& member,
-                        int64_t * _return)
+    int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_READ(sismember, key, key, member, _return);
@@ -893,7 +893,7 @@ bool Redis2P::spop(const std::string& key, std::string * member, bool * is_nil)
 }
 
 bool Redis2P::srandmember(const std::string& key,
-                          std::string * member, bool * is_nil)
+    std::string * member, bool * is_nil)
 {
   CHECK_PTR_PARAM(member);
   CHECK_PTR_PARAM(is_nil);
@@ -901,28 +901,28 @@ bool Redis2P::srandmember(const std::string& key,
 }
 
 bool Redis2P::srem(const std::string& key, const std::string& member,
-                   int64_t * _return)
+    int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_WRITE(srem, key, key, member, _return);
 }
 
 bool Redis2P::srem(const std::string& key, const string_vector_t& members,
-                   int64_t * _return)
+    int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_WRITE(srem, key, key, members, _return);
 }
 
 bool Redis2P::zadd(const std::string& key, double score,
-                   const std::string& member, int64_t * _return)
+    const std::string& member, int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_WRITE(zadd, key, key, score, member, _return);
 }
 
 bool Redis2P::zadd(const std::string& key, std::vector<double>& scores,
-                   const string_vector_t& members, int64_t * _return)
+    const string_vector_t& members, int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   CHECK_EXPR(scores.size() == members.size());
@@ -936,53 +936,53 @@ bool Redis2P::zcard(const std::string& key, int64_t * _return)
 }
 
 bool Redis2P::zcount(const std::string& key,
-                     const std::string& _min, const std::string& _max, int64_t * _return)
+    const std::string& _min, const std::string& _max, int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_READ(zcount, key, key, _min, _max, _return);
 }
 
 bool Redis2P::zincrby(const std::string& key, double increment,
-                      const std::string& member, double * _return)
+    const std::string& member, double * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_WRITE(zincrby, key, key, increment, member, _return);
 }
 
 bool Redis2P::zrange(const std::string& key, int64_t start, int64_t stop,
-                     bool withscores, mbulk_t * _return)
+    bool withscores, mbulk_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_READ(zrange, key, key, start, stop, withscores, _return);
 }
 
 bool Redis2P::zrevrange(const std::string& key, int64_t start, int64_t stop,
-                        bool withscores, mbulk_t * _return)
+    bool withscores, mbulk_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_READ(zrevrange, key, key, start, stop, withscores, _return);
 }
 
 bool Redis2P::zrangebyscore(const std::string& key,
-                            const std::string& _min, const std::string& _max,
-                            bool withscores, const ZRangebyscoreLimit * limit,
-                            mbulk_t * _return)
+    const std::string& _min, const std::string& _max,
+    bool withscores, const ZRangebyscoreLimit * limit,
+    mbulk_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_READ(zrangebyscore, key, key, _min, _max, withscores, limit, _return);
 }
 
 bool Redis2P::zrevrangebyscore(const std::string& key,
-                               const std::string& _max, const std::string& _min,
-                               bool withscores, const ZRangebyscoreLimit * limit,
-                               mbulk_t * _return)
+    const std::string& _max, const std::string& _min,
+    bool withscores, const ZRangebyscoreLimit * limit,
+    mbulk_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_READ(zrevrangebyscore, key, key, _max, _min, withscores, limit, _return);
 }
 
 bool Redis2P::zrank(const std::string& key, const std::string& member,
-                    int64_t * _return, bool * not_exists)
+    int64_t * _return, bool * not_exists)
 {
   CHECK_PTR_PARAM(_return);
   CHECK_PTR_PARAM(not_exists);
@@ -990,7 +990,7 @@ bool Redis2P::zrank(const std::string& key, const std::string& member,
 }
 
 bool Redis2P::zrevrank(const std::string& key, const std::string& member,
-                       int64_t * _return, bool * not_exists)
+    int64_t * _return, bool * not_exists)
 {
   CHECK_PTR_PARAM(_return);
   CHECK_PTR_PARAM(not_exists);
@@ -998,35 +998,35 @@ bool Redis2P::zrevrank(const std::string& key, const std::string& member,
 }
 
 bool Redis2P::zrem(const std::string& key, const std::string& member,
-                   int64_t * _return)
+    int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_WRITE(zrem, key, key, member, _return);
 }
 
 bool Redis2P::zrem(const std::string& key, const string_vector_t& members,
-                   int64_t * _return)
+    int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_WRITE(zrem, key, key, members, _return);
 }
 
 bool Redis2P::zremrangebyrank(const std::string& key,
-                              int64_t start, int64_t stop, int64_t * _return)
+    int64_t start, int64_t stop, int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_WRITE(zremrangebyrank, key, key, start, stop, _return);
 }
 
 bool Redis2P::zremrangebyscore(const std::string& key,
-                               const std::string& _min, const std::string& _max, int64_t * _return)
+    const std::string& _min, const std::string& _max, int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_WRITE(zremrangebyscore, key, key, _min, _max, _return);
 }
 
 bool Redis2P::zscore(const std::string& key, const std::string& member,
-                     double * _return, bool * is_nil)
+    double * _return, bool * is_nil)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_READ(zscore, key, key, member, _return, is_nil);
@@ -1074,4 +1074,4 @@ bool Redis2P::flushdb()
   return ret;
 }
 
-NAMESPACE_END
+LIBREDIS_NAMESPACE_END

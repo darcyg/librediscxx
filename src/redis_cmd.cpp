@@ -1,10 +1,10 @@
 /** @file
-* @brief redis command definition
-* @author yafei.zhang@langtaojin.com
-* @date
-* @version
-*
-*/
+ * @brief redis command definition
+ * @author yafei.zhang@langtaojin.com
+ * @date
+ * @version
+ *
+ */
 #include "redis_cmd.h"
 #include <ctype.h>//toupper
 #include <algorithm>
@@ -12,7 +12,7 @@
 #include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
 
-NAMESPACE_BEGIN
+LIBREDIS_NAMESPACE_BEGIN
 
 static const CommandInfo s_command_map[] =
 {
@@ -309,23 +309,23 @@ const char * to_string(kReplyType reply_type)
 {
   switch (reply_type)
   {
-  case kStatus:
-    return "status reply";
-  case kError:
-    return "error reply";
-  case kInteger:
-    return "integer reply";
-  case kBulk:
-    return "bulk reply";
-  case kMultiBulk:
-    return "multi-bulk reply";
-  case kSpecialMultiBulk:
-    return "special multi-bulk reply";
-  case kDepends:
-    return "non-defined reply";
-  case kNone:
-  default:
-    return "none type reply";
+    case kStatus:
+      return "status reply";
+    case kError:
+      return "error reply";
+    case kInteger:
+      return "integer reply";
+    case kBulk:
+      return "bulk reply";
+    case kMultiBulk:
+      return "multi-bulk reply";
+    case kSpecialMultiBulk:
+      return "special multi-bulk reply";
+    case kDepends:
+      return "non-defined reply";
+    case kNone:
+    default:
+      return "none type reply";
   }
 }
 
@@ -472,9 +472,9 @@ void delete_commands(redis_command_vector_t * commands)
 
 
 /*
-* Generic hash function (a popular one from Bernstein)
-* Inspired by redis
-*/
+ * Generic hash function (a popular one from Bernstein)
+ * Inspired by redis
+ */
 uint32_t time33_hash_32(const void * key, size_t length)
 {
   uint32_t hash = 5381;// magic number
@@ -498,14 +498,14 @@ uint32_t time33_hash_32(const void * key, size_t length)
 
   switch (length)
   {
-  case 7: hash = ((hash << 5) + hash) + *str++; /* fallthrough... */
-  case 6: hash = ((hash << 5) + hash) + *str++; /* fallthrough... */
-  case 5: hash = ((hash << 5) + hash) + *str++; /* fallthrough... */
-  case 4: hash = ((hash << 5) + hash) + *str++; /* fallthrough... */
-  case 3: hash = ((hash << 5) + hash) + *str++; /* fallthrough... */
-  case 2: hash = ((hash << 5) + hash) + *str++; /* fallthrough... */
-  case 1: hash = ((hash << 5) + hash) + *str++; break;
-  case 0: break;
+    case 7: hash = ((hash << 5) + hash) + *str++; /* fallthrough... */
+    case 6: hash = ((hash << 5) + hash) + *str++; /* fallthrough... */
+    case 5: hash = ((hash << 5) + hash) + *str++; /* fallthrough... */
+    case 4: hash = ((hash << 5) + hash) + *str++; /* fallthrough... */
+    case 3: hash = ((hash << 5) + hash) + *str++; /* fallthrough... */
+    case 2: hash = ((hash << 5) + hash) + *str++; /* fallthrough... */
+    case 1: hash = ((hash << 5) + hash) + *str++; break;
+    case 0: break;
   }
 
   return hash;
@@ -520,12 +520,12 @@ uint32_t time33_hash_32(const std::string& key)
 /************************************************************************/
 /*RedisInput*/
 /************************************************************************/
-RedisInput::RedisInput()
+  RedisInput::RedisInput()
 :command_(NOOP), command_info_(&s_command_map[NOOP])
 {
 }
 
-RedisInput::RedisInput(kCommand cmd)
+  RedisInput::RedisInput(kCommand cmd)
 :command_(cmd), command_info_(&s_command_map[cmd])
 {
 }
@@ -627,7 +627,7 @@ void RedisInput::push_arg(const std::vector<double>& dv)
 /************************************************************************/
 /*RedisOutput*/
 /************************************************************************/
-RedisOutput::RedisOutput()
+  RedisOutput::RedisOutput()
 :reply_type(kNone)
 {
   ptr.status = NULL;
@@ -642,50 +642,50 @@ void RedisOutput::clear()
 {
   switch (reply_type)
   {
-  case kStatus:
-    if (ptr.status)
-    {
-      delete ptr.status;
+    case kStatus:
+      if (ptr.status)
+      {
+        delete ptr.status;
+        ptr.status = NULL;
+      }
+      break;
+    case kError:
+      if (ptr.error)
+      {
+        delete ptr.error;
+        ptr.error = NULL;
+      }
+      break;
+    case kInteger:
+      if (ptr.i)
+      {
+        delete ptr.i;
+        ptr.i = NULL;
+      }
+      break;
+    case kBulk:
+      if (ptr.bulk)
+      {
+        delete ptr.bulk;
+        ptr.bulk = NULL;
+      }
+      break;
+    case kMultiBulk:
+      if (ptr.mbulks)
+      {
+        delete_mbulks(ptr.mbulks);
+        ptr.mbulks = NULL;
+      }
+      break;
+    case kSpecialMultiBulk:
+      if (ptr.smbulks)
+      {
+        delete_smbulks(ptr.smbulks);
+        ptr.smbulks = NULL;
+      }
+      break;
+    default:
       ptr.status = NULL;
-    }
-    break;
-  case kError:
-    if (ptr.error)
-    {
-      delete ptr.error;
-      ptr.error = NULL;
-    }
-    break;
-  case kInteger:
-    if (ptr.i)
-    {
-      delete ptr.i;
-      ptr.i = NULL;
-    }
-    break;
-  case kBulk:
-    if (ptr.bulk)
-    {
-      delete ptr.bulk;
-      ptr.bulk = NULL;
-    }
-    break;
-  case kMultiBulk:
-    if (ptr.mbulks)
-    {
-      delete_mbulks(ptr.mbulks);
-      ptr.mbulks = NULL;
-    }
-    break;
-  case kSpecialMultiBulk:
-    if (ptr.smbulks)
-    {
-      delete_smbulks(ptr.smbulks);
-      ptr.smbulks = NULL;
-    }
-    break;
-  default:
-    ptr.status = NULL;
   }
 }
 
@@ -713,17 +713,17 @@ void RedisOutput::swap(RedisOutput& other)
 /************************************************************************/
 /*RedisCommand*/
 /************************************************************************/
-RedisCommand::RedisCommand()
+  RedisCommand::RedisCommand()
 :in()
 {
 }
 
-RedisCommand::RedisCommand(kCommand cmd)
+  RedisCommand::RedisCommand(kCommand cmd)
 :in(cmd)
 {
 }
 
-RedisCommand::RedisCommand(const std::string& cmd)
+  RedisCommand::RedisCommand(const std::string& cmd)
 :in(cmd)
 {
 }
@@ -734,4 +734,4 @@ void RedisCommand::swap(RedisCommand& other)
   out.swap(other.out);
 }
 
-NAMESPACE_END
+LIBREDIS_NAMESPACE_END

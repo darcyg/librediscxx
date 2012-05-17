@@ -1,10 +1,10 @@
 /** @file
-* @brief redis monitor program
-* @author yafei.zhang@langtaojin.com
-* @date
-* @version
-*
-*/
+ * @brief redis monitor program
+ * @author yafei.zhang@langtaojin.com
+ * @date
+ * @version
+ *
+ */
 #include <redis_protocol.h>
 #include <stdlib.h>
 #include <string.h>
@@ -27,7 +27,7 @@ typedef boost::asio::ip::tcp::socket tcp_socket;
 typedef boost::asio::deadline_timer deadline_timer;
 typedef boost::asio::io_service io_service;
 
-using namespace com::langtaojin::adgaga;
+USING_LIBREDIS_NAMESPACE
 
 namespace
 {
@@ -47,7 +47,7 @@ namespace
   bool init_monitor()
   {
     s_monitor.reset(new RedisProtocol(redis_host,
-      redis_port, redis_timeout));
+          redis_port, redis_timeout));
     if (!s_monitor->assure_connect(NULL))
     {
       std::cerr << "connection failed" << std::endl;
@@ -163,7 +163,7 @@ namespace
   void init_info()
   {
     s_info.reset(new RedisProtocol(redis_host,
-      redis_port, redis_timeout));
+          redis_port, redis_timeout));
     if (!s_info->assure_connect(NULL))
     {
       std::cerr << "connection failed" << std::endl;
@@ -289,7 +289,7 @@ namespace
 
     boost::posix_time::ptime next = s_timer->expires_at();
     boost::posix_time::seconds cycle = boost::posix_time::seconds(
-      update_cycle);
+        update_cycle);
     while (next <= boost::asio::deadline_timer::traits_type::now())
       next = next + cycle;
 

@@ -22,7 +22,7 @@
 #include <boost/date_time/microsec_time_clock.hpp>
 #include <boost/thread.hpp>
 
-USING_NAMESPACE
+USING_LIBREDIS_NAMESPACE
 using namespace std;
 using namespace boost::assign;
 
@@ -291,7 +291,7 @@ namespace
 
     std::string s;
     int64_t i;
-    double d;
+    // double d;
     bool is_nil;
     mbulk_t mb;
     smbulk_t smb;

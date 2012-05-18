@@ -518,7 +518,7 @@ bool Redis2P::incrby(const std::string& key, int64_t inc, int64_t * _return)
   FOR_EACH_GROUP_WRITE(incrby, key, key, inc, _return);
 }
 
-bool Redis2P::incrbyfloat(const std::string& key, double inc, std::string * _return)
+bool Redis2P::incrbyfloat(const std::string& key, double inc, double * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_WRITE(incrbyfloat, key, key, inc, _return);
@@ -528,6 +528,7 @@ bool Redis2P::mget(const string_vector_t& keys, mbulk_t * _return)
 {
   CHECK_PTR_PARAM(_return);
 
+  clear_mbulks(_return);
   _return->reserve(keys.size());
 
   bool ret;
@@ -662,7 +663,7 @@ bool Redis2P::hincrby(const std::string& key, const std::string& field,
 }
 
 bool Redis2P::hincrbyfloat(const std::string& key, const std::string& field,
-    double inc, std::string * _return)
+    double inc, double * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_WRITE(hincrbyfloat, key, key, field, inc, _return);

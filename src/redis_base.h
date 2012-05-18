@@ -156,7 +156,7 @@ class RedisBase2
     virtual bool incr(const std::string& key, int64_t * _return) = 0;
     virtual bool incrby(const std::string& key, int64_t inc, int64_t * _return) = 0;
     // >= 2.6
-    virtual bool incrbyfloat(const std::string& key, double inc, std::string * _return) = 0;
+    virtual bool incrbyfloat(const std::string& key, double inc, double * _return) = 0;
     // NOTICE: if return true, keys.size()==values->size()
     virtual bool mget(const string_vector_t& keys, mbulk_t * _return) = 0;
     virtual bool mset(const string_vector_t& keys, const string_vector_t& values) = 0;
@@ -204,7 +204,7 @@ class RedisBase2
         int64_t inc, int64_t * _return) = 0;
     // >= 2.6
     virtual bool hincrbyfloat(const std::string& key, const std::string& field,
-        double inc, std::string * _return) = 0;
+        double inc, double * _return) = 0;
     virtual bool hkeys(const std::string& key, mbulk_t * _return) = 0;
     // _return number of fields in the hash
     // _return 0, 'key' does not exist

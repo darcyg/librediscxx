@@ -89,8 +89,8 @@ static const CommandInfo s_command_map[] =
   {MULTI, "MULTI", 0, kStatus},//
   {OBJECT, "OBJECT", -1, kDepends},//
   {PERSIST, "PERSIST", 1, kInteger},//
-  {PEXPIRE, "PEXPIRE", 2, kStatus},//
-  {PEXPIREAT, "PEXPIREAT", 2, kStatus},//
+  {PEXPIRE, "PEXPIRE", 2, kInteger},//
+  {PEXPIREAT, "PEXPIREAT", 2, kInteger},//
   {PING, "PING", 0, kStatus},//
   {PSETEX, "PSETEX", 3, kStatus},//
   // PSUBSCRIBE ... will return a special multi-bulk,

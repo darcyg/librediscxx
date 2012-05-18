@@ -554,6 +554,11 @@ struct RedisOutput
     return reply_type==kMultiBulk && ptr.mbulks==NULL;
   }
 
+  bool is_empty_mbulks()const
+  {
+    return reply_type==kMultiBulk && ptr.mbulks && ptr.mbulks->empty();
+  }
+
   bool is_smbulks()const
   {
     return reply_type==kSpecialMultiBulk && ptr.smbulks;
@@ -562,6 +567,11 @@ struct RedisOutput
   bool is_nil_smbulks()const
   {
     return reply_type==kSpecialMultiBulk && ptr.smbulks==NULL;
+  }
+
+  bool is_empty_smbulks()const
+  {
+    return reply_type==kSpecialMultiBulk && ptr.smbulks && ptr.smbulks->empty();
   }
 
   // getters

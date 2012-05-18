@@ -570,7 +570,7 @@ bool Redis2::incrby(const std::string& key, int64_t inc, int64_t * _return)
   GET_INTEGER_REPLY();
 }
 
-bool Redis2::incrbyfloat(const std::string& key, double inc, std::string * _return)
+bool Redis2::incrbyfloat(const std::string& key, double inc, double * _return)
 {
   CHECK_PTR_PARAM(_return);
 
@@ -583,7 +583,17 @@ bool Redis2::incrbyfloat(const std::string& key, double inc, std::string * _retu
   if (!proto_->exec_command(&c))
     return false;
 
-  GET_BULK_REPLY2();
+  std::string _return_string;
+  if (c.out.get_bulk(&_return_string))
+  {
+    *_return = boost::lexical_cast<double>(_return_string);
+    return true;
+  }
+  else
+  {
+    on_reply_type_error(&c);
+    return false;
+  }
 }
 
 bool Redis2::mget(const string_vector_t& keys, mbulk_t * _return)
@@ -835,7 +845,7 @@ bool Redis2::hincrby(const std::string& key, const std::string& field,
 }
 
 bool Redis2::hincrbyfloat(const std::string& key, const std::string& field,
-    double inc, std::string * _return)
+    double inc, double * _return)
 {
   CHECK_PTR_PARAM(_return);
 
@@ -849,7 +859,17 @@ bool Redis2::hincrbyfloat(const std::string& key, const std::string& field,
   if (!proto_->exec_command(&c))
     return false;
 
-  GET_BULK_REPLY2();
+  std::string _return_string;
+  if (c.out.get_bulk(&_return_string))
+  {
+    *_return = boost::lexical_cast<double>(_return_string);
+    return true;
+  }
+  else
+  {
+    on_reply_type_error(&c);
+    return false;
+  }
 }
 
 bool Redis2::hkeys(const std::string& key, mbulk_t * _return)
@@ -1846,7 +1866,7 @@ bool Redis2::brpoplpush(const std::string& source, const std::string& destinatio
     *expired = false;
     return true;
   }
-  else if (c.out.is_nil_mbulks())
+  else if (c.out.is_nil_smbulks())
   {
     *expired = true;
     return true;
@@ -2253,7 +2273,7 @@ bool Redis2::bgrewriteaof()
   if (!proto_->exec_command(&c))
     return false;
 
-  CHECK_STATUS_OK();
+  return c.out.is_status();
 }
 
 bool Redis2::bgsave()

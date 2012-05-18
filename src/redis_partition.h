@@ -94,7 +94,7 @@ class Redis2P : public RedisBase2Multi
         std::string * _return, bool * is_nil);
     virtual bool incr(const std::string& key, int64_t * _return);
     virtual bool incrby(const std::string& key, int64_t inc, int64_t * _return);
-    virtual bool incrbyfloat(const std::string& key, double inc, std::string * _return);
+    virtual bool incrbyfloat(const std::string& key, double inc, double * _return);
     virtual bool mget(const string_vector_t& keys, mbulk_t * _return);
     virtual bool mset(const string_vector_t& keys, const string_vector_t& values);
     virtual bool psetex(const std::string& key, int64_t milliseconds, const std::string& value);
@@ -119,7 +119,7 @@ class Redis2P : public RedisBase2Multi
     virtual bool hincrby(const std::string& key, const std::string& field,
         int64_t inc, int64_t * _return);
     virtual bool hincrbyfloat(const std::string& key, const std::string& field,
-        double inc, std::string * _return);
+        double inc, double * _return);
     virtual bool hkeys(const std::string& key, mbulk_t * _return);
     virtual bool hlen(const std::string& key, int64_t * _return);
     virtual bool hmget(const std::string& key, const string_vector_t& fields, mbulk_t * _return);

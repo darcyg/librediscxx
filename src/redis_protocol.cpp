@@ -486,22 +486,29 @@ bool RedisProtocol::__read_reply(RedisCommand * command, RedisOutput * output,
           return false;
         }
 
-        smbulk_t smbulks;
-
-        for (int64_t i=0; i<bulk_size; i++)
+        if (bulk_size == -1)
         {
-          RedisOutput * output_child = new RedisOutput;// may throw
-          if (!__read_reply(command, output_child, false))
-          {
-            delete output_child;
-            clear_smbulks(&smbulks);
-            return false;
-          }
-          smbulks.push_back(output_child);
+          output->set_nil_smbulks();
         }
+        else
+        {
+          smbulk_t smbulks;
 
-        output->set_smbulks(&smbulks);
-        clear_smbulks(&smbulks);
+          for (int64_t i=0; i<bulk_size; i++)
+          {
+            RedisOutput * output_child = new RedisOutput;// may throw
+            if (!__read_reply(command, output_child, false))
+            {
+              delete output_child;
+              clear_smbulks(&smbulks);
+              return false;
+            }
+            smbulks.push_back(output_child);
+          }
+
+          output->set_smbulks(&smbulks);
+          clear_smbulks(&smbulks);
+        }
 
         if (transaction_mode_ && cmd==EXEC && &command->out==output)
           transaction_mode_ = false;

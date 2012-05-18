@@ -6,7 +6,7 @@
  *
  */
 #include "redis_cmd.h"
-#include <ctype.h>//toupper
+#include <ctype.h>// toupper
 #include <algorithm>
 #include <boost/assign/list_of.hpp>
 #include <boost/foreach.hpp>
@@ -16,16 +16,16 @@ LIBREDIS_NAMESPACE_BEGIN
 
 static const CommandInfo s_command_map[] =
 {
-  {NOOP, "NOOP", ARGC_NO_CHECKING, kNone},//place holder
+  {NOOP, "NOOP", ARGC_NO_CHECKING, kNone},// place holder
   {APPEND, "APPEND", 2, kInteger},//
   {AUTH, "AUTH", 1, kStatus},//
   {BGREWRITEAOF, "BGREWRITEAOF", 0, kStatus},//
   {BGSAVE, "BGSAVE", 0, kStatus},//
-  //BLPOP may block
+  // BLPOP may block
   {BLPOP, "BLPOP", -2, kMultiBulk},//
-  //BRPOP may block
+  // BRPOP may block
   {BRPOP, "BRPOP", -2, kMultiBulk},//
-  //BRPOPLPUSH may block
+  // BRPOPLPUSH may block
   {BRPOPLPUSH, "BRPOPLPUSH", 3, kDepends},//
   {CONFIG, "CONFIG", -1, kDepends},//
   {DBSIZE, "DBSIZE", 0, kInteger},//
@@ -38,7 +38,7 @@ static const CommandInfo s_command_map[] =
   {ECHO, "ECHO", 1, kBulk},//
   {EVAL, "EVAL", -2, kDepends},//
   {EVALSHA, "EVALSHA", -2, kDepends},//
-  //EXEC may return a special multi bulk
+  // EXEC may return a special multi-bulk
   {EXEC, "EXEC", 0, kSpecialMultiBulk},//
   {EXISTS, "EXISTS", 1, kInteger},//
   {EXPIRE, "EXPIRE", 2, kInteger},//
@@ -91,12 +91,12 @@ static const CommandInfo s_command_map[] =
   {PEXPIREAT, "PEXPIREAT", 2, kStatus},//
   {PING, "PING", 0, kStatus},//
   {PSETEX, "PSETEX", 3, kStatus},//
-  //PSUBSCRIBE ... will return a special multi bulk,
+  // PSUBSCRIBE ... will return a special multi-bulk,
   {PSUBSCRIBE, "PSUBSCRIBE", -1, kSpecialMultiBulk},//
   {PTTL, "PTTL", 1, kInteger},//
   {PUBLISH, "PUBLISH", 2, kInteger},//
-  //PUNSUBSCRIBE will block
-  //PUNSUBSCRIBE ... will return a special multi bulk
+  // PUNSUBSCRIBE will block
+  // PUNSUBSCRIBE ... will return a special multi-bulk
   {PUNSUBSCRIBE, "PUNSUBSCRIBE", ARGC_NO_CHECKING, kSpecialMultiBulk},//
   {QUIT, "QUIT", 0, kStatus},//
   {RANDOMKEY, "RANDOMKEY", 0, kBulk},//
@@ -132,7 +132,7 @@ static const CommandInfo s_command_map[] =
   {SRANDMEMBER, "SRANDMEMBER", 1, kBulk},//
   {SREM, "SREM", -2, kInteger},//
   {STRLEN, "STRLEN", 1, kInteger},//
-  //SUBSCRIBE ... will return a special multi bulk,
+  // SUBSCRIBE ... will return a special multi-bulk,
   {SUBSCRIBE, "SUBSCRIBE", -1, kSpecialMultiBulk},//
   {SUNION, "SUNION", -1, kMultiBulk},//
   {SUNIONSTORE, "SUNIONSTORE", -2, kInteger},//
@@ -140,8 +140,8 @@ static const CommandInfo s_command_map[] =
   {TIME, "TIME", 0, kMultiBulk},//
   {TTL, "TTL", 1, kInteger},//
   {TYPE, "TYPE", 1, kStatus},//
-  //UNSUBSCRIBE will block
-  //UNSUBSCRIBE ... will return a special multi bulk
+  // UNSUBSCRIBE will block
+  // UNSUBSCRIBE ... will return a special multi-bulk
   {UNSUBSCRIBE, "UNSUBSCRIBE", ARGC_NO_CHECKING, kSpecialMultiBulk},//
   {UNWATCH, "UNWATCH", 0, kStatus},//
   {WATCH, "WATCH", -1, kStatus},//
@@ -161,7 +161,7 @@ static const CommandInfo s_command_map[] =
   {ZREVRANK, "ZREVRANK", 2, kDepends},//
   {ZSCORE, "ZSCORE", 2, kBulk},//
   {ZUNIONSTORE, "ZUNIONSTORE", -3, kInteger},//
-  {COMMAND_MAX, "COMMAND_MAX", ARGC_NO_CHECKING, kNone},//place holder
+  {COMMAND_MAX, "COMMAND_MAX", ARGC_NO_CHECKING, kNone},// place holder
 };
 
 typedef std::map<std::string, kCommand> CommandRevMapType;
@@ -331,7 +331,7 @@ const char * to_string(kReplyType reply_type)
 
 void clear_mbulks(mbulk_t * mbulks)
 {
-  if (mbulks == NULL)
+  if (mbulks==NULL)
     return;
 
   BOOST_FOREACH(std::string * str, (*mbulks))
@@ -343,7 +343,7 @@ void clear_mbulks(mbulk_t * mbulks)
 
 void delete_mbulks(mbulk_t * mbulks)
 {
-  if (mbulks == NULL)
+  if (mbulks==NULL)
     return;
 
   clear_mbulks(mbulks);
@@ -352,7 +352,7 @@ void delete_mbulks(mbulk_t * mbulks)
 
 void append_mbulks(mbulk_t * to, mbulk_t * from)
 {
-  if (to == NULL || from == NULL)
+  if (to==NULL || from==NULL)
     return;
 
   to->insert(to->end(), from->begin(), from->end());
@@ -361,7 +361,7 @@ void append_mbulks(mbulk_t * to, mbulk_t * from)
 
 void convert(mbulk_t * from, string_vector_t * to)
 {
-  if (from == NULL || to == NULL)
+  if (from==NULL || to==NULL)
     return;
 
   to->clear();
@@ -381,7 +381,7 @@ void convert(mbulk_t * from, string_vector_t * to)
 
 void clear_smbulks(smbulk_t * smbulks)
 {
-  if (smbulks == NULL)
+  if (smbulks==NULL)
     return;
 
   BOOST_FOREACH(RedisOutput * output, (*smbulks))
@@ -393,7 +393,7 @@ void clear_smbulks(smbulk_t * smbulks)
 
 void delete_smbulks(smbulk_t * smbulks)
 {
-  if (smbulks == NULL)
+  if (smbulks==NULL)
     return;
 
   clear_smbulks(smbulks);
@@ -402,7 +402,7 @@ void delete_smbulks(smbulk_t * smbulks)
 
 void append_smbulks(smbulk_t * to, smbulk_t * from)
 {
-  if (to == NULL || from == NULL)
+  if (to==NULL || from==NULL)
     return;
 
   to->insert(to->end(), from->begin(), from->end());
@@ -414,7 +414,7 @@ bool convertible_2_mbulks(const smbulk_t& from)
   BOOST_FOREACH(RedisOutput * output, from)
   {
     assert(output);
-    if (output->reply_type != kBulk)
+    if (output->reply_type!=kBulk)
       return false;
   }
   return true;
@@ -422,7 +422,7 @@ bool convertible_2_mbulks(const smbulk_t& from)
 
 bool convert(smbulk_t * from, mbulk_t * to)
 {
-  if (from == NULL || to == NULL)
+  if (from==NULL || to==NULL)
     return false;
 
   if (!convertible_2_mbulks(*from))
@@ -451,7 +451,7 @@ bool convert(smbulk_t * from, mbulk_t * to)
 
 void clear_commands(redis_command_vector_t * commands)
 {
-  if (commands == NULL)
+  if (commands==NULL)
     return;
 
   BOOST_FOREACH(RedisCommand * command, (*commands))
@@ -463,27 +463,26 @@ void clear_commands(redis_command_vector_t * commands)
 
 void delete_commands(redis_command_vector_t * commands)
 {
-  if (commands == NULL)
+  if (commands==NULL)
     return;
 
   clear_commands(commands);
   delete commands;
 }
 
-
-/*
- * Generic hash function (a popular one from Bernstein)
- * Inspired by redis
+/**
+ * default hash function (a popular one from Bernstein)
+ * inspired by redis
  */
 uint32_t time33_hash_32(const void * key, size_t length)
 {
   uint32_t hash = 5381;// magic number
   const char * str = (const char *)key;
 
-  if (NULL == key || 0 == length)
+  if (NULL==key || 0==length)
     return 0;
 
-  for (;length >= 8;length -= 8)
+  for (;length>=8;length -= 8)
   {
     // expand loop
     hash = ((hash << 5) + hash) + *str++;
@@ -511,7 +510,6 @@ uint32_t time33_hash_32(const void * key, size_t length)
   return hash;
 }
 
-
 uint32_t time33_hash_32(const std::string& key)
 {
   return time33_hash_32(key.c_str(), key.size());
@@ -520,15 +518,11 @@ uint32_t time33_hash_32(const std::string& key)
 /************************************************************************/
 /*RedisInput*/
 /************************************************************************/
-  RedisInput::RedisInput()
-:command_(NOOP), command_info_(&s_command_map[NOOP])
-{
-}
+RedisInput::RedisInput()
+  : command_(NOOP), command_info_(&s_command_map[NOOP]) {}
 
-  RedisInput::RedisInput(kCommand cmd)
-:command_(cmd), command_info_(&s_command_map[cmd])
-{
-}
+RedisInput::RedisInput(kCommand cmd)
+  : command_(cmd), command_info_(&s_command_map[cmd]) {}
 
 RedisInput::RedisInput(const std::string& cmd)
 {
@@ -550,7 +544,7 @@ void RedisInput::set_command(const std::string& cmd)
   CommandRevMapType::const_iterator iter
     = s_command_rev_map.find(upper_cmd);
 
-  if (iter != s_command_rev_map.end())
+  if (iter!=s_command_rev_map.end())
     set_command(iter->second);
   else
     set_command(NOOP);
@@ -623,12 +617,11 @@ void RedisInput::push_arg(const std::vector<double>& dv)
   }
 }
 
-
 /************************************************************************/
 /*RedisOutput*/
 /************************************************************************/
   RedisOutput::RedisOutput()
-:reply_type(kNone)
+: reply_type(kNone)
 {
   ptr.status = NULL;
 }
@@ -691,7 +684,7 @@ void RedisOutput::clear()
 
 bool RedisOutput::get_mbulks(string_vector_t * mb)
 {
-  if (mb == NULL)
+  if (mb==NULL)
     return false;
 
   if (is_mbulks())
@@ -709,24 +702,17 @@ void RedisOutput::swap(RedisOutput& other)
   std::swap(reply_type, other.reply_type);
 }
 
-
 /************************************************************************/
 /*RedisCommand*/
 /************************************************************************/
-  RedisCommand::RedisCommand()
-:in()
-{
-}
+RedisCommand::RedisCommand()
+  : in() {}
 
-  RedisCommand::RedisCommand(kCommand cmd)
-:in(cmd)
-{
-}
+RedisCommand::RedisCommand(kCommand cmd)
+  : in(cmd) {}
 
-  RedisCommand::RedisCommand(const std::string& cmd)
-:in(cmd)
-{
-}
+RedisCommand::RedisCommand(const std::string& cmd)
+  : in(cmd) {}
 
 void RedisCommand::swap(RedisCommand& other)
 {

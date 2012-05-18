@@ -1,10 +1,10 @@
 /** @file
-* @brief host resolver
-* @author yafei.zhang@langtaojin.com
-* @date
-* @version
-* inner header
-*/
+ * @brief host resolver
+ * @author yafei.zhang@langtaojin.com
+ * @date
+ * @version
+ * inner header
+ */
 #ifndef _LANGTAOJIN_LIBREDIS_HOST_RESOLVER_H_
 #define _LANGTAOJIN_LIBREDIS_HOST_RESOLVER_H_
 
@@ -14,7 +14,7 @@
 
 LIBREDIS_NAMESPACE_BEGIN
 
-//single thread safety
+// single thread safety
 class HostResolver
 {
   private:
@@ -30,26 +30,26 @@ class HostResolver
 
      * 1.iterator all the hosts:
      * iter = resolve_host(...);
-     * //check if ec is ok
-     * for (; iter != boost::asio::ip::tcp::resolver::iterator(); ++iter)
+     * // check if ec is ok
+     * for (; iter!=boost::asio::ip::tcp::resolver::iterator(); ++iter)
      * {
      * }
 
      * 2.judge the host is resolved:
      * iter = resolve_host(...);
-     * //check if ec is ok
-     * if (iter != boost::asio::ip::tcp::resolver::iterator())
+     * // check if ec is ok
+     * if (iter!=boost::asio::ip::tcp::resolver::iterator())
      * {
      * }
      */
 
-    //resolve host without a timeout
+    // resolve host without a timeout
     boost::asio::ip::tcp::resolver::iterator resolve_host(
         const std::string& ip_or_host,
         const std::string& port_or_service,
         boost::system::error_code& ec);
 
-    //resolve host with a timeout
+    // resolve host with a timeout
     boost::asio::ip::tcp::resolver::iterator resolve_host(
         const std::string& ip_or_host,
         const std::string& port_or_service,
@@ -59,4 +59,4 @@ class HostResolver
 
 LIBREDIS_NAMESPACE_END
 
-#endif //_LANGTAOJIN_LIBREDIS_HOST_RESOLVER_H_
+#endif// _LANGTAOJIN_LIBREDIS_HOST_RESOLVER_H_

@@ -26,7 +26,6 @@ enum
   kCheckOpenInterval = 180
 };
 
-
 /************************************************************************/
 /*TcpClientBuffer*/
 /************************************************************************/
@@ -36,7 +35,7 @@ class TcpClientBuffer
     std::vector<char> buffer_;
     char * read_;// ptr to first byte already read
     char * to_read_;// ptr to first byte to be read next time
-    // buffer_.begin() <= read <= to_read <= buffer_.end()
+    // buffer_.begin()<=read<=to_read<=buffer_.end()
 
     inline char * begin()
     {
@@ -58,14 +57,12 @@ class TcpClientBuffer
       return &buffer_[0] + buffer_.size();
     }
 
-
   public:
     explicit TcpClientBuffer(size_t buf_size = kDefaultBufferSize)
       :buffer_(buf_size), read_(begin()), to_read_(begin())
     {
       assert(buf_size);
     }
-
 
     inline boost::asio::const_buffers_1 get_read_buffer()const
     {
@@ -76,7 +73,6 @@ class TcpClientBuffer
     {
       return boost::asio::mutable_buffers_1(to_read_, free_size());
     }
-
 
     inline size_t total_size()const
     {
@@ -98,27 +94,25 @@ class TcpClientBuffer
       return end() - to_read_;
     }
 
-
     inline void clear()
     {
       buffer_.resize(kDefaultBufferSize);
       read_ = to_read_ = begin();
     }
 
-
     void prepare(size_t size = kDefaultBufferSize, bool drain = false)
     {
-      if (size == 0)
+      if (size==0)
         return;
 
-      if (!drain && free_size() >= size)
+      if (!drain && free_size()>=size)
         return;
 
       size_t rsize = read_size();
       size_t min_new_size = rsize + size;
       size_t new_size = buffer_.size();
 
-      for (; new_size <= min_new_size; new_size = new_size << 1)
+      for (; new_size<=min_new_size; new_size = new_size << 1)
       {
       }
 
@@ -130,42 +124,38 @@ class TcpClientBuffer
       to_read_ = read_ + rsize;
     }
 
-
     void produce(size_t size)
     {
-      if (size == 0)
+      if (size==0)
         return;
 
-      assert(free_size() >= size);
+      assert(free_size()>=size);
 
       to_read_ += size;
     }
 
-
     std::string consume(size_t size)
     {
       assert(size);
-      assert(read_size() >= size);
+      assert(read_size()>=size);
 
       char * read = read_;
       read_ += size;
       std::string ret(read, size);
 
-      if (read_size() == 0 && total_size() >= kMaxBufferSize)
+      if (read_size()==0 && total_size()>=kMaxBufferSize)
         drain();
-      else if (read_size() == 0)
+      else if (read_size()==0)
         read_ = to_read_ = begin();
 
       return ret;
     }
-
 
     inline void drain()
     {
       prepare(kDefaultBufferSize, true);
     }
 };
-
 
 /************************************************************************/
 /*TcpClient::Impl*/
@@ -181,7 +171,6 @@ class TcpClient::Impl
 
     mutable time_t last_check_open_time_;
 
-
   private:
     void __connect_handler(
         const boost::system::error_code& error,
@@ -189,7 +178,6 @@ class TcpClient::Impl
     {
       *error_out = error;
     }
-
 
     void __read_write_handler(
         const boost::system::error_code& error,
@@ -201,10 +189,9 @@ class TcpClient::Impl
       *size_out = size;
     }
 
-
     void __socket_timeout_handler()
     {
-      if (socket_timer_.expires_at() <= boost::asio::deadline_timer::traits_type::now())
+      if (socket_timer_.expires_at()<=boost::asio::deadline_timer::traits_type::now())
       {
         // The deadline has passed
         // close();
@@ -215,14 +202,12 @@ class TcpClient::Impl
       socket_timer_.async_wait(boost::bind(&TcpClient::Impl::__socket_timeout_handler, this));
     }
 
-
     void __init_socket_timer()
     {
       socket_timer_.expires_at(boost::posix_time::pos_infin);
 
       __socket_timeout_handler();
     }
-
 
     inline boost::asio::ip::tcp::resolver::iterator __resolve_host(
         const std::string& ip_or_host,
@@ -234,7 +219,6 @@ class TcpClient::Impl
       return host_resolver.resolve_host(ip_or_host, port_or_service, timeout, ec);
     }
 
-
   public:
     Impl()
       :io_service_(),
@@ -245,11 +229,9 @@ class TcpClient::Impl
     __init_socket_timer();
   }
 
-
     ~Impl()
     {
     }
-
 
     inline void connect(
         const std::string& ip_or_host,
@@ -259,7 +241,7 @@ class TcpClient::Impl
     {
       // adjust timeout
       timeout /= kConnectTimeoutProportion;
-      if (timeout.total_milliseconds() == 0)
+      if (timeout.total_milliseconds()==0)
         timeout = boost::posix_time::milliseconds(1);
 
       boost::asio::ip::tcp::resolver::iterator iter =
@@ -268,13 +250,13 @@ class TcpClient::Impl
         return;
 
       boost::posix_time::milliseconds min_timeout(kMinConnectTimeout);
-      if (timeout < min_timeout)
+      if (timeout<min_timeout)
         timeout = min_timeout;
 
       // set timer
       socket_timer_.expires_from_now(timeout);
 
-      for (; iter != boost::asio::ip::tcp::resolver::iterator(); ++iter)
+      for (; iter!=boost::asio::ip::tcp::resolver::iterator(); ++iter)
       {
         close();
         io_service_.reset();
@@ -291,7 +273,7 @@ class TcpClient::Impl
         socket_.async_connect(iter->endpoint(),
             boost::bind(&TcpClient::Impl::__connect_handler, this, _1, &ec));
 
-        do io_service_.run_one(); while (ec == boost::asio::error::would_block);
+        do io_service_.run_one(); while (ec==boost::asio::error::would_block);
 
         if (!ec && socket_.is_open())
         {
@@ -305,21 +287,18 @@ class TcpClient::Impl
       return;
     }
 
-
     inline void write(
         const std::string& line,
         boost::posix_time::time_duration timeout,
         boost::system::error_code& ec)
     {
-      size_t count;
-
       // set timer
       socket_timer_.expires_from_now(timeout);
 
       ec = boost::asio::error::would_block;
       boost::asio::async_write(socket_, boost::asio::buffer(line),
           boost::bind(&TcpClient::Impl::__read_write_handler, this, _1, _2, &ec, &count));
-      do io_service_.run_one(); while (ec == boost::asio::error::would_block);
+      do io_service_.run_one(); while (ec==boost::asio::error::would_block);
 
       if (ec)
       {
@@ -328,7 +307,6 @@ class TcpClient::Impl
       }
       ::time(&last_check_open_time_);
     }
-
 
     inline std::string read(
         size_t size,
@@ -350,7 +328,7 @@ class TcpClient::Impl
       for (;;)
       {
         // try consume (previous) buffer
-        if (buffer_.read_size() >= expect)
+        if (buffer_.read_size()>=expect)
         {
           boost::asio::const_buffers_1 bufs = buffer_.get_read_buffer();
           line = std::string(
@@ -370,7 +348,7 @@ class TcpClient::Impl
             boost::bind(&TcpClient::Impl::__read_write_handler, this, _1, _2, &ec, &count));
 
         ec = boost::asio::error::would_block;
-        do io_service_.run_one(); while (ec == boost::asio::error::would_block);
+        do io_service_.run_one(); while (ec==boost::asio::error::would_block);
 
         if (ec)
         {
@@ -382,7 +360,6 @@ class TcpClient::Impl
         to_read -= count;
       }
     }
-
 
     inline std::string read_line(
         const std::string& delim,
@@ -406,7 +383,7 @@ class TcpClient::Impl
       for (;;)
       {
         // try consume (previous) buffer
-        if (buffer_.read_size() >= delim_size)
+        if (buffer_.read_size()>=delim_size)
         {
           boost::asio::const_buffers_1 bufs = buffer_.get_read_buffer();
           // find delim in buffer_
@@ -414,9 +391,9 @@ class TcpClient::Impl
           search_end = search_begin + boost::asio::buffer_size(bufs) - delim_size;
           search_curr = search_begin + search_offset;
 
-          for (; search_curr <= search_end; search_curr++, search_offset++)
+          for (; search_curr<=search_end; search_curr++, search_offset++)
           {
-            if (::memcmp(delim.c_str(), search_curr, delim_size) == 0)
+            if (::memcmp(delim.c_str(), search_curr, delim_size)==0)
             {
               // find delim in buffer_, grep it and return
 
@@ -433,7 +410,6 @@ class TcpClient::Impl
           }
         }
 
-
         // try async_read
         buffer_.prepare();
         boost::asio::async_read(socket_, buffer_.get_to_read_buffer(),
@@ -441,7 +417,7 @@ class TcpClient::Impl
             boost::bind(&TcpClient::Impl::__read_write_handler, this, _1, _2, &ec, &count));
 
         ec = boost::asio::error::would_block;
-        do io_service_.run_one(); while (ec == boost::asio::error::would_block);
+        do io_service_.run_one(); while (ec==boost::asio::error::would_block);
 
         if (ec)
         {
@@ -454,14 +430,12 @@ class TcpClient::Impl
       }
     }
 
-
     inline void close()
     {
       boost::system::error_code ec;
       socket_.close(ec);
       buffer_.clear();
     }
-
 
     inline bool is_open()const
     {
@@ -471,7 +445,7 @@ class TcpClient::Impl
       // to detect the close of redis server
       time_t now;
       ::time(&now);
-      if (now - last_check_open_time_ > kCheckOpenInterval)
+      if (now - last_check_open_time_>kCheckOpenInterval)
       {
         last_check_open_time_ = now;
         char c;
@@ -481,10 +455,10 @@ class TcpClient::Impl
             boost::asio::socket_base::message_peek,
             ec);
 
-        if (s == 0
-            && ec != boost::asio::error::try_again
-            && ec != boost::asio::error::would_block
-            && ec != boost::asio::error::interrupted)
+        if (s==0
+            && ec!=boost::asio::error::try_again
+            && ec!=boost::asio::error::would_block
+            && ec!=boost::asio::error::interrupted)
         {
           return false;
         }
@@ -493,10 +467,9 @@ class TcpClient::Impl
       return true;
     }
 
-
     inline bool available()const
     {
-      if (buffer_.read_size() != 0)
+      if (buffer_.read_size()!=0)
         return true;
 
       boost::system::error_code ec;
@@ -504,25 +477,22 @@ class TcpClient::Impl
 
       if (ec)
         return false;
-      return bytes != 0;
+      return bytes!=0;
     }
 };
-
 
 /************************************************************************/
 /*TcpClient*/
 /************************************************************************/
 TcpClient::TcpClient()
 {
-  impl_ = new Impl;
+  impl_ = new Impl;// may throw
 }
-
 
 TcpClient::~TcpClient()
 {
   delete impl_;
 }
-
 
 void TcpClient::connect(const std::string& ip_or_host,
     const std::string& port_or_service,
@@ -532,14 +502,12 @@ void TcpClient::connect(const std::string& ip_or_host,
   impl_->connect(ip_or_host, port_or_service, timeout, ec);
 }
 
-
 void TcpClient::write(const std::string& line,
     boost::posix_time::time_duration timeout,
     boost::system::error_code& ec)
 {
   impl_->write(line, timeout, ec);
 }
-
 
 std::string TcpClient::read(size_t size,
     const std::string& delim,
@@ -549,7 +517,6 @@ std::string TcpClient::read(size_t size,
   return impl_->read(size, delim, timeout, ec);
 }
 
-
 std::string TcpClient::read_line(const std::string& delim,
     boost::posix_time::time_duration timeout,
     boost::system::error_code& ec)
@@ -557,18 +524,15 @@ std::string TcpClient::read_line(const std::string& delim,
   return impl_->read_line(delim, timeout, ec);
 }
 
-
 void TcpClient::close()
 {
   impl_->close();
 }
 
-
 bool TcpClient::is_open()const
 {
   return impl_->is_open();
 }
-
 
 bool TcpClient::available()const
 {

@@ -65,9 +65,6 @@ class Redis2 : public RedisBase2Single
         int db_index = 0, int timeout_ms = 50);
     virtual ~Redis2();
 
-    //NOTICE: all success operation will not clear previous errors,
-    //but any failures will set errors.
-    //retrieving error on failures call is reasonable.
     virtual void last_error(const std::string& err);
     virtual std::string last_error()const;
     virtual const char * last_c_error()const;
@@ -79,29 +76,24 @@ class Redis2 : public RedisBase2Single
     virtual bool del(const string_vector_t& keys, int64_t * _return);
     virtual bool dump(const std::string& key, std::string * _return, bool * is_nil);
     virtual bool exists(const std::string& key, int64_t * _return);
-    virtual bool expire(const std::string& key, int64_t seconds,
-        int64_t * _return);
-    virtual bool expireat(const std::string& key, int64_t abs_time,
-        int64_t * _return);
+    virtual bool expire(const std::string& key, int64_t seconds, int64_t * _return);
+    virtual bool expireat(const std::string& key, int64_t abs_seconds, int64_t * _return);
     virtual bool keys(const std::string& pattern, mbulk_t * _return);
-    virtual bool move(const std::string& key, int db,
-        int64_t * _return);
+    virtual bool move(const std::string& key, int db, int64_t * _return);
     virtual bool persist(const std::string& key, int64_t * _return);
     virtual bool pexpire(const std::string& key, int64_t milliseconds, int64_t * _return);
     virtual bool pexpireat(const std::string& key, int64_t abs_milliseconds, int64_t * _return);
     virtual bool pttl(const std::string& key, int64_t * _return);
     virtual bool randomkey(std::string * _return, bool * is_nil);
     virtual bool restore(const std::string& key, int64_t ttl, const std::string& value);
-    virtual bool sort(const std::string& key, const string_vector_t * phrases,
-        mbulk_t * _return);
+    virtual bool sort(const std::string& key, const string_vector_t * phrases, mbulk_t * _return);
     virtual bool ttl(const std::string& key, int64_t * _return);
     virtual bool type(const std::string& key, std::string * _return);
 
     /************************************************************************/
     /*String command*/
     /************************************************************************/
-    virtual bool append(const std::string& key, const std::string& value,
-        int64_t * _return);
+    virtual bool append(const std::string& key, const std::string& value, int64_t * _return);
     virtual bool decr(const std::string& key, int64_t * _return);
     virtual bool decrby(const std::string& key, int64_t dec, int64_t * _return);
     virtual bool get(const std::string& key, std::string * _return, bool * is_nil);
@@ -117,12 +109,9 @@ class Redis2 : public RedisBase2Single
     virtual bool mset(const string_vector_t& keys, const string_vector_t& values);
     virtual bool psetex(const std::string& key, int64_t milliseconds, const std::string& value);
     virtual bool set(const std::string& key, const std::string& value);
-    virtual bool setbit(const std::string& key, int64_t offset, int64_t value,
-        int64_t * _return);
-    virtual bool setex(const std::string& key, int64_t seconds,
-        const std::string& value);
-    virtual bool setnx(const std::string& key, const std::string& value,
-        int64_t * _return);
+    virtual bool setbit(const std::string& key, int64_t offset, int64_t value, int64_t * _return);
+    virtual bool setex(const std::string& key, int64_t seconds, const std::string& value);
+    virtual bool setnx(const std::string& key, const std::string& value, int64_t * _return);
     virtual bool setrange(const std::string& key, int64_t offset,
         const std::string& value, int64_t * _return);
     virtual bool strlen(const std::string& key, int64_t * _return);
@@ -130,25 +119,20 @@ class Redis2 : public RedisBase2Single
     /************************************************************************/
     /*Hashes command*/
     /************************************************************************/
-    virtual bool hdel(const std::string& key, const std::string& field,
-        int64_t * _return);
-    virtual bool hdel(const std::string& key, const string_vector_t& fields,
-        int64_t * _return);
-    virtual bool hexists(const std::string& key, const std::string& field,
-        int64_t * _return);
+    virtual bool hdel(const std::string& key, const std::string& field, int64_t * _return);
+    virtual bool hdel(const std::string& key, const string_vector_t& fields, int64_t * _return);
+    virtual bool hexists(const std::string& key, const std::string& field, int64_t * _return);
     virtual bool hget(const std::string& key, const std::string& field,
         std::string * _return, bool * is_nil);
     virtual bool hgetall(const std::string& key, mbulk_t * _return);
-    virtual bool hincr(const std::string& key, const std::string& field,
-        int64_t * _return);
+    virtual bool hincr(const std::string& key, const std::string& field, int64_t * _return);
     virtual bool hincrby(const std::string& key, const std::string& field,
         int64_t inc, int64_t * _return);
     virtual bool hincrbyfloat(const std::string& key, const std::string& field,
         double inc, std::string * _return);
     virtual bool hkeys(const std::string& key, mbulk_t * _return);
     virtual bool hlen(const std::string& key, int64_t * _return);
-    virtual bool hmget(const std::string& key, const string_vector_t& fields,
-        mbulk_t * _return);
+    virtual bool hmget(const std::string& key, const string_vector_t& fields, mbulk_t * _return);
     virtual bool hmset(const std::string& key,
         const string_vector_t& fields, const string_vector_t& values);
     virtual bool hset(const std::string& key, const std::string& field,
@@ -166,45 +150,31 @@ class Redis2 : public RedisBase2Single
         const std::string& pivot, const std::string& value, int64_t * _return);
     virtual bool llen(const std::string& key, int64_t * _return);
     virtual bool lpop(const std::string& key, std::string * _return, bool * is_nil);
-    virtual bool lpush(const std::string& key, const std::string& value,
-        int64_t * _return);
-    virtual bool lpush(const std::string& key, const string_vector_t& values,
-        int64_t * _return);
-    virtual bool lpushx(const std::string& key, const std::string& value,
-        int64_t * _return);
-    virtual bool lrange(const std::string& key, int64_t start, int64_t stop,
-        mbulk_t * _return);
+    virtual bool lpush(const std::string& key, const std::string& value, int64_t * _return);
+    virtual bool lpush(const std::string& key, const string_vector_t& values, int64_t * _return);
+    virtual bool lpushx(const std::string& key, const std::string& value, int64_t * _return);
+    virtual bool lrange(const std::string& key, int64_t start, int64_t stop, mbulk_t * _return);
     virtual bool lrem(const std::string& key, int64_t count, const std::string& value,
         int64_t * _return);
-    virtual bool lset(const std::string& key, int64_t index,
-        const std::string& value);
+    virtual bool lset(const std::string& key, int64_t index, const std::string& value);
     virtual bool ltrim(const std::string& key, int64_t start, int64_t stop);
     virtual bool rpop(const std::string& key, std::string * _return, bool * is_nil);
-    virtual bool rpush(const std::string& key, const std::string& value,
-        int64_t * _return);
-    virtual bool rpush(const std::string& key, const string_vector_t& values,
-        int64_t * _return);
-    virtual bool rpushx(const std::string& key, const std::string& value,
-        int64_t * _return);
+    virtual bool rpush(const std::string& key, const std::string& value, int64_t * _return);
+    virtual bool rpush(const std::string& key, const string_vector_t& values, int64_t * _return);
+    virtual bool rpushx(const std::string& key, const std::string& value, int64_t * _return);
 
     /************************************************************************/
     /*Sets command*/
     /************************************************************************/
-    virtual bool sadd(const std::string& key, const std::string& member,
-        int64_t * _return);
-    virtual bool sadd(const std::string& key, const string_vector_t& members,
-        int64_t * _return);
+    virtual bool sadd(const std::string& key, const std::string& member, int64_t * _return);
+    virtual bool sadd(const std::string& key, const string_vector_t& members, int64_t * _return);
     virtual bool scard(const std::string& key, int64_t * _return);
-    virtual bool sismember(const std::string& key, const std::string& member,
-        int64_t * _return);
+    virtual bool sismember(const std::string& key, const std::string& member, int64_t * _return);
     virtual bool smembers(const std::string& key, mbulk_t * _return);
     virtual bool spop(const std::string& key, std::string * member, bool * is_nil);
-    virtual bool srandmember(const std::string& key,
-        std::string * member, bool * is_nil);
-    virtual bool srem(const std::string& key, const std::string& member,
-        int64_t * _return);
-    virtual bool srem(const std::string& key, const string_vector_t& members,
-        int64_t * _return);
+    virtual bool srandmember(const std::string& key, std::string * member, bool * is_nil);
+    virtual bool srem(const std::string& key, const std::string& member, int64_t * _return);
+    virtual bool srem(const std::string& key, const string_vector_t& members, int64_t * _return);
 
     /************************************************************************/
     /*Sorted Sets command*/
@@ -234,10 +204,8 @@ class Redis2 : public RedisBase2Single
         int64_t * _return, bool * not_exists);
     virtual bool zrevrank(const std::string& key, const std::string& member,
         int64_t * _return, bool * not_exists);
-    virtual bool zrem(const std::string& key, const std::string& member,
-        int64_t * _return);
-    virtual bool zrem(const std::string& key, const string_vector_t& members,
-        int64_t * _return);
+    virtual bool zrem(const std::string& key, const std::string& member, int64_t * _return);
+    virtual bool zrem(const std::string& key, const string_vector_t& members, int64_t * _return);
     virtual bool zremrangebyrank(const std::string& key,
         int64_t start, int64_t stop, int64_t * _return);
     virtual bool zremrangebyscore(const std::string& key,
@@ -263,8 +231,7 @@ class Redis2 : public RedisBase2Single
     /*KEYS command*/
     /************************************************************************/
     virtual bool rename(const std::string& key, const std::string& newkey);
-    virtual bool renamenx(const std::string& key, const std::string& newkey,
-        int64_t * _return);
+    virtual bool renamenx(const std::string& key, const std::string& newkey, int64_t * _return);
 
     /************************************************************************/
     /*Lists command*/
@@ -347,10 +314,9 @@ class Redis2 : public RedisBase2Single
     virtual bool slaveof(const std::string& host, const std::string& port);
 };
 
-
 typedef boost::shared_ptr<Redis2> redis2_sp_t;
 typedef std::vector<redis2_sp_t> redis2_sp_vector_t;
 
 LIBREDIS_NAMESPACE_END
 
-#endif //_LANGTAOJIN_LIBREDIS_REDIS_H_
+#endif// _LANGTAOJIN_LIBREDIS_REDIS_H_

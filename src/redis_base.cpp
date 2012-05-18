@@ -16,10 +16,7 @@ LIBREDIS_NAMESPACE_BEGIN
 /************************************************************************/
 /*RedisBase2*/
 /************************************************************************/
-RedisBase2::~RedisBase2()
-{
-
-}
+RedisBase2::~RedisBase2() {}
 
 int RedisBase2::get(const std::string& key, std::string * value)
 {
@@ -45,10 +42,10 @@ int RedisBase2::expire(const std::string& key, int64_t seconds)
   return -1;
 }
 
-int RedisBase2::expireat(const std::string& key, int64_t abs_time)
+int RedisBase2::expireat(const std::string& key, int64_t abs_seconds)
 {
   int64_t _return;
-  if (expireat(key, abs_time, &_return))
+  if (expireat(key, abs_seconds, &_return))
     return static_cast<int>(_return);
 
   return -1;
@@ -56,7 +53,7 @@ int RedisBase2::expireat(const std::string& key, int64_t abs_time)
 
 bool RedisBase2::keys(const std::string& pattern, string_vector_t * _keys)
 {
-  if (_keys == NULL)
+  if (_keys==NULL)
   {
     last_error("EINVAL");
     return false;
@@ -105,7 +102,7 @@ int RedisBase2::hdel(const std::string& key, const std::string& field)
 
 bool RedisBase2::hgetall(const std::string& key, string_pair_vector_t * fields_and_values)
 {
-  if (fields_and_values == NULL)
+  if (fields_and_values==NULL)
   {
     last_error("EINVAL");
     return false;
@@ -135,7 +132,7 @@ bool RedisBase2::hgetall(const std::string& key, string_pair_vector_t * fields_a
 
 bool RedisBase2::hgetall(const std::string& key, string_map_t * fields_and_values)
 {
-  if (fields_and_values == NULL)
+  if (fields_and_values==NULL)
   {
     last_error("EINVAL");
     return false;
@@ -185,37 +182,32 @@ bool RedisBase2::hmset(const std::string& key, const string_map_t& fields_and_va
   return hmset(key, fields, values);
 }
 
-
 /************************************************************************/
 /*RedisBase2Single*/
 /************************************************************************/
-RedisBase2Single::~RedisBase2Single()
-{
-
-}
-
+RedisBase2Single::~RedisBase2Single() {}
 
 /************************************************************************/
 /*RedisBase2Multi*/
 /************************************************************************/
 bool RedisBase2Multi::__inner_init()
 {
-  //parse host and port
+  // parse host and port
   boost::split(hosts_, host_list_, boost::is_any_of(","));
   boost::split(ports_, port_list_, boost::is_any_of(","));
 
-  if (hosts_.size() != ports_.size() && ports_.size() != 1)
+  if (hosts_.size()!=ports_.size() && ports_.size()!=1)
   {
     error_ = (boost::format("the number of hosts and ports do not match: %lu vs %lu")
         % hosts_.size() % ports_.size()).str();
     return false;
   }
 
-  //make host and port match
-  if (ports_.size() == 1 && hosts_.size() != 1)
+  // make host and port match
+  if (ports_.size()==1 && hosts_.size()!=1)
     ports_.insert(ports_.end(), hosts_.size() - 1, ports_[0]);
 
-  assert(hosts_.size() == ports_.size());
+  assert(hosts_.size()==ports_.size());
 
   return true;
 }
@@ -224,7 +216,7 @@ RedisBase2Multi::RedisBase2Multi(const std::string& host_list,
     const std::string& port_list,
     int db_index,
     int timeout_ms)
-:host_list_(host_list),
+: host_list_(host_list),
   port_list_(port_list),
   db_index_(db_index),
   timeout_ms_(timeout_ms)
@@ -235,10 +227,7 @@ RedisBase2Multi::RedisBase2Multi(const std::string& host_list,
   }
 }
 
-RedisBase2Multi::~RedisBase2Multi()
-{
-
-}
+RedisBase2Multi::~RedisBase2Multi() {}
 
 void RedisBase2Multi::last_error(const std::string& err)
 {
@@ -266,16 +255,10 @@ RedisException::RedisException(const char * exception)
     exception_ = "redis exception";
 }
 
-  RedisException::RedisException(const std::string& exception)
-:exception_(exception)
-{
+RedisException::RedisException(const std::string& exception)
+  : exception_(exception) {}
 
-}
-
-RedisException::~RedisException() throw()
-{
-
-}
+  RedisException::~RedisException() throw() {}
 
 const char * RedisException::what() const throw()
 {

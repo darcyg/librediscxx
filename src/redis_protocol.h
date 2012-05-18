@@ -17,14 +17,14 @@ class TcpClient;
 class RedisProtocol
 {
   public:
-    //timeout_ms is used for TCP connecting, sending and receiving
+    // 'timeout_ms' is used for TCP connecting, sending and receiving
     RedisProtocol(const std::string& host, const std::string& port, int timeout_ms);
     ~RedisProtocol();
 
-    //status is optional
-    //*status == 0, if it is open
-    //*status == 1, if it is not open and connected
-    //*status == -1, if it is not open and not connected
+    // 'status' is optional
+    // '*status'==0, it is open
+    // '*status'==1, it is not open and connected
+    // '*status'==-1, it is not open and not connected
     bool assure_connect(int * status);
     bool connect();
     void close();
@@ -72,17 +72,18 @@ class RedisProtocol
       return transaction_mode_;
     }
 
-    //execute a command
+    // execute 'command'
     bool exec_command(RedisCommand * command);
-    //execute a command with format and va
-    //NOTICE: format string is textual without spaces, binary data does not work!!!
+    // execute 'command' with 'format' and 'ap'
+    // NOTICE: format string is textual without spaces,
+    // binary data or string with spaces does not work!!!
     bool exec_commandv(RedisCommand * command, const char * format, va_list ap);
     bool exec_command(RedisCommand * command, const char * format, ...);
 
-    //execute a set of commands in pipeline mode: write all and read all
+    // execute 'commands' in pipeline mode: write all and read all
     bool exec_pipeline(redis_command_vector_t * commands);
 
-    //like exec_command(v), but only write command to redis server
+    // like exec_command(v), but only write command to redis server
     bool write_command(RedisCommand * command);
     bool write_commandv(RedisCommand * command, const char * format, va_list ap);
     bool write_command(RedisCommand * command, const char * format, ...);
@@ -92,17 +93,14 @@ class RedisProtocol
     bool read(size_t count, std::string * line);
 
   private:
-    bool __read_reply(RedisCommand * command, RedisOutput * output,
-        bool check_reply_type);
-    //_2 means part 2
-    //in part 1 we invoke read_line to read the first line
-    //in part 2 we pass the header by
-    bool read_bulk_2(const std::string& header,
-        std::string * bulk, std::string ** out_bulk);
-    bool read_multi_bulk_2(const std::string& header,
-        mbulk_t * mbulks, mbulk_t ** out_mbulks);
-    //read a whole bulk, when a bulk is expected (in multi bulks' body)
-    //*bulk is out on heap or NULL (nil object)
+    bool __read_reply(RedisCommand * command, RedisOutput * output, bool check_reply_type);
+    // _2 means part 2
+    // In part 1 we invoke read_line to read the first line.
+    // In part 2 we pass the header by.
+    bool read_bulk_2(const std::string& header, std::string * bulk, std::string ** out_bulk);
+    bool read_multi_bulk_2(const std::string& header, mbulk_t * mbulks, mbulk_t ** out_mbulks);
+    // Read a whole bulk, when a bulk is expected (in multi-bulk's body),
+    // '*bulk' is out on heap or NULL (nil object).
     bool read_bulk(std::string ** bulk);
 
     static bool parse_integer(const std::string& line, int64_t * i);
@@ -116,15 +114,16 @@ class RedisProtocol
     boost::posix_time::time_duration timeout_;
     boost::posix_time::time_duration pos_infin_;
 
-    //commands like BLPOP,SUBSCRIBE ... may block clients,
-    //so in reading operations pos_infin_ rather than timeout_ is used
+    // Commands like BLPOP,SUBSCRIBE may block clients,
+    // so in reading operations 'pos_infin_' rather than 'timeout_' is used.
     bool blocking_mode_;
 
-    //after MULTI, set transaction_mode_ true
-    //after DISCARD or EXEC, set transaction_mode_ false
+    // After MULTI, set 'transaction_mode_' true
+    // After DISCARD or EXEC, set 'transaction_mode_' false
+    // In transaction mode, common commands' replies are status code.
     bool transaction_mode_;
 };
 
 LIBREDIS_NAMESPACE_END
 
-#endif //_LANGTAOJIN_LIBREDIS_REDIS_PROTOCOL_H_
+#endif// _LANGTAOJIN_LIBREDIS_REDIS_PROTOCOL_H_

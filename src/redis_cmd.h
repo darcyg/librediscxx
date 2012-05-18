@@ -10,12 +10,12 @@
 
 #include "redis_common.h"
 
-//an 'ECHO' macro may be disturbing
+// an 'ECHO' macro may be disturbing
 #ifdef ECHO
 #undef ECHO
 #endif
 
-//a 'setbit' macro may be disturbing
+// a 'setbit' macro may be disturbing
 #ifdef setbit
 #undef setbit
 #endif
@@ -24,7 +24,7 @@ LIBREDIS_NAMESPACE_BEGIN
 
 enum kCommand
 {
-  NOOP = 0,//place holder
+  NOOP = 0,// place holder
   APPEND,
   AUTH,
   BGREWRITEAOF,
@@ -159,77 +159,74 @@ enum kCommand
   ZREVRANK,
   ZSCORE,
   ZUNIONSTORE,
-  COMMAND_MAX//place holder
+  COMMAND_MAX// place holder
 };
-
 
 enum kReplyType
 {
-  kNone = 0,//place holder
+  kNone = 0,// place holder
 
-  //+xxx\r\n
+  // +xxx\r\n
   kStatus,
 
-  //-xxx\r\n
+  // -xxx\r\n
   kError,
 
-  //:0\r\n
-  //:1000\r\n
+  // :0\r\n
+  // :1000\r\n
   kInteger,
 
-  //$6\r\nfoobar\r\n
-  //$0\r\n   ---   empty bulk
-  //$-1\r\n   ---   nil bulk
+  // $6\r\nfoobar\r\n
+  // $0\r\n    ---   an empty bulk
+  // $-1\r\n   ---   a nil bulk
   kBulk,
 
-  /*
-   *4\r\n
-   $3\r\n
-   foo\r\n
-   $3\r\n
-   bar\r\n
-   $5\r\n
-   Hello\r\n
-   $5\r\n
-   World\r\n
+  /**
+   * *4\r\n
+   * $3\r\n
+   * foo\r\n
+   * $3\r\n
+   * bar\r\n
+   * $5\r\n
+   * Hello\r\n
+   * $5\r\n
+   * World\r\n
    */
-  /*
-   *4\r\n
-   $3\r\n
-   foo\r\n
-   $3\r\n
-   bar\r\n
-   $-1\r\n   ---   nil bulk
-   $5\r\n
-   World\r\n
+  /**
+   * *4\r\n
+   * $3\r\n
+   * foo\r\n
+   * $3\r\n
+   * bar\r\n
+   * $-1\r\n   ---   a nil bulk
+   * $5\r\n
+   * World\r\n
    */
-  //*0\r\n   ---   empty multi bulk
-  //*-1\r\n   ---   nil multi bulk
+  // *0\r\n    ---   an empty multi-bulk
+  // *-1\r\n   ---   a nil multi-bulk
   kMultiBulk,
 
-  //in multi bulk, there may be a an integer or another multi bulk recursively
+  // in a multi-bulk, there may be a an integer or another multi-bulk recursively
   kSpecialMultiBulk,
 
-  //return type is not certain
+  // return type is not certain
   kDepends
 };
-
 
 struct CommandInfo
 {
   kCommand command;
   std::string command_str;
 
-  //argc is the args number for input checking:
-  //  zero and positive value: the exact argc
-  //  negative value: varidic args, real argc must be more than or equal to abs(argc)
-  //  -65535 means argc will not be checked
+  // 'argc' is the argument number for input checking:
+  //  zero and positive value: the exact argument number
+  //  negative value: varidic args, real argument number must be more than or equal to abs('argc')
+  //  -65535 means 'argc' will not be checked
 #define ARGC_NO_CHECKING (-65535)
   int argc;
 
   kReplyType reply_type;
 };
-
 
 /************************************************************************/
 /*typedefs*/
@@ -280,7 +277,7 @@ inline void clear(mbulk_t * mbulks)
   clear_mbulks(mbulks);
 }
 
-//delete is a keyword in C++
+// delete is a keyword in C++
 inline void _delete(mbulk_t * mbulks)
 {
   delete_mbulks(mbulks);
@@ -291,7 +288,7 @@ inline void clear(smbulk_t * smbulks)
   clear_smbulks(smbulks);
 }
 
-//delete is a keyword in C++
+// delete is a keyword in C++
 inline void _delete(smbulk_t * smbulks)
 {
   delete_smbulks(smbulks);
@@ -326,7 +323,6 @@ class ClearGuard
     }
 };
 
-
 template <class T>
 class DeleteGuard
 {
@@ -345,7 +341,6 @@ class DeleteGuard
         _delete(t_);
     }
 };
-
 
 /************************************************************************/
 /*RedisInput*/
@@ -398,37 +393,36 @@ class RedisInput
     void push_arg(const std::vector<double>& dv);
 };
 
-
 /************************************************************************/
 /*RedisOutput*/
 /************************************************************************/
 struct RedisOutput
 {
-  //NOTICE!!!
-  //all outputs variables are public for efficient access(READING only)
-  //all writing operations must use 'setters'
+  // NOTICE:
+  // All outputs variables are public for efficient access(READING only).
+  // All writing operations must use setters.
   union _ptr
   {
-    //reply_type == kStatus
+    // 'reply_type'==kStatus
     std::string * status;
 
-    //reply_type == kError
+    // 'reply_type'==kError
     std::string * error;
 
-    //reply_type == kInteger
+    // 'reply_type'==kInteger
     int64_t * i;
 
-    //reply_type == kBulk
-    //'NULL' means nil bulk
+    // 'reply_type'==kBulk
+    // NULL means nil bulk
     std::string * bulk;
 
-    //reply_type == kMultiBulk
-    //'NULL' means nil multi bulks
-    //not 'NULL' and !mbulks->empty() means an empty multi bulk
-    //'NULL element in mbulks' means nil object
+    // 'reply_type'==kMultiBulk
+    // 1.NULL means a nil multi-bulk
+    // 2.'mbulks' being not NULL and 'mbulks->empty()' means an empty multi-bulk
+    // 3.NULL elements in 'mbulks' mean nil objects
     mbulk_t * mbulks;
 
-    //maybe recursively contain elements
+    // 'reply_type'==kSpecialMultiBulk
     smbulk_t * smbulks;
   } ptr;
 
@@ -440,25 +434,25 @@ struct RedisOutput
 
   void clear();
 
-  //setters
+  // setters
   void set_status(const std::string& s)
   {
     clear();
-    ptr.status = new std::string(s);
+    ptr.status = new std::string(s);// mays throw
     reply_type = kStatus;
   }
 
   void set_error(const std::string& e)
   {
     clear();
-    ptr.error = new std::string(e);
+    ptr.error = new std::string(e);// may throw
     reply_type = kError;
   }
 
   void set_i(int64_t _i)
   {
     clear();
-    ptr.i = new int64_t;
+    ptr.i = new int64_t;// may throw
     *ptr.i = _i;
     reply_type = kInteger;
   }
@@ -466,7 +460,7 @@ struct RedisOutput
   void set_bulk(const std::string& b)
   {
     clear();
-    ptr.bulk = new std::string(b);
+    ptr.bulk = new std::string(b);// may throw
     reply_type = kBulk;
   }
 
@@ -483,7 +477,7 @@ struct RedisOutput
 
     if (mb)
     {
-      ptr.mbulks = new mbulk_t();
+      ptr.mbulks = new mbulk_t();// may throw
       ptr.mbulks->swap(*mb);
     }
   }
@@ -512,63 +506,63 @@ struct RedisOutput
     reply_type = kSpecialMultiBulk;
   }
 
-  //is...
+  // is...
   bool is_status()const
   {
-    return reply_type == kStatus && ptr.status;
+    return reply_type==kStatus && ptr.status;
   }
 
   bool is_status_ok()const
   {
-    return reply_type == kStatus && ptr.status && *ptr.status == "OK";
+    return reply_type==kStatus && ptr.status && *ptr.status=="OK";
   }
 
   bool is_status_pong()const
   {
-    return reply_type == kStatus && ptr.status && *ptr.status == "PONG";
+    return reply_type==kStatus && ptr.status && *ptr.status=="PONG";
   }
 
   bool is_error()const
   {
-    return reply_type == kError && ptr.error;
+    return reply_type==kError && ptr.error;
   }
 
   bool is_i()const
   {
-    return reply_type == kInteger && ptr.i;
+    return reply_type==kInteger && ptr.i;
   }
 
   bool is_bulk()const
   {
-    return reply_type == kBulk && ptr.bulk;
+    return reply_type==kBulk && ptr.bulk;
   }
 
   bool is_nil_bulk()const
   {
-    return reply_type == kBulk && ptr.bulk == NULL;
+    return reply_type==kBulk && ptr.bulk==NULL;
   }
 
   bool is_mbulks()const
   {
-    return reply_type == kMultiBulk && ptr.mbulks;
+    return reply_type==kMultiBulk && ptr.mbulks;
   }
 
   bool is_nil_mbulks()const
   {
-    return reply_type == kMultiBulk && ptr.mbulks == NULL;
+    return reply_type==kMultiBulk && ptr.mbulks==NULL;
   }
 
   bool is_smbulks()const
   {
-    return reply_type == kSpecialMultiBulk && ptr.smbulks;
+    return reply_type==kSpecialMultiBulk && ptr.smbulks;
   }
 
   bool is_nil_smbulks()const
   {
-    return reply_type == kSpecialMultiBulk && ptr.smbulks == NULL;
+    return reply_type==kSpecialMultiBulk && ptr.smbulks==NULL;
   }
 
-  //getters
+  // getters
   kReplyType get_reply_type()const
   {
     return reply_type;
@@ -576,7 +570,7 @@ struct RedisOutput
 
   bool get_status(std::string * _status)const
   {
-    if (_status == 0)
+    if (_status==NULL)
       return false;
 
     if (is_status())
@@ -590,7 +584,7 @@ struct RedisOutput
 
   bool get_error(std::string * _error)const
   {
-    if (_error == 0)
+    if (_error==NULL)
       return false;
 
     if (is_error())
@@ -604,7 +598,7 @@ struct RedisOutput
 
   bool get_i(int64_t * _i)const
   {
-    if (_i == 0)
+    if (_i==NULL)
       return false;
 
     if (is_i())
@@ -618,7 +612,7 @@ struct RedisOutput
 
   bool get_bulk(std::string * b)
   {
-    if (b == 0)
+    if (b==NULL)
       return false;
 
     if (is_bulk())
@@ -632,7 +626,7 @@ struct RedisOutput
 
   bool get_mbulks(mbulk_t * mb)
   {
-    if (mb == 0)
+    if (mb==NULL)
       return false;
 
     clear_mbulks(mb);
@@ -649,7 +643,7 @@ struct RedisOutput
 
   bool get_smbulks(smbulk_t * smb)
   {
-    if (smb == 0)
+    if (smb==NULL)
       return false;
 
     clear_smbulks(smb);
@@ -665,7 +659,6 @@ struct RedisOutput
   void swap(RedisOutput& other);
 };
 
-
 /************************************************************************/
 /*RedisCommand*/
 /************************************************************************/
@@ -678,7 +671,6 @@ struct RedisCommand
   explicit RedisCommand(kCommand cmd);
   explicit RedisCommand(const std::string& cmd);
   void swap(RedisCommand& other);
-
 
   const kCommand& command()const
   {
@@ -753,4 +745,4 @@ struct RedisCommand
 
 LIBREDIS_NAMESPACE_END
 
-#endif //_LANGTAOJIN_LIBREDIS_REDIS_CMD_H_
+#endif// _LANGTAOJIN_LIBREDIS_REDIS_CMD_H_

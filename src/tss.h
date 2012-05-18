@@ -157,7 +157,7 @@ class thread_specific_ptr
     void reset(T * new_value = NULL)
     {
       T * const current_value = get();
-      if (current_value != new_value)
+      if (current_value!=new_value)
       {
         boost::detail::set_tss_data(this, cleanup_, new_value, true);
       }
@@ -166,4 +166,4 @@ class thread_specific_ptr
 
 LIBREDIS_NAMESPACE_END
 
-#endif// LANGTAOJIN_LIBREDIS_TSS_H_
+#endif// _LANGTAOJIN_LIBREDIS_TSS_H_

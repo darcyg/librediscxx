@@ -38,7 +38,6 @@ class RedisTss
 
     ~RedisTss();
 
-    // may throw, do not return NULL
     RedisBase2 * get();
 };
 

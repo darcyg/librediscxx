@@ -18,4 +18,4 @@ std::string get_host_name();
 
 LIBREDIS_NAMESPACE_END
 
-#endif //_LANGTAOJIN_LIBREDIS_OS_H_
+#endif// _LANGTAOJIN_LIBREDIS_OS_H_

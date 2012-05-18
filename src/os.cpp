@@ -36,9 +36,9 @@ std::string get_host_name()
 #ifndef HOST_NAME_MAX
 #define HOST_NAME_MAX 255
 #endif
-  //POSIX.1-2001 guarantees that "Host names
-  //(not including the terminating null byte) are limited to HOST_NAME_MAX bytes
-  //SUSv2 guarantees that "Host names are limited to 255 bytes".
+  // POSIX.1-2001 guarantees that "Host names
+  // (not including the terminating null byte) are limited to HOST_NAME_MAX bytes
+  // SUSv2 guarantees that "Host names are limited to 255 bytes".
   char buf[HOST_NAME_MAX+1];
   ::gethostname(buf, sizeof(buf));
   return std::string(buf);

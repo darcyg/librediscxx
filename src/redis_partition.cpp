@@ -13,49 +13,43 @@
 #include <boost/format.hpp>
 
 #define CHECK_PTR_PARAM(ptr) \
-  if (ptr == NULL) {last_error("EINVAL");return false;}
+  if (ptr==NULL) {last_error("EINVAL");return false;}
 
 #define CHECK_EXPR(exp) \
   if (!(exp)) {last_error("EINVAL");return false;}
 
-
 #define FOR_EACH_GROUP_WRITE(func, key, ...) \
-  do {\
-    size_t_vector_t index_v;\
-    if (!__get_key_client(key, index_v))\
-    return false;\
-    bool ret;\
-    BOOST_FOREACH(size_t host_index, index_v)\
-    {\
-      ret = redis2_sp_vector_[host_index]->func(__VA_ARGS__);\
-      if (!ret)\
-      {\
-        __set_index_error(host_index);\
-        return false;\
-      }\
-    }\
-    return true;\
+  do { \
+    size_t_vector_t index_v; \
+    if (!__get_key_client(key, index_v)) \
+    return false; \
+    bool ret; \
+    BOOST_FOREACH(size_t host_index, index_v) \
+    { \
+      ret = redis2_sp_vector_[host_index]->func(__VA_ARGS__); \
+      if (!ret) \
+      { \
+        __set_index_error(host_index); \
+        return false; \
+      } \
+    } \
+    return true; \
   } while (0)
 
-
 #define FOR_EACH_GROUP_READ(func, key, ...) \
-  do\
-{\
-  size_t_vector_t index_v;\
-  if (!__get_key_client(key, index_v))\
-  return false;\
-  bool ret;\
-  BOOST_FOREACH(size_t host_index, index_v)\
-  {\
-    ret = redis2_sp_vector_[host_index]->func(__VA_ARGS__);\
-    if (!ret)\
-    __set_index_error(host_index);\
-    else\
-    return true;\
-  }\
-  return false;\
-} while (0)
-
+  do { \
+    size_t_vector_t index_v; \
+    if (!__get_key_client(key, index_v)) \
+    return false; \
+    bool ret; \
+    BOOST_FOREACH(size_t host_index, index_v) \
+    { \
+      ret = redis2_sp_vector_[host_index]->func(__VA_ARGS__); \
+      if (!ret) __set_index_error(host_index); \
+      else return true; \
+    } \
+    return false;\
+  } while (0)
 
 LIBREDIS_NAMESPACE_BEGIN
 
@@ -64,23 +58,22 @@ static inline size_t __get_seed()
   return static_cast<size_t>(get_thread_id());
 }
 
-
 bool Redis2P::__inner_init()
 {
-  if (partitions_ == 0)
+  if (partitions_==0)
   {
     error_ = "the number of partition must be not zero";
     return false;
   }
 
   groups_ = hosts_.size() / partitions_;
-  if (groups_ == 0)
+  if (groups_==0)
   {
     error_ = "the number of group must be not zero";
     return false;
   }
 
-  if (hosts_.size() % groups_ != 0)
+  if (hosts_.size() % groups_!=0)
   {
     error_ = str(boost::format(
           "invalid group number, hosts: %lu, groups: %lu, partitions: %lu")
@@ -97,16 +90,12 @@ bool Redis2P::__inner_init()
   return true;
 }
 
-
 bool Redis2P::is_invalid(size_t index)const
 {
-  return invalid_redis_.find(index) == invalid_redis_.end();
+  return invalid_redis_.find(index)==invalid_redis_.end();
 }
 
-
-bool Redis2P::__get_key_client(const std::string& key,
-    size_t_vector_t& index_v,
-    bool write)
+bool Redis2P::__get_key_client(const std::string& key, size_t_vector_t& index_v, bool write)
 {
   size_t host_num = redis2_sp_vector_.size() / groups_;
   size_t host_index = __get_key_host_index(key);
@@ -117,14 +106,14 @@ bool Redis2P::__get_key_client(const std::string& key,
 
   if (!write)
   {
-    //get one client in one group
+    // get one client in one group
     index = host_index + host_num * (seed % groups_);
     if (is_invalid(index))
       index_v.push_back(index);
   }
   else
   {
-    //get clients in all groups
+    // get clients in all groups
     for (size_t i=0; i<groups_; i++)
     {
       index = host_index + host_num * ((seed + i) % groups_);
@@ -142,10 +131,8 @@ bool Redis2P::__get_key_client(const std::string& key,
   return true;
 }
 
-
 bool Redis2P::__get_keys_client(const string_vector_t& keys,
-    size_t_vector_vector_t& index_v,
-    bool write)
+    size_t_vector_vector_t& index_v, bool write)
 {
   size_t host_num = redis2_sp_vector_.size() / groups_;
   size_t host_index;
@@ -156,7 +143,7 @@ bool Redis2P::__get_keys_client(const string_vector_t& keys,
 
   if (!write)
   {
-    //get one client in one group
+    // get one client in one group
     size_t seed = __get_seed();
     for (size_t i=0; i<keys.size(); i++)
     {
@@ -168,7 +155,7 @@ bool Redis2P::__get_keys_client(const string_vector_t& keys,
   }
   else
   {
-    //get clients in all groups
+    // get clients in all groups
     for (size_t i=0; i<keys.size(); i++)
     {
       host_index = __get_key_host_index(keys[i]);
@@ -192,14 +179,13 @@ bool Redis2P::__get_keys_client(const string_vector_t& keys,
   return true;
 }
 
-
 bool Redis2P::__get_group_client(size_t_vector_t& index_v)
 {
   size_t host_num = redis2_sp_vector_.size() / groups_;
   size_t host_index = 0;
   size_t index;
 
-  if (groups_ > 1)
+  if (groups_>1)
     host_index = (__get_seed() % groups_) * host_num;
 
   index_v.clear();
@@ -221,14 +207,12 @@ bool Redis2P::__get_group_client(size_t_vector_t& index_v)
   return true;
 }
 
-
 void Redis2P::__set_index_error(size_t host_index)
 {
-  assert(host_index < redis2_sp_vector_.size());
+  assert(host_index<redis2_sp_vector_.size());
   error_ = str(boost::format("[%s:%s] %s")
       % hosts_[host_index] % ports_[host_index] % redis2_sp_vector_[host_index]->last_error());
 }
-
 
 void Redis2P::__set_host_error(const Redis2& host)
 {
@@ -236,12 +220,10 @@ void Redis2P::__set_host_error(const Redis2& host)
       % host.get_host() % host.get_port() % host.last_error());
 }
 
-
 size_t Redis2P::__get_key_host_index(const std::string& key)const
 {
   return (static_cast<size_t>(hash_fn_(key)) % (redis2_sp_vector_.size() / groups_));
 }
-
 
 Redis2P::Redis2P(const std::string& host_list,
     const std::string& port_list,
@@ -249,7 +231,7 @@ Redis2P::Redis2P(const std::string& host_list,
     int timeout_ms,
     int partitions,
     key_hasher fn)
-:RedisBase2Multi(host_list, port_list, db_index, timeout_ms),
+: RedisBase2Multi(host_list, port_list, db_index, timeout_ms),
   partitions_(partitions),
   hash_fn_(fn)
 {
@@ -259,11 +241,9 @@ Redis2P::Redis2P(const std::string& host_list,
   }
 }
 
-
 Redis2P::~Redis2P()
 {
 }
-
 
 bool Redis2P::get_key_client(const std::string& key, redis2_sp_vector_t * redis_clients)
 {
@@ -272,7 +252,6 @@ bool Redis2P::get_key_client(const std::string& key, redis2_sp_vector_t * redis_
   size_t host_index = __get_key_host_index(key);
   return get_index_client(host_index, redis_clients);
 }
-
 
 bool Redis2P::get_index_client(size_t host_index, redis2_sp_vector_t * redis_clients)
 {
@@ -297,7 +276,6 @@ bool Redis2P::get_index_client(size_t host_index, redis2_sp_vector_t * redis_cli
   return true;
 }
 
-
 bool Redis2P::get_all_client(redis2_sp_vector_t * redis_clients)
 {
   CHECK_PTR_PARAM(redis_clients);
@@ -305,12 +283,10 @@ bool Redis2P::get_all_client(redis2_sp_vector_t * redis_clients)
   return true;
 }
 
-
 void Redis2P::set_invalid_redis(const std::set<size_t>& invalid_redis)
 {
   invalid_redis_ = invalid_redis;
 }
-
 
 bool Redis2P::del(const std::string& key, int64_t * _return)
 {
@@ -330,12 +306,12 @@ bool Redis2P::del(const string_vector_t& keys, int64_t * _return)
   int64_t total_deleted = 0;
   bool ret = true;
 
-  //convert multi-del to del
-  //for each key
+  // convert multi-del to del to multi redis instance
+  // for each key
   for (size_t i=0; i<index_vv.size(); i++)
   {
     const size_t_vector_t& index_v = index_vv[i];
-    //for each group
+    // for each group
     for (size_t j=0; j<index_v.size(); j++)
     {
       ret = redis2_sp_vector_[index_v[j]]->del(keys[i], &deleted);
@@ -368,18 +344,16 @@ bool Redis2P::exists(const std::string& key, int64_t * _return)
   FOR_EACH_GROUP_READ(exists, key, key, _return);
 }
 
-bool Redis2P::expire(const std::string& key, int64_t seconds,
-    int64_t * _return)
+bool Redis2P::expire(const std::string& key, int64_t seconds, int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_WRITE(expire, key, key, seconds, _return);
 }
 
-bool Redis2P::expireat(const std::string& key, int64_t abs_time,
-    int64_t * _return)
+bool Redis2P::expireat(const std::string& key, int64_t abs_seconds, int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
-  FOR_EACH_GROUP_WRITE(expireat, key, key, abs_time, _return);
+  FOR_EACH_GROUP_WRITE(expireat, key, key, abs_seconds, _return);
 }
 
 bool Redis2P::keys(const std::string& pattern, mbulk_t * _return)
@@ -393,7 +367,7 @@ bool Redis2P::keys(const std::string& pattern, mbulk_t * _return)
   if (!__get_group_client(index_v))
     return false;
 
-  //for each host
+  // for each host
   bool ret;
   BOOST_FOREACH(size_t host_index, index_v)
   {
@@ -411,8 +385,7 @@ bool Redis2P::keys(const std::string& pattern, mbulk_t * _return)
   return true;
 }
 
-bool Redis2P::move(const std::string& key, int db,
-    int64_t * _return)
+bool Redis2P::move(const std::string& key, int db, int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_WRITE(move, key, key, db, _return);
@@ -456,7 +429,7 @@ bool Redis2P::randomkey(std::string * _return, bool * is_nil)
   if (!__get_group_client(index_v))
     return false;
 
-  //for each host
+  // for each host
   bool ret;
   BOOST_FOREACH(size_t host_index, index_v)
   {
@@ -469,8 +442,7 @@ bool Redis2P::randomkey(std::string * _return, bool * is_nil)
   return false;
 }
 
-bool Redis2P::sort(const std::string& key, const string_vector_t * phrases,
-    mbulk_t * _return)
+bool Redis2P::sort(const std::string& key, const string_vector_t * phrases, mbulk_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_READ(sort, key, key, phrases, _return);
@@ -488,8 +460,7 @@ bool Redis2P::type(const std::string& key, std::string * _return)
   FOR_EACH_GROUP_READ(type, key, key, _return);
 }
 
-bool Redis2P::append(const std::string& key, const std::string& value,
-    int64_t * _return)
+bool Redis2P::append(const std::string& key, const std::string& value, int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_WRITE(append, key, key, value, _return);
@@ -564,7 +535,7 @@ bool Redis2P::mget(const string_vector_t& keys, mbulk_t * _return)
   std::string * tmp_value;
   bool is_nil;
 
-  //convert mget to get
+  // convert mget to get to multi redis instance
   BOOST_FOREACH(const std::string& key, keys)
   {
     ret = get(key, &value, &is_nil);
@@ -579,22 +550,22 @@ bool Redis2P::mget(const string_vector_t& keys, mbulk_t * _return)
     }
     else
     {
-      tmp_value = new std::string;
+      tmp_value = new std::string;// may throw
       tmp_value->swap(value);
       _return->push_back(tmp_value);
     }
   }
-  assert(keys.size() == _return->size());
+  assert(keys.size()==_return->size());
   return true;
 }
 
 bool Redis2P::mset(const string_vector_t& keys, const string_vector_t& values)
 {
-  CHECK_EXPR(keys.size() == values.size());
+  CHECK_EXPR(keys.size()==values.size());
 
   bool ret;
 
-  //convert mset to set
+  // convert mset to set to multi redis instance
   for (size_t i=0; i<keys.size(); i++)
   {
     ret = set(keys[i], values[i]);
@@ -616,21 +587,18 @@ bool Redis2P::set(const std::string& key, const std::string& value)
   FOR_EACH_GROUP_WRITE(set, key, key, value);
 }
 
-bool Redis2P::setbit(const std::string& key, int64_t offset, int64_t value,
-    int64_t * _return)
+bool Redis2P::setbit(const std::string& key, int64_t offset, int64_t value, int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_WRITE(setbit, key, key, offset, value, _return);
 }
 
-bool Redis2P::setex(const std::string& key, int64_t seconds,
-    const std::string& value)
+bool Redis2P::setex(const std::string& key, int64_t seconds, const std::string& value)
 {
   FOR_EACH_GROUP_WRITE(setex, key, key, seconds, value);
 }
 
-bool Redis2P::setnx(const std::string& key, const std::string& value,
-    int64_t * _return)
+bool Redis2P::setnx(const std::string& key, const std::string& value, int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_WRITE(setnx, key, key, value, _return);
@@ -649,22 +617,19 @@ bool Redis2P::strlen(const std::string& key, int64_t * _return)
   FOR_EACH_GROUP_READ(strlen, key, key, _return);
 }
 
-bool Redis2P::hdel(const std::string& key, const std::string& field,
-    int64_t * _return)
+bool Redis2P::hdel(const std::string& key, const std::string& field, int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_WRITE(hdel, key, key, field, _return);
 }
 
-bool Redis2P::hdel(const std::string& key, const string_vector_t& fields,
-    int64_t * _return)
+bool Redis2P::hdel(const std::string& key, const string_vector_t& fields, int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_WRITE(hdel, key, key, fields, _return);
 }
 
-bool Redis2P::hexists(const std::string& key, const std::string& field,
-    int64_t * _return)
+bool Redis2P::hexists(const std::string& key, const std::string& field, int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_READ(hexists, key, key, field, _return);
@@ -684,8 +649,7 @@ bool Redis2P::hgetall(const std::string& key, mbulk_t * _return)
   FOR_EACH_GROUP_READ(hgetall, key, key, _return);
 }
 
-bool Redis2P::hincr(const std::string& key, const std::string& field,
-    int64_t * _return)
+bool Redis2P::hincr(const std::string& key, const std::string& field, int64_t * _return)
 {
   FOR_EACH_GROUP_WRITE(hincr, key, key, field, _return);
 }
@@ -716,8 +680,7 @@ bool Redis2P::hlen(const std::string& key, int64_t * _return)
   FOR_EACH_GROUP_READ(hlen, key, key, _return);
 }
 
-bool Redis2P::hmget(const std::string& key, const string_vector_t& fields,
-    mbulk_t * _return)
+bool Redis2P::hmget(const std::string& key, const string_vector_t& fields, mbulk_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_READ(hmget, key, key, fields, _return);
@@ -726,7 +689,7 @@ bool Redis2P::hmget(const std::string& key, const string_vector_t& fields,
 bool Redis2P::hmset(const std::string& key,
     const string_vector_t& fields, const string_vector_t& values)
 {
-  CHECK_EXPR(fields.size() == values.size());
+  CHECK_EXPR(fields.size()==values.size());
   FOR_EACH_GROUP_WRITE(hmset, key, key, fields, values);
 }
 
@@ -750,8 +713,7 @@ bool Redis2P::hvals(const std::string& key, mbulk_t * _return)
   FOR_EACH_GROUP_READ(hvals, key, key, _return);
 }
 
-bool Redis2P::lindex(const std::string& key, int64_t index,
-    std::string * _return, bool * is_nil)
+bool Redis2P::lindex(const std::string& key, int64_t index, std::string * _return, bool * is_nil)
 {
   CHECK_PTR_PARAM(_return);
   CHECK_PTR_PARAM(is_nil);
@@ -778,29 +740,25 @@ bool Redis2P::lpop(const std::string& key, std::string * _return, bool * is_nil)
   FOR_EACH_GROUP_WRITE(lpop, key, key, _return, is_nil);
 }
 
-bool Redis2P::lpush(const std::string& key, const std::string& value,
-    int64_t * _return)
+bool Redis2P::lpush(const std::string& key, const std::string& value, int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_WRITE(lpush, key, key, value, _return);
 }
 
-bool Redis2P::lpush(const std::string& key, const string_vector_t& values,
-    int64_t * _return)
+bool Redis2P::lpush(const std::string& key, const string_vector_t& values, int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_WRITE(lpush, key, key, values, _return);
 }
 
-bool Redis2P::lpushx(const std::string& key, const std::string& value,
-    int64_t * _return)
+bool Redis2P::lpushx(const std::string& key, const std::string& value, int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_WRITE(lpushx, key, key, value, _return);
 }
 
-bool Redis2P::lrange(const std::string& key, int64_t start, int64_t stop,
-    mbulk_t * _return)
+bool Redis2P::lrange(const std::string& key, int64_t start, int64_t stop, mbulk_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_READ(lrange, key, key, start, stop, _return);
@@ -813,8 +771,7 @@ bool Redis2P::lrem(const std::string& key, int64_t count, const std::string& val
   FOR_EACH_GROUP_WRITE(lrem, key, key, count, value, _return);
 }
 
-bool Redis2P::lset(const std::string& key, int64_t index,
-    const std::string& value)
+bool Redis2P::lset(const std::string& key, int64_t index, const std::string& value)
 {
   FOR_EACH_GROUP_WRITE(lset, key, key, index, value);
 }
@@ -831,36 +788,31 @@ bool Redis2P::rpop(const std::string& key, std::string * _return, bool * is_nil)
   FOR_EACH_GROUP_WRITE(rpop, key, key, _return, is_nil);
 }
 
-bool Redis2P::rpush(const std::string& key, const std::string& value,
-    int64_t * _return)
+bool Redis2P::rpush(const std::string& key, const std::string& value, int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_WRITE(rpush, key, key, value, _return);
 }
 
-bool Redis2P::rpush(const std::string& key, const string_vector_t& values,
-    int64_t * _return)
+bool Redis2P::rpush(const std::string& key, const string_vector_t& values, int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_WRITE(rpush, key, key, values, _return);
 }
 
-bool Redis2P::rpushx(const std::string& key, const std::string& value,
-    int64_t * _return)
+bool Redis2P::rpushx(const std::string& key, const std::string& value, int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_WRITE(rpushx, key, key, value, _return);
 }
 
-bool Redis2P::sadd(const std::string& key, const std::string& member,
-    int64_t * _return)
+bool Redis2P::sadd(const std::string& key, const std::string& member, int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_WRITE(sadd, key, key, member, _return);
 }
 
-bool Redis2P::sadd(const std::string& key, const string_vector_t& members,
-    int64_t * _return)
+bool Redis2P::sadd(const std::string& key, const string_vector_t& members, int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_WRITE(sadd, key, key, members, _return);
@@ -872,8 +824,7 @@ bool Redis2P::scard(const std::string& key, int64_t * _return)
   FOR_EACH_GROUP_READ(scard, key, key, _return);
 }
 
-bool Redis2P::sismember(const std::string& key, const std::string& member,
-    int64_t * _return)
+bool Redis2P::sismember(const std::string& key, const std::string& member, int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_READ(sismember, key, key, member, _return);
@@ -892,23 +843,20 @@ bool Redis2P::spop(const std::string& key, std::string * member, bool * is_nil)
   FOR_EACH_GROUP_WRITE(spop, key, key, member, is_nil);
 }
 
-bool Redis2P::srandmember(const std::string& key,
-    std::string * member, bool * is_nil)
+bool Redis2P::srandmember(const std::string& key, std::string * member, bool * is_nil)
 {
   CHECK_PTR_PARAM(member);
   CHECK_PTR_PARAM(is_nil);
   FOR_EACH_GROUP_READ(srandmember, key, key, member, is_nil);
 }
 
-bool Redis2P::srem(const std::string& key, const std::string& member,
-    int64_t * _return)
+bool Redis2P::srem(const std::string& key, const std::string& member, int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_WRITE(srem, key, key, member, _return);
 }
 
-bool Redis2P::srem(const std::string& key, const string_vector_t& members,
-    int64_t * _return)
+bool Redis2P::srem(const std::string& key, const string_vector_t& members, int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_WRITE(srem, key, key, members, _return);
@@ -925,7 +873,7 @@ bool Redis2P::zadd(const std::string& key, std::vector<double>& scores,
     const string_vector_t& members, int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
-  CHECK_EXPR(scores.size() == members.size());
+  CHECK_EXPR(scores.size()==members.size());
   FOR_EACH_GROUP_WRITE(zadd, key, key, scores, members, _return);
 }
 
@@ -997,15 +945,13 @@ bool Redis2P::zrevrank(const std::string& key, const std::string& member,
   FOR_EACH_GROUP_READ(zrevrank, key, key, member, _return, not_exists);
 }
 
-bool Redis2P::zrem(const std::string& key, const std::string& member,
-    int64_t * _return)
+bool Redis2P::zrem(const std::string& key, const std::string& member, int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_WRITE(zrem, key, key, member, _return);
 }
 
-bool Redis2P::zrem(const std::string& key, const string_vector_t& members,
-    int64_t * _return)
+bool Redis2P::zrem(const std::string& key, const string_vector_t& members, int64_t * _return)
 {
   CHECK_PTR_PARAM(_return);
   FOR_EACH_GROUP_WRITE(zrem, key, key, members, _return);

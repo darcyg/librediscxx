@@ -17,12 +17,11 @@ class HostResolver::Impl
     boost::asio::ip::tcp::resolver resolver_;
     boost::asio::deadline_timer resolver_timer_;
 
-
     void __resolve_timeout_handler(
         const boost::system::error_code& ec,
         boost::system::error_code * error_out)
     {
-      if (ec == boost::asio::error::operation_aborted)
+      if (ec==boost::asio::error::operation_aborted)
       {
         // The timer was canceled, so the resolver is ok.
       }
@@ -41,15 +40,14 @@ class HostResolver::Impl
       }
     }
 
-
     void __resolve_handler(
         const boost::system::error_code& ec,
         boost::asio::ip::tcp::resolver::iterator iterator,
         boost::system::error_code * error_out,
         boost::asio::ip::tcp::resolver::iterator * iterator_out)
     {
-      if (*error_out == boost::asio::error::operation_aborted
-          || ec == boost::asio::error::operation_aborted)
+      if (*error_out==boost::asio::error::operation_aborted
+          || ec==boost::asio::error::operation_aborted)
       {
         // The resolver was canceled, timed out.
       }
@@ -63,18 +61,13 @@ class HostResolver::Impl
       }
     }
 
-
   public:
     Impl()
-      :io_service_(),
+      : io_service_(),
       resolver_(io_service_),
-      resolver_timer_(io_service_)
-  {}
+      resolver_timer_(io_service_) {}
 
-
-    ~Impl()
-    {}
-
+    ~Impl() {}
 
     boost::asio::ip::tcp::resolver::iterator resolve_host(
         const std::string& ip_or_host,
@@ -86,13 +79,12 @@ class HostResolver::Impl
 
       if (ec)
       {
-        //return an invalid iterator
+        // return an invalid iterator
         return boost::asio::ip::tcp::resolver::iterator();
       }
 
       return iterator_ret;
     }
-
 
     boost::asio::ip::tcp::resolver::iterator resolve_host(
         const std::string& ip_or_host,
@@ -108,7 +100,7 @@ class HostResolver::Impl
       resolver_.async_resolve(query,
           boost::bind(&HostResolver::Impl::__resolve_handler, this, _1, _2, &ec, &iterator_ret));
 
-      //set timer
+      // set timer
       resolver_timer_.expires_from_now(timeout);
       resolver_timer_.async_wait(
           boost::bind(&HostResolver::Impl::__resolve_timeout_handler, this, _1, &ec));
@@ -117,7 +109,7 @@ class HostResolver::Impl
       io_service_.run();
       if (ec)
       {
-        //return an invalid iterator
+        // return an invalid iterator
         return boost::asio::ip::tcp::resolver::iterator();
       }
 
@@ -125,10 +117,9 @@ class HostResolver::Impl
     }
 };
 
-
 HostResolver::HostResolver()
 {
-  impl_ = new Impl();
+  impl_ = new Impl();// may throw
 }
 
 HostResolver::~HostResolver()

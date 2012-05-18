@@ -292,6 +292,8 @@ class TcpClient::Impl
         boost::posix_time::time_duration timeout,
         boost::system::error_code& ec)
     {
+      size_t count;
+
       // set timer
       socket_timer_.expires_from_now(timeout);
 

@@ -46,8 +46,7 @@ namespace
 
   bool init_monitor()
   {
-    s_monitor.reset(new RedisProtocol(redis_host,
-          redis_port, redis_timeout));
+    s_monitor.reset(new RedisProtocol(redis_host, redis_port, redis_timeout));
     if (!s_monitor->assure_connect(NULL))
     {
       std::cerr << "connection failed" << std::endl;
@@ -79,7 +78,6 @@ namespace
     return true;
   }
 
-
   void monitor()
   {
     if (!s_monitor)
@@ -100,9 +98,9 @@ namespace
       ret = pro->read_line(&line);
       if (ret)
       {
-        //example:
-        //+1317279070.687700 (db 1) "EXPIRE" "tag_pv2_de8c68" "3600"
-        //+1317280373.276440 "MONITOR"
+        // example:
+        // +1317279070.687700 (db 1) "EXPIRE" "tag_pv2_de8c68" "3600"
+        // +1317280373.276440 "MONITOR"
         if (line.size() < 24 || line[20]!='d')
           continue;
 
@@ -128,12 +126,10 @@ namespace
     }
   }
 
-
   void uninit_monitor()
   {
     s_monitor.reset();
   }
-
 
   void print_monitor()
   {
@@ -159,11 +155,9 @@ namespace
     }
   }
 
-
   void init_info()
   {
-    s_info.reset(new RedisProtocol(redis_host,
-          redis_port, redis_timeout));
+    s_info.reset(new RedisProtocol(redis_host, redis_port, redis_timeout));
     if (!s_info->assure_connect(NULL))
     {
       std::cerr << "connection failed" << std::endl;
@@ -171,7 +165,6 @@ namespace
       return;
     }
   }
-
 
   void info()
   {
@@ -201,27 +194,7 @@ namespace
     }
 
     std::cout <<  command.out.ptr.bulk->c_str() << std::endl;
-    //some useful infos:
-    //connected_clients:859
-    //used_memory:5923363536
-    //used_memory_rss:7423385600
-    //mem_fragmentation_ratio:1.25
-    //expired_keys:16372092
-    //evicted_keys:0
-    //keyspace_hits:1424977714
-    //keyspace_misses:339686219
-    //hash_max_zipmap_entries:256
-    //hash_max_zipmap_value:256
-    //db0:keys=19749,expires=0
-    //db1:keys=136557,expires=136543
-    //db2:keys=131072,expires=0
-    //db3:keys=131072,expires=0
-    //db4:keys=131072,expires=0
-    //db5:keys=205,expires=0
-    //db6:keys=58238,expires=0
-    //db7:keys=44855,expires=0
   }
-
 
   void ping()
   {
@@ -263,12 +236,10 @@ namespace
     std::cout << "[PING]:" << ms << std::endl;
   }
 
-
   void uninit_info()
   {
     s_info.reset();
   }
-
 
   void update(const boost::system::error_code& ec)
   {
@@ -296,7 +267,6 @@ namespace
     s_timer->expires_at(next);
     s_timer->async_wait(update);
   }
-
 
   void signal_handler(int signo)
   {

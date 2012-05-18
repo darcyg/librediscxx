@@ -21,6 +21,8 @@ static const CommandInfo s_command_map[] =
   {AUTH, "AUTH", 1, kStatus},//
   {BGREWRITEAOF, "BGREWRITEAOF", 0, kStatus},//
   {BGSAVE, "BGSAVE", 0, kStatus},//
+  {BITCOUNT, "BITCOUNT", -1, kInteger},//
+  {BITOP, "BITOP", -3, kInteger},//
   // BLPOP may block
   {BLPOP, "BLPOP", -2, kMultiBulk},//
   // BRPOP may block
@@ -170,6 +172,8 @@ CommandRevMapType s_command_rev_map = boost::assign::map_list_of
 ("AUTH",AUTH)
 ("BGREWRITEAOF",BGREWRITEAOF)
 ("BGSAVE",BGSAVE)
+("BITCOUNT",BITCOUNT)
+("BITOP",BITOP)
 ("BLPOP",BLPOP)
 ("BRPOP",BRPOP)
 ("BRPOPLPUSH",BRPOPLPUSH)

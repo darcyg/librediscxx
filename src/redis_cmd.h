@@ -29,6 +29,8 @@ enum kCommand
   AUTH,
   BGREWRITEAOF,
   BGSAVE,
+  BITCOUNT,
+  BITOP,
   BLPOP,
   BRPOP,
   BRPOPLPUSH,

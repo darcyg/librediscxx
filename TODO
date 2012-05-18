@@ -1,2 +1,3 @@
+add more commands
 exec_command support commands with spaces
 consistent hash partitioned client

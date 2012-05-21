@@ -9,5 +9,5 @@ Features:
 3. fixed-size partition client
 
 Build and Installation:
-1. librediscxx depends on boost.
+1. librediscxx depends on boost(>=1.35).
 2. Building in linux requires SCons. While a solution of VS2008 is provided.

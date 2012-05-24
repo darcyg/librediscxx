@@ -24,7 +24,8 @@ if not env.GetOption('clean'):
         sys.exit()
     env = conf.Finish()
 
-env.Append(CCFLAGS = Split('-Wall -g -O2 -std=c++98 -pedantic -Wno-variadic-macros'))
+#env.Append(CCFLAGS = Split('-Wall -g -O2 -std=c++98 -pedantic -Wno-variadic-macros'))
+env.Append(CCFLAGS = Split('-Wall -g -O2'))
 env.Append(CPPPATH = 'src')
 
 env.Append(LIBS = [

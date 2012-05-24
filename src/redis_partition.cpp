@@ -156,10 +156,10 @@ bool Redis2P::__get_keys_client(const string_vector_t& keys,
   else
   {
     // get clients in all groups
+    index_v.resize(keys.size());
     for (size_t i=0; i<keys.size(); i++)
     {
       host_index = __get_key_host_index(keys[i]);
-      index_v.resize(i+1);
       index_v[i].reserve(groups_);
       for (size_t j=0; j<groups_; j++)
       {

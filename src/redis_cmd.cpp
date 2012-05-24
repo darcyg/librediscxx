@@ -67,7 +67,7 @@ static const CommandInfo s_command_map[] =
   {INCR, "INCR", 1, kInteger},//
   {INCRBY, "INCRBY", 2, kInteger},//
   {INCRBYFLOAT, "INCRBYFLOAT", 2, kBulk},//
-  {INFO, "INFO", 0, kBulk},//
+  {INFO, "INFO", ARGC_NO_CHECKING, kBulk},//
   {KEYS, "KEYS", 1, kMultiBulk},//
   {LASTSAVE, "LASTSAVE", 0, kInteger},//
   {LINDEX, "LINDEX", 2, kBulk},//

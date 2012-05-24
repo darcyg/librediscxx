@@ -241,17 +241,13 @@ class TcpClient::Impl
     {
       // adjust timeout
       timeout /= kConnectTimeoutProportion;
-      if (timeout.total_milliseconds()==0)
-        timeout = boost::posix_time::milliseconds(1);
+      if (timeout.total_milliseconds()<kMinConnectTimeout)
+        timeout = boost::posix_time::milliseconds(kMinConnectTimeout);
 
       boost::asio::ip::tcp::resolver::iterator iter =
         __resolve_host(ip_or_host, port_or_service, timeout, ec);
       if (ec)
         return;
-
-      boost::posix_time::milliseconds min_timeout(kMinConnectTimeout);
-      if (timeout<min_timeout)
-        timeout = min_timeout;
 
       // set timer
       socket_timer_.expires_from_now(timeout);
@@ -262,12 +258,14 @@ class TcpClient::Impl
         io_service_.reset();
 
         socket_.open(iter->endpoint().protocol(), ec);
-        if (ec) continue;
+        if (ec)
+          continue;
 
         // use non-block mode
         boost::asio::socket_base::non_blocking_io command(true);
         socket_.io_control(command, ec);
-        if (ec) continue;
+        if (ec)
+          continue;
 
         ec = boost::asio::error::would_block;
         socket_.async_connect(iter->endpoint(),

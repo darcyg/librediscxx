@@ -18,7 +18,7 @@ class Redis2P : public RedisBase2Multi
 {
   private:
     bool __inner_init();
-    bool is_invalid(size_t index)const;
+    // bool is_invalid(size_t index)const;
 
     bool __get_key_client(const std::string& key,
         size_t_vector_t& host_indexes, bool write = true);
@@ -37,7 +37,7 @@ class Redis2P : public RedisBase2Multi
     size_t groups_;
 
     redis2_sp_vector_t redis2_sp_vector_;
-    std::set<size_t> invalid_redis_;
+    // std::set<size_t> invalid_redis_;
 
   public:
     Redis2P(
@@ -56,8 +56,8 @@ class Redis2P : public RedisBase2Multi
     // retrieve all of them ignoring the availability
     bool get_all_client(redis2_sp_vector_t * redis_clients);
 
-    // usually, this is called in class RedisTss to detect and shield unavailable clients
-    void set_invalid_redis(const std::set<size_t>& invalid_redis);
+    //// usually, this is called in class RedisTss to detect and shield unavailable clients
+    // void set_invalid_redis(const std::set<size_t>& invalid_redis);
 
     /************************************************************************/
     /*KEYS command*/

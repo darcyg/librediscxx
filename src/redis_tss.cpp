@@ -50,8 +50,8 @@ class RedisTss::Impl
 
     std::vector<std::string> redis_hosts_;
 
-    boost::mutex invalid_redis_lock_;
-    std::set<size_t> invalid_redis_;
+    //boost::mutex invalid_redis_lock_;
+    //std::set<size_t> invalid_redis_;
 
     boost::scoped_ptr<boost::thread> check_thread_;
     boost::asio::io_service io_service_;
@@ -67,10 +67,10 @@ class RedisTss::Impl
     thread_specific_ptr<RedisBase2> client_;
 
     void inner_init();
-    void check_invalid_redis();
-    void set_check();
-    void start_check();
-    void stop_check();
+    //void check_invalid_redis();
+    //void set_check();
+    //void start_check();
+    //void stop_check();
 
     void clear_free_redis()
     {
@@ -141,7 +141,7 @@ RedisTss::Impl::Impl(const std::string& host, const std::string& port,
 
 RedisTss::Impl::~Impl()
 {
-  stop_check();
+  // stop_check();
   clear_free_redis();
 }
 
@@ -167,11 +167,11 @@ RedisBase2 * RedisTss::Impl::get()
     client_.reset(redis_ptr);
   }
 
-  if (type_==kPartition && redis_hosts_.size()>1)
-  {
-    boost::mutex::scoped_lock guard(invalid_redis_lock_);
-    (static_cast<Redis2P *>(redis_ptr))->set_invalid_redis(invalid_redis_);
-  }
+  //if (type_==kPartition && redis_hosts_.size()>1)
+  //{
+  //  boost::mutex::scoped_lock guard(invalid_redis_lock_);
+  //  (static_cast<Redis2P *>(redis_ptr))->set_invalid_redis(invalid_redis_);
+  //}
   return redis_ptr;
 }
 
@@ -179,72 +179,72 @@ void RedisTss::Impl::inner_init()
 {
   boost::split(redis_hosts_, host_, boost::is_any_of(","));
 
-  if (type_==kPartition && redis_hosts_.size()>1)
-  {
-    start_check();
-  }
+  //if (type_==kPartition && redis_hosts_.size()>1)
+  //{
+  //  start_check();
+  //}
 }
 
-void RedisTss::Impl::check_invalid_redis()
-{
-  std::set<size_t> invalid_redis_tmp;
-  bool has_changed = false;
-  for (size_t i=0; i<redis_hosts_.size(); i++)
-  {
-    RedisProtocol r(redis_hosts_[i], port_, timeout_ms_);
-    if (!r.connect())
-    {
-      invalid_redis_tmp.insert(i);
-      if (invalid_redis_.find(i)==invalid_redis_.end())
-      {
-        has_changed = true;
-      }
-    }
-    else
-    {
-      if (invalid_redis_.find(i)!=invalid_redis_.end())
-      {
-        has_changed = true;
-      }
-    }
-  }
-
-  if (has_changed)
-  {
-    boost::mutex::scoped_lock guard(invalid_redis_lock_);
-    invalid_redis_.swap(invalid_redis_tmp);
-  }
-
-  set_check();
-}
-
-void RedisTss::Impl::set_check()
-{
-  check_timer_.expires_from_now(boost::posix_time::seconds(check_interval_));
-  check_timer_.async_wait(boost::bind(&RedisTss::Impl::check_invalid_redis, this));
-}
-
-void RedisTss::Impl::start_check()
-{
-  if (!check_thread_)
-  {
-    check_invalid_redis();
-
-    io_service_.reset();
-    check_thread_.reset(new boost::thread
-        (boost::bind(&boost::asio::io_service::run, &io_service_)));// may throw
-  }
-}
-
-void RedisTss::Impl::stop_check()
-{
-  if (check_thread_)
-  {
-    io_service_.stop();
-    check_thread_->join();
-    check_thread_.reset();
-  }
-}
+//void RedisTss::Impl::check_invalid_redis()
+//{
+//  std::set<size_t> invalid_redis_tmp;
+//  bool has_changed = false;
+//  for (size_t i=0; i<redis_hosts_.size(); i++)
+//  {
+//    RedisProtocol r(redis_hosts_[i], port_, timeout_ms_);
+//    if (!r.connect())
+//    {
+//      invalid_redis_tmp.insert(i);
+//      if (invalid_redis_.find(i)==invalid_redis_.end())
+//      {
+//        has_changed = true;
+//      }
+//    }
+//    else
+//    {
+//      if (invalid_redis_.find(i)!=invalid_redis_.end())
+//      {
+//        has_changed = true;
+//      }
+//    }
+//  }
+//
+//  if (has_changed)
+//  {
+//    boost::mutex::scoped_lock guard(invalid_redis_lock_);
+//    invalid_redis_.swap(invalid_redis_tmp);
+//  }
+//
+//  set_check();
+//}
+//
+//void RedisTss::Impl::set_check()
+//{
+//  check_timer_.expires_from_now(boost::posix_time::seconds(check_interval_));
+//  check_timer_.async_wait(boost::bind(&RedisTss::Impl::check_invalid_redis, this));
+//}
+//
+//void RedisTss::Impl::start_check()
+//{
+//  if (!check_thread_)
+//  {
+//    check_invalid_redis();
+//
+//    io_service_.reset();
+//    check_thread_.reset(new boost::thread
+//        (boost::bind(&boost::asio::io_service::run, &io_service_)));// may throw
+//  }
+//}
+//
+//void RedisTss::Impl::stop_check()
+//{
+//  if (check_thread_)
+//  {
+//    io_service_.stop();
+//    check_thread_->join();
+//    check_thread_.reset();
+//  }
+//}
 
 /************************************************************************/
 /*RedisTss*/

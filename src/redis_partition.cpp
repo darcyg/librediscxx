@@ -90,10 +90,10 @@ bool Redis2P::__inner_init()
   return true;
 }
 
-bool Redis2P::is_invalid(size_t index)const
-{
-  return invalid_redis_.find(index)==invalid_redis_.end();
-}
+//bool Redis2P::is_invalid(size_t index)const
+//{
+//  return invalid_redis_.find(index)==invalid_redis_.end();
+//}
 
 bool Redis2P::__get_key_client(const std::string& key, size_t_vector_t& index_v, bool write)
 {
@@ -108,8 +108,8 @@ bool Redis2P::__get_key_client(const std::string& key, size_t_vector_t& index_v,
   {
     // get one client in one group
     index = host_index + host_num * (seed % groups_);
-    if (is_invalid(index))
-      index_v.push_back(index);
+    // if (is_invalid(index))
+    index_v.push_back(index);
   }
   else
   {
@@ -117,8 +117,8 @@ bool Redis2P::__get_key_client(const std::string& key, size_t_vector_t& index_v,
     for (size_t i=0; i<groups_; i++)
     {
       index = host_index + host_num * ((seed + i) % groups_);
-      if (is_invalid(index))
-        index_v.push_back(index);
+      // if (is_invalid(index))
+      index_v.push_back(index);
     }
   }
 
@@ -149,8 +149,8 @@ bool Redis2P::__get_keys_client(const string_vector_t& keys,
     {
       host_index = __get_key_host_index(keys[i]);
       index = host_index + host_num * (seed % groups_);
-      if (is_invalid(index))
-        index_v[i].push_back(index);
+      // if (is_invalid(index))
+      index_v[i].push_back(index);
     }
   }
   else
@@ -164,8 +164,8 @@ bool Redis2P::__get_keys_client(const string_vector_t& keys,
       for (size_t j=0; j<groups_; j++)
       {
         index = host_index + host_num * j;
-        if (is_invalid(index))
-          index_v[i].push_back(index);
+        // if (is_invalid(index))
+        index_v[i].push_back(index);
       }
     }
   }
@@ -194,8 +194,8 @@ bool Redis2P::__get_group_client(size_t_vector_t& index_v)
   for (size_t i=0; i<host_num; i++)
   {
     index = host_index + i;
-    if (is_invalid(index))
-      index_v.push_back(index);
+    // if (is_invalid(index))
+    index_v.push_back(index);
   }
 
   if (index_v.empty())
@@ -263,8 +263,8 @@ bool Redis2P::get_index_client(size_t host_index, redis2_sp_vector_t * redis_cli
   for (size_t i=0; i<groups_; i++)
   {
     index = host_index + host_num * i;
-    if (is_invalid(index))
-      redis_clients->push_back(redis2_sp_vector_[index]);
+    // if (is_invalid(index))
+    redis_clients->push_back(redis2_sp_vector_[index]);
   }
 
   if (redis_clients->empty())
@@ -283,10 +283,10 @@ bool Redis2P::get_all_client(redis2_sp_vector_t * redis_clients)
   return true;
 }
 
-void Redis2P::set_invalid_redis(const std::set<size_t>& invalid_redis)
-{
-  invalid_redis_ = invalid_redis;
-}
+//void Redis2P::set_invalid_redis(const std::set<size_t>& invalid_redis)
+//{
+//  invalid_redis_ = invalid_redis;
+//}
 
 bool Redis2P::del(const std::string& key, int64_t * _return)
 {

@@ -166,8 +166,8 @@ static const CommandInfo s_command_map[] =
   {COMMAND_MAX, "COMMAND_MAX", ARGC_NO_CHECKING, kNone},// place holder
 };
 
-typedef std::map<std::string, kCommand> CommandRevMapType;
-CommandRevMapType s_command_rev_map = boost::assign::map_list_of
+typedef std::map<std::string, kCommand> command_rev_map_t;
+command_rev_map_t s_command_rev_map = boost::assign::map_list_of
 ("APPEND",APPEND)
 ("AUTH",AUTH)
 ("BGREWRITEAOF",BGREWRITEAOF)
@@ -545,7 +545,7 @@ void RedisInput::set_command(const std::string& cmd)
   for (size_t i=0; i<upper_cmd.size(); i++)
     upper_cmd[i] = ::toupper(upper_cmd[i]);
 
-  CommandRevMapType::const_iterator iter
+  command_rev_map_t::const_iterator iter
     = s_command_rev_map.find(upper_cmd);
 
   if (iter!=s_command_rev_map.end())

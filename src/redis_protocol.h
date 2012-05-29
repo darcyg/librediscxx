@@ -9,6 +9,7 @@
 #define _LANGTAOJIN_LIBREDIS_REDIS_PROTOCOL_H_
 
 #include "redis_cmd.h"
+#include <boost/date_time.hpp>
 
 LIBREDIS_NAMESPACE_BEGIN
 

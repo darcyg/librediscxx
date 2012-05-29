@@ -7,113 +7,106 @@
  */
 #include "host_resolver.h"
 #include <boost/bind.hpp>
+#include <boost/thread.hpp>
 
 LIBREDIS_NAMESPACE_BEGIN
 
 class HostResolver::Impl
 {
   private:
+    typedef std::pair<std::string, std::string> host_service_t;
+
+    struct HostEntry
+    {
+      endpoint_vector_t endpoints;
+      boost::system::error_code ec;
+    };
+
+    typedef std::map<host_service_t, HostEntry> dns_cache_t;
+
+    dns_cache_t dns_cache_;
+    mutable boost::shared_mutex dns_cache_mutex_;
+
     boost::asio::io_service io_service_;
     boost::asio::ip::tcp::resolver resolver_;
-    boost::asio::deadline_timer resolver_timer_;
 
-    void __resolve_timeout_handler(
-        const boost::system::error_code& ec,
-        boost::system::error_code * error_out)
+    void __resolve_host(
+        const std::string& host,
+        const std::string& service,
+        endpoint_vector_t& endpoints,
+        boost::system::error_code& ec)
     {
-      if (ec==boost::asio::error::operation_aborted)
-      {
-        // The timer was canceled, so the resolver is ok.
-      }
-      else
-      {
-        // The deadline has passed, cancel the resolver.
-        resolver_.cancel();
+      endpoints.clear();
 
-        // Unluckily, there is a bug that resolver's cancellation works unexpectedly:
-        // https://svn.boost.org/trac/boost/ticket/6138
-        // Wait for its patch.
+      boost::asio::ip::tcp::resolver::query query(host, service);
+      boost::asio::ip::tcp::resolver::iterator iter = resolver_.resolve(query, ec);
 
-        // Temporarily, we assign 'error_out', and check it in '__resolve_handler'.
-        // But the cancellation is still not immediate.
-        *error_out = boost::asio::error::make_error_code(boost::asio::error::operation_aborted);
-      }
+      if (ec)
+        return;
+
+      for (; iter!=boost::asio::ip::tcp::resolver::iterator(); ++iter)
+        endpoints.push_back(iter->endpoint());
     }
 
-    void __resolve_handler(
-        const boost::system::error_code& ec,
-        boost::asio::ip::tcp::resolver::iterator iterator,
-        boost::system::error_code * error_out,
-        boost::asio::ip::tcp::resolver::iterator * iterator_out)
+    bool __lookup_cache(
+        const std::string& host,
+        const std::string& service,
+        endpoint_vector_t& endpoints,
+        boost::system::error_code& ec)const
     {
-      if (*error_out==boost::asio::error::operation_aborted
-          || ec==boost::asio::error::operation_aborted)
-      {
-        // The resolver was canceled, timed out.
-      }
-      else
-      {
-        // The resolver is ok, cancel the timer.
-        resolver_timer_.cancel();
+      host_service_t key = std::make_pair(host, service);
+      dns_cache_t::const_iterator iter;
 
-        *error_out = ec;
-        *iterator_out = iterator;
-      }
+      boost::shared_lock<boost::shared_mutex> guard(dns_cache_mutex_);
+
+      iter = dns_cache_.find(key);
+      if (iter == dns_cache_.end())
+        return false;
+
+      endpoints = (*iter).second.endpoints;
+      ec = (*iter).second.ec;
+      return true;
+    }
+
+    void __update_cache(
+        const std::string& host,
+        const std::string& service,
+        const endpoint_vector_t& endpoints,
+        const boost::system::error_code& ec)
+    {
+      host_service_t key = std::make_pair(host, service);
+      HostEntry host_entry;
+      host_entry.endpoints = endpoints;
+      host_entry.ec = ec;
+
+      boost::unique_lock<boost::shared_mutex> guard(dns_cache_mutex_);
+      dns_cache_[key] = host_entry;
     }
 
   public:
     Impl()
       : io_service_(),
-      resolver_(io_service_),
-      resolver_timer_(io_service_) {}
+      resolver_(io_service_) {}
 
     ~Impl() {}
 
-    boost::asio::ip::tcp::resolver::iterator resolve_host(
-        const std::string& ip_or_host,
-        const std::string& port_or_service,
+    void resolve_host(
+        const std::string& host,
+        const std::string& service,
+        endpoint_vector_t& endpoints,
         boost::system::error_code& ec)
     {
-      boost::asio::ip::tcp::resolver::query query(ip_or_host, port_or_service);
-      boost::asio::ip::tcp::resolver::iterator iterator_ret = resolver_.resolve(query, ec);
+      if (__lookup_cache(host, service, endpoints, ec))
+        return;
 
-      if (ec)
-      {
-        // return an invalid iterator
-        return boost::asio::ip::tcp::resolver::iterator();
-      }
-
-      return iterator_ret;
+      __resolve_host(host, service, endpoints, ec);
+      __update_cache(host, service, endpoints, ec);
     }
 
-    boost::asio::ip::tcp::resolver::iterator resolve_host(
-        const std::string& ip_or_host,
-        const std::string& port_or_service,
-        boost::posix_time::time_duration timeout,
-        boost::system::error_code& ec)
+    void clear_cache()
     {
-      boost::asio::ip::tcp::resolver::query query(ip_or_host, port_or_service);
-      boost::asio::ip::tcp::resolver::iterator iterator_ret;
-
-      ec = boost::asio::error::would_block;
-
-      resolver_.async_resolve(query,
-          boost::bind(&HostResolver::Impl::__resolve_handler, this, _1, _2, &ec, &iterator_ret));
-
-      // set timer
-      resolver_timer_.expires_from_now(timeout);
-      resolver_timer_.async_wait(
-          boost::bind(&HostResolver::Impl::__resolve_timeout_handler, this, _1, &ec));
-
-      io_service_.reset();
-      io_service_.run();
-      if (ec)
-      {
-        // return an invalid iterator
-        return boost::asio::ip::tcp::resolver::iterator();
-      }
-
-      return iterator_ret;
+      boost::unique_lock<boost::shared_mutex> guard(dns_cache_mutex_);
+      dns_cache_.clear();
     }
 };
 
@@ -127,21 +120,17 @@ HostResolver::~HostResolver()
   delete impl_;
 }
 
-boost::asio::ip::tcp::resolver::iterator HostResolver::resolve_host(
-    const std::string& ip_or_host,
-    const std::string& port_or_service,
+void HostResolver::resolve_host(const std::string& host,
+    const std::string& service,
+    endpoint_vector_t& endpoints,
     boost::system::error_code& ec)
 {
-  return impl_->resolve_host(ip_or_host, port_or_service, ec);
+  impl_->resolve_host(host, service, endpoints, ec);
 }
 
-boost::asio::ip::tcp::resolver::iterator HostResolver::resolve_host(
-    const std::string& ip_or_host,
-    const std::string& port_or_service,
-    boost::posix_time::time_duration timeout,
-    boost::system::error_code& ec)
+void HostResolver::clear_cache()
 {
-  return impl_->resolve_host(ip_or_host, port_or_service, timeout, ec);
+  impl_->clear_cache();
 }
 
 LIBREDIS_NAMESPACE_END

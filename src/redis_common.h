@@ -26,7 +26,6 @@
 #include <map>
 
 #include <boost/cstdint.hpp>
-#include <boost/date_time.hpp>
 #include <boost/shared_ptr.hpp>
 
 typedef boost::int64_t int64_t;

@@ -14,7 +14,9 @@
 
 LIBREDIS_NAMESPACE_BEGIN
 
-// single thread safety
+typedef std::vector<boost::asio::ip::tcp::endpoint> endpoint_vector_t;
+
+// multi thread safety
 class HostResolver
 {
   private:
@@ -25,36 +27,13 @@ class HostResolver
     HostResolver();
     ~HostResolver();
 
-    /*
-     * usage of the return value of resolve_host:
-
-     * 1.iterator all the hosts:
-     * iter = resolve_host(...);
-     * // check if ec is ok
-     * for (; iter!=boost::asio::ip::tcp::resolver::iterator(); ++iter)
-     * {
-     * }
-
-     * 2.judge the host is resolved:
-     * iter = resolve_host(...);
-     * // check if ec is ok
-     * if (iter!=boost::asio::ip::tcp::resolver::iterator())
-     * {
-     * }
-     */
-
-    // resolve host without a timeout
-    boost::asio::ip::tcp::resolver::iterator resolve_host(
-        const std::string& ip_or_host,
-        const std::string& port_or_service,
+    void resolve_host(
+        const std::string& host,
+        const std::string& service,
+        endpoint_vector_t& endpoints,
         boost::system::error_code& ec);
 
-    // resolve host with a timeout
-    boost::asio::ip::tcp::resolver::iterator resolve_host(
-        const std::string& ip_or_host,
-        const std::string& port_or_service,
-        boost::posix_time::time_duration timeout,
-        boost::system::error_code& ec);
+    void clear_cache();
 };
 
 LIBREDIS_NAMESPACE_END

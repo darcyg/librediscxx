@@ -15,6 +15,8 @@
 
 LIBREDIS_NAMESPACE_BEGIN
 
+static HostResolver s_host_resolver;
+
 enum
 {
   kDefaultBufferSize = 512,
@@ -209,15 +211,15 @@ class TcpClient::Impl
       __socket_timeout_handler();
     }
 
-    inline boost::asio::ip::tcp::resolver::iterator __resolve_host(
-        const std::string& ip_or_host,
-        const std::string& port_or_service,
-        boost::posix_time::time_duration timeout,
-        boost::system::error_code& ec)
-    {
-      HostResolver host_resolver;
-      return host_resolver.resolve_host(ip_or_host, port_or_service, timeout, ec);
-    }
+    //inline boost::asio::ip::tcp::resolver::iterator __resolve_host(
+    //    const std::string& ip_or_host,
+    //    const std::string& port_or_service,
+    //    boost::posix_time::time_duration timeout,
+    //    boost::system::error_code& ec)
+    //{
+    //  HostResolver host_resolver;
+    //  return host_resolver.resolve_host(ip_or_host, port_or_service, timeout, ec);
+    //}
 
   public:
     Impl()
@@ -239,25 +241,25 @@ class TcpClient::Impl
         boost::posix_time::time_duration timeout,
         boost::system::error_code& ec)
     {
+      endpoint_vector_t endpoints;
+      s_host_resolver.resolve_host(ip_or_host, port_or_service, endpoints, ec);
+      if (ec)
+        return;
+
       // adjust timeout
       timeout /= kConnectTimeoutProportion;
       if (timeout.total_milliseconds()<kMinConnectTimeout)
         timeout = boost::posix_time::milliseconds(kMinConnectTimeout);
 
-      boost::asio::ip::tcp::resolver::iterator iter =
-        __resolve_host(ip_or_host, port_or_service, timeout, ec);
-      if (ec)
-        return;
-
       // set timer
       socket_timer_.expires_from_now(timeout);
 
-      for (; iter!=boost::asio::ip::tcp::resolver::iterator(); ++iter)
+      for (size_t i=0; i<endpoints.size(); i++)
       {
         close();
         io_service_.reset();
 
-        socket_.open(iter->endpoint().protocol(), ec);
+        socket_.open(endpoints[i].protocol(), ec);
         if (ec)
           continue;
 
@@ -268,7 +270,7 @@ class TcpClient::Impl
           continue;
 
         ec = boost::asio::error::would_block;
-        socket_.async_connect(iter->endpoint(),
+        socket_.async_connect(endpoints[i],
             boost::bind(&TcpClient::Impl::__connect_handler, this, _1, &ec));
 
         do io_service_.run_one(); while (ec==boost::asio::error::would_block);

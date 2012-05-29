@@ -6,8 +6,6 @@
  *
  */
 #include <redis_common.h>
-#include <blocking_tcp_client.h>
-#include <host_resolver.h>
 #include <os.h>
 #include <redis_protocol.h>
 #include <redis_cmd.h>
@@ -97,55 +95,6 @@ namespace
 
     s_redis_version.assign(begin, end);
     cout << "redis version: " << s_redis_version << endl;
-  }
-
-  int host_resolver_test()
-  {
-    cout << "host_resolver_test..." << endl;
-    HostResolver res;
-    boost::asio::ip::tcp::resolver::iterator iter;
-    boost::posix_time::time_duration _short = boost::posix_time::milliseconds(50);
-    boost::posix_time::time_duration _long = boost::posix_time::seconds(10);
-    boost::system::error_code ec;
-
-    std::string hosts[] =
-    {
-      "www.baidu.com",
-      "www.qq.com",
-    };
-
-    for (size_t i=0; i<sizeof(hosts)/sizeof(hosts[0]); i++)
-    {
-      cout << "resolving host: " << hosts[i] << endl;
-      iter = res.resolve_host(hosts[i], "80", _short, ec);
-      if (iter != boost::asio::ip::tcp::resolver::iterator())
-      {
-        cout << "resolved host: " << hosts[i] << "=" << iter->endpoint() << endl;
-      }
-      else
-      {
-        cout << "resolve host: " << hosts[i] << " failed: " << ec.message() << endl;
-      }
-      cout << endl;
-    }
-
-    for (size_t i=0; i<sizeof(hosts)/sizeof(hosts[0]); i++)
-    {
-      cout << "resolving host: " << hosts[i] << endl;
-      iter = res.resolve_host(hosts[i], "80", _long, ec);
-      if (iter != boost::asio::ip::tcp::resolver::iterator())
-      {
-        cout << "resolved host: " << hosts[i] << "=" << iter->endpoint() << endl;
-      }
-      else
-      {
-        cout << "resolve host: " << hosts[i] << " failed: " << ec.message() << endl;
-      }
-      cout << endl;
-    }
-
-    cout << "host_resolver_test ok" << endl;
-    return 0;
   }
 
   int os_test()
@@ -1111,8 +1060,6 @@ int main(int argc, char * argv[])
     return 1;
   }
 
-  // this is slow, do not test it
-  // host_resolver_test();
   os_test();
   protocol_test();
   get_redis_version();

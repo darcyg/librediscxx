@@ -9,6 +9,7 @@
 #define _LANGTAOJIN_LIBREDIS_BLOCKING_TCP_CLIENT_H_
 
 #include "redis_common.h"
+#include <boost/date_time.hpp>
 #include <boost/system/system_error.hpp>
 
 LIBREDIS_NAMESPACE_BEGIN

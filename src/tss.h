@@ -70,9 +70,7 @@ class thread_specific_ptr
 
       public:
         explicit custom_cleanup_function_ptr(cleanup_function_ptr_type cleanup_function)
-          :cleanup_function_(cleanup_function)
-        {
-        }
+          : cleanup_function_(cleanup_function) {}
 
         void operator()(void * data)
         {

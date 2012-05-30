@@ -313,10 +313,7 @@ class ClearGuard
     T * t_;
 
   public:
-    ClearGuard(T * t)
-      :t_(t)
-    {
-    }
+    ClearGuard(T * t) : t_(t) {}
 
     ~ClearGuard()
     {

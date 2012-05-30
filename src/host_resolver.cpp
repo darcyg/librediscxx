@@ -6,7 +6,6 @@
  *
  */
 #include "host_resolver.h"
-#include <boost/bind.hpp>
 #include <boost/thread.hpp>
 
 LIBREDIS_NAMESPACE_BEGIN
@@ -29,6 +28,7 @@ class HostResolver::Impl
 
     boost::asio::io_service io_service_;
     boost::asio::ip::tcp::resolver resolver_;
+    const bool enable_cache_;
 
     void __resolve_host(
         const std::string& host,
@@ -84,9 +84,10 @@ class HostResolver::Impl
     }
 
   public:
-    Impl()
+    explicit Impl(bool enable_cache)
       : io_service_(),
-      resolver_(io_service_) {}
+      resolver_(io_service_),
+      enable_cache_(enable_cache) {}
 
     ~Impl() {}
 
@@ -96,11 +97,18 @@ class HostResolver::Impl
         endpoint_vector_t& endpoints,
         boost::system::error_code& ec)
     {
-      if (__lookup_cache(host, service, endpoints, ec))
-        return;
+      if (!enable_cache_)
+      {
+        __resolve_host(host, service, endpoints, ec);
+      }
+      else
+      {
+        if (__lookup_cache(host, service, endpoints, ec))
+          return;
 
-      __resolve_host(host, service, endpoints, ec);
-      __update_cache(host, service, endpoints, ec);
+        __resolve_host(host, service, endpoints, ec);
+        __update_cache(host, service, endpoints, ec);
+      }
     }
 
     void clear_cache()
@@ -110,9 +118,9 @@ class HostResolver::Impl
     }
 };
 
-HostResolver::HostResolver()
+HostResolver::HostResolver(bool enable_cache)
 {
-  impl_ = new Impl();// may throw
+  impl_ = new Impl(enable_cache);// may throw
 }
 
 HostResolver::~HostResolver()

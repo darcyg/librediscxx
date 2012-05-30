@@ -55,7 +55,7 @@ namespace
     { \
       s_failed++; \
       cout << __FILE__ << "(" << __LINE__ << "):\"" << #exp << "\" fails:" \
-        << (client).last_c_error() << endl; \
+      << (client).last_c_error() << endl; \
       cout << __FUNCTION__ << " failed" << endl; \
       return 1; \
     } \
@@ -581,34 +581,34 @@ namespace
       VERIFY(i == 2);
 
       /*
-      keys.clear();
-      keys += "a";
-      VERIFY_MSG(rs->blpop(keys, 1, &key, &member, &expired), *rs);
-      VERIFY(!expired);
-      keys.clear();
-      keys += "d", "e", "f", "g";
-      VERIFY_MSG(rs->blpop(keys, 1, &key, &member, &expired), *rs);
-      VERIFY(expired);
+         keys.clear();
+         keys += "a";
+         VERIFY_MSG(rs->blpop(keys, 1, &key, &member, &expired), *rs);
+         VERIFY(!expired);
+         keys.clear();
+         keys += "d", "e", "f", "g";
+         VERIFY_MSG(rs->blpop(keys, 1, &key, &member, &expired), *rs);
+         VERIFY(expired);
 
-      keys.clear();
-      keys += "a";
-      VERIFY_MSG(rs->brpop(keys, 1, &key, &member, &expired), *rs);
-      VERIFY(!expired);
-      keys.clear();
-      keys += "d", "e", "f", "g";
-      VERIFY_MSG(rs->brpop(keys, 1, &key, &member, &expired), *rs);
-      VERIFY(expired);
+         keys.clear();
+         keys += "a";
+         VERIFY_MSG(rs->brpop(keys, 1, &key, &member, &expired), *rs);
+         VERIFY(!expired);
+         keys.clear();
+         keys += "d", "e", "f", "g";
+         VERIFY_MSG(rs->brpop(keys, 1, &key, &member, &expired), *rs);
+         VERIFY(expired);
 
-      VERIFY_MSG(rs->brpoplpush("a", "b", 1, &key, &expired), *rs);
-      VERIFY(expired);
-      VERIFY_MSG(rs->brpoplpush("b", "a", 1, &key, &expired), *rs);
-      VERIFY(!expired);
+         VERIFY_MSG(rs->brpoplpush("a", "b", 1, &key, &expired), *rs);
+         VERIFY(expired);
+         VERIFY_MSG(rs->brpoplpush("b", "a", 1, &key, &expired), *rs);
+         VERIFY(!expired);
 
-      VERIFY_MSG(rs->rpoplpush("a", "b", &s, &is_nil), *rs);
-      VERIFY(!is_nil);
-      VERIFY_MSG(rs->rpoplpush("a", "b", &s, &is_nil), *rs);
-      VERIFY(is_nil);
-      */
+         VERIFY_MSG(rs->rpoplpush("a", "b", &s, &is_nil), *rs);
+         VERIFY(!is_nil);
+         VERIFY_MSG(rs->rpoplpush("a", "b", &s, &is_nil), *rs);
+         VERIFY(is_nil);
+         */
     }
 
 

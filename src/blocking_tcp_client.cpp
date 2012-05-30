@@ -211,16 +211,6 @@ class TcpClient::Impl
       __socket_timeout_handler();
     }
 
-    //inline boost::asio::ip::tcp::resolver::iterator __resolve_host(
-    //    const std::string& ip_or_host,
-    //    const std::string& port_or_service,
-    //    boost::posix_time::time_duration timeout,
-    //    boost::system::error_code& ec)
-    //{
-    //  HostResolver host_resolver;
-    //  return host_resolver.resolve_host(ip_or_host, port_or_service, timeout, ec);
-    //}
-
   public:
     Impl()
       :io_service_(),
@@ -238,7 +228,7 @@ class TcpClient::Impl
     inline void connect(
         const std::string& ip_or_host,
         const std::string& port_or_service,
-        boost::posix_time::time_duration timeout,
+        size_t timeout,
         boost::system::error_code& ec)
     {
       endpoint_vector_t endpoints;
@@ -246,13 +236,16 @@ class TcpClient::Impl
       if (ec)
         return;
 
+      boost::posix_time::time_duration _timeout;
       // adjust timeout
       timeout /= kConnectTimeoutProportion;
-      if (timeout.total_milliseconds()<kMinConnectTimeout)
-        timeout = boost::posix_time::milliseconds(kMinConnectTimeout);
+      if (timeout<kMinConnectTimeout)
+        _timeout = boost::posix_time::milliseconds(kMinConnectTimeout);
+      else
+        _timeout = boost::posix_time::milliseconds(timeout);
 
       // set timer
-      socket_timer_.expires_from_now(timeout);
+      socket_timer_.expires_from_now(_timeout);
 
       for (size_t i=0; i<endpoints.size(); i++)
       {
@@ -289,13 +282,14 @@ class TcpClient::Impl
 
     inline void write(
         const std::string& line,
-        boost::posix_time::time_duration timeout,
+        size_t timeout,
         boost::system::error_code& ec)
     {
       size_t count;
 
+      boost::posix_time::time_duration _timeout = boost::posix_time::milliseconds(timeout);
       // set timer
-      socket_timer_.expires_from_now(timeout);
+      socket_timer_.expires_from_now(_timeout);
 
       ec = boost::asio::error::would_block;
       boost::asio::async_write(socket_, boost::asio::buffer(line),
@@ -313,7 +307,7 @@ class TcpClient::Impl
     inline std::string read(
         size_t size,
         const std::string& delim,
-        boost::posix_time::time_duration timeout,
+        size_t timeout,
         boost::system::error_code& ec)
     {
       assert(size && !delim.empty());
@@ -324,8 +318,13 @@ class TcpClient::Impl
       size_t to_read = expect - buffer_.read_size();
       size_t count;
 
+      boost::posix_time::time_duration _timeout;
+      if (timeout != 0)
+        _timeout = boost::posix_time::milliseconds(timeout);
+      else
+        _timeout = boost::posix_time::pos_infin;
       // set timer
-      socket_timer_.expires_from_now(timeout);
+      socket_timer_.expires_from_now(_timeout);
 
       for (;;)
       {
@@ -365,7 +364,7 @@ class TcpClient::Impl
 
     inline std::string read_line(
         const std::string& delim,
-        boost::posix_time::time_duration timeout,
+        size_t timeout,
         boost::system::error_code& ec)
     {
       assert(!delim.empty());
@@ -379,8 +378,13 @@ class TcpClient::Impl
       size_t to_consume;
       size_t count;
 
+      boost::posix_time::time_duration _timeout;
+      if (timeout != 0)
+        _timeout = boost::posix_time::milliseconds(timeout);
+      else
+        _timeout = boost::posix_time::pos_infin;
       // set timer
-      socket_timer_.expires_from_now(timeout);
+      socket_timer_.expires_from_now(_timeout);
 
       for (;;)
       {
@@ -498,14 +502,14 @@ TcpClient::~TcpClient()
 
 void TcpClient::connect(const std::string& ip_or_host,
     const std::string& port_or_service,
-    boost::posix_time::time_duration timeout,
+    size_t timeout,
     boost::system::error_code& ec)
 {
   impl_->connect(ip_or_host, port_or_service, timeout, ec);
 }
 
 void TcpClient::write(const std::string& line,
-    boost::posix_time::time_duration timeout,
+    size_t timeout,
     boost::system::error_code& ec)
 {
   impl_->write(line, timeout, ec);
@@ -513,14 +517,14 @@ void TcpClient::write(const std::string& line,
 
 std::string TcpClient::read(size_t size,
     const std::string& delim,
-    boost::posix_time::time_duration timeout,
+    size_t timeout,
     boost::system::error_code& ec)
 {
   return impl_->read(size, delim, timeout, ec);
 }
 
 std::string TcpClient::read_line(const std::string& delim,
-    boost::posix_time::time_duration timeout,
+    size_t timeout,
     boost::system::error_code& ec)
 {
   return impl_->read_line(delim, timeout, ec);

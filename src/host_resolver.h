@@ -24,7 +24,7 @@ class HostResolver
     Impl * impl_;
 
   public:
-    HostResolver();
+    explicit HostResolver(bool enable_cache = true);
     ~HostResolver();
 
     void resolve_host(

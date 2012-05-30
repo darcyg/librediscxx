@@ -9,7 +9,6 @@
 #define _LANGTAOJIN_LIBREDIS_REDIS_PROTOCOL_H_
 
 #include "redis_cmd.h"
-#include <boost/date_time.hpp>
 
 LIBREDIS_NAMESPACE_BEGIN
 
@@ -18,8 +17,9 @@ class TcpClient;
 class RedisProtocol
 {
   public:
-    // 'timeout_ms' is used for TCP connecting, sending and receiving
-    RedisProtocol(const std::string& host, const std::string& port, int timeout_ms);
+    // all 'timeout' are in milliseconds
+    // 'timeout' is used for TCP connecting, sending and receiving
+    RedisProtocol(const std::string& host, const std::string& port, int timeout);
     ~RedisProtocol();
 
     // 'status' is optional
@@ -112,11 +112,10 @@ class RedisProtocol
     const std::string port_;
     std::string error_;
     TcpClient * tcp_client_;
-    boost::posix_time::time_duration timeout_;
-    boost::posix_time::time_duration pos_infin_;
+    size_t timeout_;
 
     // Commands like BLPOP,SUBSCRIBE may block clients,
-    // so in reading operations 'pos_infin_' rather than 'timeout_' is used.
+    // so in reading operations 'timeout_' is not used.
     bool blocking_mode_;
 
     // After MULTI, set 'transaction_mode_' true

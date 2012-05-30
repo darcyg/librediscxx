@@ -25,12 +25,10 @@ LIBREDIS_NAMESPACE_BEGIN
 static const std::string s_redis_line_end("\r\n");
 static const size_t s_redis_line_end_size = 2;
 
-  RedisProtocol::RedisProtocol(const std::string& host, const std::string& port, int timeout_ms)
-: host_(host), port_(port), blocking_mode_(false), transaction_mode_(false)
+  RedisProtocol::RedisProtocol(const std::string& host, const std::string& port, int timeout)
+: host_(host), port_(port), timeout_(timeout), blocking_mode_(false), transaction_mode_(false)
 {
   tcp_client_ = new TcpClient;// may throw
-  timeout_ = boost::posix_time::milliseconds(timeout_ms);
-  pos_infin_ = boost::posix_time::pos_infin;
 }
 
 RedisProtocol::~RedisProtocol()
@@ -530,7 +528,7 @@ bool RedisProtocol::read_line(std::string * line)
 
   boost::system::error_code ec;
   *line = tcp_client_->read_line(s_redis_line_end,
-      blocking_mode_?pos_infin_:timeout_, ec);
+      blocking_mode_?0:timeout_, ec);
 
   if (ec)
   {
@@ -556,7 +554,7 @@ bool RedisProtocol::read(size_t count, std::string * line)
 
   boost::system::error_code ec;
   *line = tcp_client_->read(count, s_redis_line_end,
-      blocking_mode_?pos_infin_:timeout_, ec);
+      blocking_mode_?0:timeout_, ec);
 
   if (ec)
   {

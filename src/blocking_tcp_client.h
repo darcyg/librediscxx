@@ -9,7 +9,6 @@
 #define _LANGTAOJIN_LIBREDIS_BLOCKING_TCP_CLIENT_H_
 
 #include "redis_common.h"
-#include <boost/date_time.hpp>
 #include <boost/system/system_error.hpp>
 
 LIBREDIS_NAMESPACE_BEGIN
@@ -25,27 +24,29 @@ class TcpClient
     TcpClient();
     ~TcpClient();
 
-    // NOTICE: connect, write, read, read_line
+    // all 'timeout' is in milliseconds
     void connect(
         const std::string& ip_or_host,
         const std::string& port_or_service,
-        boost::posix_time::time_duration timeout,
+        size_t timeout,
         boost::system::error_code& ec);
 
     void write(
         const std::string& line,
-        boost::posix_time::time_duration timeout,
+        size_t timeout,
         boost::system::error_code& ec);
 
+    // if 'timeout' is zero, block to read
     std::string read(
         size_t size,
         const std::string& delim,
-        boost::posix_time::time_duration timeout,
+        size_t timeout,
         boost::system::error_code& ec);
 
+    // if 'timeout' is zero, block to read until 'delim'
     std::string read_line(
         const std::string& delim,
-        boost::posix_time::time_duration timeout,
+        size_t timeout,
         boost::system::error_code& ec);
 
     void close();

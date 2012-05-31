@@ -9,6 +9,7 @@
 #include "blocking_tcp_client.h"
 #include <assert.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <errno.h>
 #include <algorithm>
 #include <sstream>

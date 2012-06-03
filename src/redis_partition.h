@@ -9,8 +9,8 @@
 #ifndef _LANGTAOJIN_LIBREDIS_REDIS_PARTITION_H_
 #define _LANGTAOJIN_LIBREDIS_REDIS_PARTITION_H_
 
-#include <set>
 #include "redis.h"
+#include <set>
 
 LIBREDIS_NAMESPACE_BEGIN
 
@@ -21,10 +21,10 @@ class Redis2P : public RedisBase2Multi
     // bool is_invalid(size_t index)const;
 
     bool __get_key_client(const std::string& key,
-        size_t_vector_t& host_indexes, bool write = true);
+        size_t_vector_t * host_indexes, bool write = true);
     bool __get_keys_client(const string_vector_t& keys,
-        size_t_vector_vector_t& host_indexes, bool write = true);
-    bool __get_group_client(size_t_vector_t& host_indexes);
+        size_t_vector_vector_t * host_indexes, bool write = true);
+    bool __get_group_client(size_t_vector_t * host_indexes);
 
     void __set_index_error(size_t host_index);
     void __set_host_error(const Redis2& host);

@@ -437,21 +437,21 @@ struct RedisOutput
   void set_status(const std::string& s)
   {
     clear();
-    ptr.status = new std::string(s);// mays throw
+    ptr.status = new std::string(s);
     reply_type = kStatus;
   }
 
   void set_error(const std::string& e)
   {
     clear();
-    ptr.error = new std::string(e);// may throw
+    ptr.error = new std::string(e);
     reply_type = kError;
   }
 
   void set_i(int64_t _i)
   {
     clear();
-    ptr.i = new int64_t;// may throw
+    ptr.i = new int64_t;
     *ptr.i = _i;
     reply_type = kInteger;
   }
@@ -459,7 +459,7 @@ struct RedisOutput
   void set_bulk(const std::string& b)
   {
     clear();
-    ptr.bulk = new std::string(b);// may throw
+    ptr.bulk = new std::string(b);
     reply_type = kBulk;
   }
 
@@ -476,7 +476,7 @@ struct RedisOutput
 
     if (mb)
     {
-      ptr.mbulks = new mbulk_t();// may throw
+      ptr.mbulks = new mbulk_t();
       ptr.mbulks->swap(*mb);
     }
   }

@@ -23,9 +23,9 @@ class RedisProtocol
     ~RedisProtocol();
 
     // 'status' is optional
-    // '*status'==0, it is open
-    // '*status'==1, it is not open and connected
-    // '*status'==-1, it is not open and not connected
+    // return true, '*status'==0, it is open
+    // return true, '*status'==1, it is not open and connected
+    // return false, '*status'==-1, it is not open and not connected
     bool assure_connect(int * status);
     bool connect();
     void close();
@@ -108,6 +108,7 @@ class RedisProtocol
 
     bool check_argc(RedisCommand * command, int given_argc);
 
+  private:
     const std::string host_;
     const std::string port_;
     std::string error_;

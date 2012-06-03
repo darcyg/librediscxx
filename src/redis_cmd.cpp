@@ -417,7 +417,6 @@ bool convertible_2_mbulks(const smbulk_t& from)
 {
   BOOST_FOREACH(RedisOutput * output, from)
   {
-    assert(output);
     if (output->reply_type!=kBulk)
       return false;
   }
@@ -437,7 +436,6 @@ bool convert(smbulk_t * from, mbulk_t * to)
 
   BOOST_FOREACH(RedisOutput * output, (*from))
   {
-    assert(output);
     if (output->ptr.bulk)
     {
       to->push_back(output->ptr.bulk);

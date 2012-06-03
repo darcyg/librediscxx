@@ -141,10 +141,10 @@ RedisBase2 * RedisTss::Impl::get()
       switch (type_)
       {
         case kNormal:
-          redis_ptr = new Redis2(host_, port_, db_index_, timeout_ms_);// may throw
+          redis_ptr = new Redis2(host_, port_, db_index_, timeout_ms_);
           break;
         case kPartition:
-          redis_ptr = new Redis2P(host_, port_, db_index_, timeout_ms_, partitions_);// may throw
+          redis_ptr = new Redis2P(host_, port_, db_index_, timeout_ms_, partitions_);
           break;
       }
     }
@@ -169,7 +169,7 @@ RedisTss::RedisTss(const std::string& host, int port,
     size_t pool_size, size_t check_interval)
 {
   impl_ = new Impl(host, port, db_index, partitions, timeout_ms, type,
-      pool_size, check_interval);// may throw
+      pool_size, check_interval);
 }
 
 RedisTss::RedisTss(const std::string& host, const std::string& port,
@@ -178,7 +178,7 @@ RedisTss::RedisTss(const std::string& host, const std::string& port,
     size_t pool_size, size_t check_interval)
 {
   impl_ = new Impl(host, port, db_index, partitions, timeout_ms, type,
-      pool_size, check_interval);// may throw
+      pool_size, check_interval);
 }
 
 RedisTss::~RedisTss()

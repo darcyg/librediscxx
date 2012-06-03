@@ -47,8 +47,6 @@ void Redis2::on_reset()
 
 void Redis2::on_reply_type_error(RedisCommand * command)
 {
-  assert(command);
-
   last_error(str(boost::format("expect %s, but got %s")
         % to_string(command->in.command_info().reply_type)
         % to_string(command->out.reply_type)));
@@ -128,7 +126,7 @@ Redis2::Redis2(const std::string& host, const std::string& port, int db_index,
     int timeout_ms)
 : db_index_(db_index), db_index_select_failure_(true)
 {
-  proto_ = new RedisProtocol(host, port, timeout_ms);// may throw
+  proto_ = new RedisProtocol(host, port, timeout_ms);
 }
 
 Redis2::~Redis2()
@@ -2158,7 +2156,7 @@ bool Redis2::add_command(RedisCommand * command)
   if (!check_connect())
     return false;
 
-  RedisCommand * inner_command = new RedisCommand;// may throw
+  RedisCommand * inner_command = new RedisCommand;
   inner_command->swap(*command);
 
   if (!proto_->exec_command(inner_command))
@@ -2175,7 +2173,7 @@ bool Redis2::add_command(RedisCommand * command, const char * format, ...)
   if (!check_connect())
     return false;
 
-  RedisCommand * inner_command = new RedisCommand;// may throw
+  RedisCommand * inner_command = new RedisCommand;
   inner_command->swap(*command);
 
   va_list ap;
@@ -2206,7 +2204,6 @@ bool Redis2::exec(redis_command_vector_t * commands)
   {
     for (size_t i=0; i<smb.size(); i++)
     {
-      assert(transaction_cmds_[i]);
       smb[i]->swap(transaction_cmds_[i]->out);
 
       RedisOutput& out = transaction_cmds_[i]->out;

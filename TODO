@@ -1,3 +1,2 @@
-add more commands
-exec_command support commands with spaces
+exec_command support commands with spaces and escaped characters
 consistent hash partitioned client

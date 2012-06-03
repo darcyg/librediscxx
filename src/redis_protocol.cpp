@@ -6,7 +6,8 @@
  *
  */
 #include "redis_protocol.h"
-#include "blocking_tcp_client.h"
+#include "tcp_client.h"
+#include "os.h"
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -16,7 +17,6 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/format.hpp>
 #include <boost/foreach.hpp>
-#include <boost/system/system_error.hpp>
 
 #define CHECK_PTR_PARAM(ptr) \
   if (ptr==NULL) {error_ = "EINVAL";return false;}
@@ -24,12 +24,11 @@
 LIBREDIS_NAMESPACE_BEGIN
 
 static const std::string s_redis_line_end("\r\n");
-static const size_t s_redis_line_end_size = 2;
 
   RedisProtocol::RedisProtocol(const std::string& host, const std::string& port, int timeout)
 : host_(host), port_(port), timeout_(timeout), blocking_mode_(false), transaction_mode_(false)
 {
-  tcp_client_ = new TcpClient;// may throw
+  tcp_client_ = new TcpClient;
 }
 
 RedisProtocol::~RedisProtocol()
@@ -61,14 +60,14 @@ bool RedisProtocol::assure_connect(int * status)
 
 bool RedisProtocol::connect()
 {
-  boost::system::error_code ec;
-  tcp_client_->connect(host_, port_, timeout_, ec);
+  int ec;
+  tcp_client_->connect(host_, port_, timeout_, &ec);
 
   if (ec)
   {
     close();
     error_ = str(boost::format("connect %s:%s failed, %s")
-        % host_ % port_ % ec.message());
+        % host_ % port_ % ec_2_string(ec));
     return false;
   }
   return true;
@@ -156,7 +155,6 @@ bool RedisProtocol::exec_pipeline(redis_command_vector_t * commands)
     }
   }
 
-  std::string reply;
   for (size_t i=0; i<size; i++)
   {
     if (!read_reply((*commands)[i]))
@@ -203,13 +201,13 @@ bool RedisProtocol::write_command(RedisCommand * command)
     ss << "$" << arg.size() << s_redis_line_end << arg << s_redis_line_end;
   }
 
-  boost::system::error_code ec;
-  tcp_client_->write(ss.str(), timeout_, ec);
+  int ec;
+  tcp_client_->write(ss.str(), timeout_, &ec);
   if (ec)
   {
     close();
     error_ = str(boost::format("write %s:%s failed, %s")
-        % host_ % port_ % ec.message());
+        % host_ % port_ % ec_2_string(ec));
     command->out.set_error(error_);
     return false;
   }
@@ -290,13 +288,13 @@ bool RedisProtocol::write_commandv(RedisCommand * command, const char * format, 
     ss << "$" << arg.size() << s_redis_line_end << arg << s_redis_line_end;
   }
 
-  boost::system::error_code ec;
-  tcp_client_->write(ss.str(), timeout_, ec);
+  int ec;
+  tcp_client_->write(ss.str(), timeout_, &ec);
   if (ec)
   {
     close();
     error_ = str(boost::format("write %s:%s failed, %s")
-        % host_ % port_ % ec.message());
+        % host_ % port_ % ec_2_string(ec));
     command->out.set_error(error_);
     return false;
   }
@@ -321,7 +319,6 @@ bool RedisProtocol::read_reply(RedisCommand * command)
 bool RedisProtocol::__read_reply(RedisCommand * command, RedisOutput * output,
     bool check_reply_type)
 {
-  assert(command && output);
   /**
    * Replies:
 
@@ -485,7 +482,7 @@ bool RedisProtocol::__read_reply(RedisCommand * command, RedisOutput * output,
           return false;
         }
 
-        if (bulk_size == -1)
+        if (bulk_size==-1)
         {
           output->set_nil_smbulks();
         }
@@ -495,7 +492,7 @@ bool RedisProtocol::__read_reply(RedisCommand * command, RedisOutput * output,
 
           for (int64_t i=0; i<bulk_size; i++)
           {
-            RedisOutput * output_child = new RedisOutput;// may throw
+            RedisOutput * output_child = new RedisOutput;
             if (!__read_reply(command, output_child, false))
             {
               delete output_child;
@@ -525,17 +522,15 @@ bool RedisProtocol::__read_reply(RedisCommand * command, RedisOutput * output,
 
 bool RedisProtocol::read_line(std::string * line)
 {
-  assert(line);
-
-  boost::system::error_code ec;
+  int ec;
   *line = tcp_client_->read_line(s_redis_line_end,
-      blocking_mode_?0:timeout_, ec);
+      blocking_mode_?0:timeout_, &ec);
 
   if (ec)
   {
     close();
     error_ = str(boost::format("read %s:%s failed, %s")
-        % host_ % port_ % ec.message());
+        % host_ % port_ % ec_2_string(ec));
     return false;
   }
 
@@ -551,17 +546,15 @@ bool RedisProtocol::read_line(std::string * line)
 
 bool RedisProtocol::read(size_t count, std::string * line)
 {
-  assert(line);
-
-  boost::system::error_code ec;
+  int ec;
   *line = tcp_client_->read(count, s_redis_line_end,
-      blocking_mode_?0:timeout_, ec);
+      blocking_mode_?0:timeout_, &ec);
 
   if (ec)
   {
     close();
     error_ = str(boost::format("read %s:%s failed, %s")
-        % host_ % port_ % ec.message());
+        % host_ % port_ % ec_2_string(ec));
     return false;
   }
 
@@ -578,8 +571,6 @@ bool RedisProtocol::read(size_t count, std::string * line)
 bool RedisProtocol::read_bulk_2(const std::string& header,
     std::string * bulk, std::string ** out_bulk)
 {
-  assert(bulk && out_bulk);
-
   int64_t i;
   if (!parse_integer(header, &i))
   {
@@ -626,8 +617,6 @@ bool RedisProtocol::read_bulk_2(const std::string& header,
 bool RedisProtocol::read_multi_bulk_2(const std::string& header,
     mbulk_t * mbulks, mbulk_t ** out_mbulks)
 {
-  assert(mbulks && out_mbulks);
-
   std::string buf;
   int64_t i;
   if (!parse_integer(header, &i))
@@ -673,8 +662,6 @@ bool RedisProtocol::read_multi_bulk_2(const std::string& header,
 
 bool RedisProtocol::read_bulk(std::string ** bulk)
 {
-  assert(bulk);
-
   std::string header;
   if (!read_line(&header))
     return false;
@@ -689,7 +676,7 @@ bool RedisProtocol::read_bulk(std::string ** bulk)
 
     if (ob)
     {
-      *bulk = new std::string;// may throw
+      *bulk = new std::string;
       (*bulk)->swap(b);
     }
     else
@@ -710,7 +697,6 @@ bool RedisProtocol::read_bulk(std::string ** bulk)
 
 bool RedisProtocol::parse_integer(const std::string& line, int64_t * i)
 {
-  assert(i);
   assert(!line.empty());
 
   *i = strtol(line.c_str()+1, NULL, 10);
@@ -721,8 +707,6 @@ bool RedisProtocol::parse_integer(const std::string& line, int64_t * i)
 
 bool RedisProtocol::check_argc(RedisCommand * command, int given_argc)
 {
-  assert(command);
-
   int argc = command->in.command_info().argc;
 
   switch (argc)

@@ -19,16 +19,13 @@
 #endif
 
 #include <stdarg.h>
+#include <stdint.h>
 
 #include <string>
 #include <exception>
 #include <vector>
 #include <map>
 
-#include <boost/cstdint.hpp>
 #include <boost/shared_ptr.hpp>
-
-typedef boost::int64_t int64_t;
-typedef boost::uint32_t uint32_t;
 
 #endif// _LANGTAOJIN_LIBREDIS_REDIS_COMMON_H_

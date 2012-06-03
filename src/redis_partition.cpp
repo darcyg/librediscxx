@@ -21,7 +21,7 @@
 #define FOR_EACH_GROUP_WRITE(func, key, ...) \
   do { \
     size_t_vector_t index_v; \
-    if (!__get_key_client(key, index_v)) \
+    if (!__get_key_client(key, &index_v)) \
     return false; \
     bool ret; \
     BOOST_FOREACH(size_t host_index, index_v) \
@@ -39,7 +39,7 @@
 #define FOR_EACH_GROUP_READ(func, key, ...) \
   do { \
     size_t_vector_t index_v; \
-    if (!__get_key_client(key, index_v)) \
+    if (!__get_key_client(key, &index_v)) \
     return false; \
     bool ret; \
     BOOST_FOREACH(size_t host_index, index_v) \
@@ -90,26 +90,21 @@ bool Redis2P::__inner_init()
   return true;
 }
 
-//bool Redis2P::is_invalid(size_t index)const
-//{
-//  return invalid_redis_.find(index)==invalid_redis_.end();
-//}
-
-bool Redis2P::__get_key_client(const std::string& key, size_t_vector_t& index_v, bool write)
+bool Redis2P::__get_key_client(const std::string& key, size_t_vector_t * index_v, bool write)
 {
   size_t host_num = redis2_sp_vector_.size() / groups_;
   size_t host_index = __get_key_host_index(key);
   size_t index;
   size_t seed = __get_seed();
 
-  index_v.clear();
+  index_v->clear();
 
   if (!write)
   {
     // get one client in one group
     index = host_index + host_num * (seed % groups_);
     // if (is_invalid(index))
-    index_v.push_back(index);
+    index_v->push_back(index);
   }
   else
   {
@@ -118,11 +113,11 @@ bool Redis2P::__get_key_client(const std::string& key, size_t_vector_t& index_v,
     {
       index = host_index + host_num * ((seed + i) % groups_);
       // if (is_invalid(index))
-      index_v.push_back(index);
+      index_v->push_back(index);
     }
   }
 
-  if (index_v.empty())
+  if (index_v->empty())
   {
     error_ = "no available redis server";
     return false;
@@ -132,14 +127,14 @@ bool Redis2P::__get_key_client(const std::string& key, size_t_vector_t& index_v,
 }
 
 bool Redis2P::__get_keys_client(const string_vector_t& keys,
-    size_t_vector_vector_t& index_v, bool write)
+    size_t_vector_vector_t * index_v, bool write)
 {
   size_t host_num = redis2_sp_vector_.size() / groups_;
   size_t host_index;
   size_t index;
 
-  index_v.clear();
-  index_v.reserve(keys.size());
+  index_v->clear();
+  index_v->reserve(keys.size());
 
   if (!write)
   {
@@ -150,27 +145,27 @@ bool Redis2P::__get_keys_client(const string_vector_t& keys,
       host_index = __get_key_host_index(keys[i]);
       index = host_index + host_num * (seed % groups_);
       // if (is_invalid(index))
-      index_v[i].push_back(index);
+      (*index_v)[i].push_back(index);
     }
   }
   else
   {
     // get clients in all groups
-    index_v.resize(keys.size());
+    index_v->resize(keys.size());
     for (size_t i=0; i<keys.size(); i++)
     {
       host_index = __get_key_host_index(keys[i]);
-      index_v[i].reserve(groups_);
+      (*index_v)[i].reserve(groups_);
       for (size_t j=0; j<groups_; j++)
       {
         index = host_index + host_num * j;
         // if (is_invalid(index))
-        index_v[i].push_back(index);
+        (*index_v)[i].push_back(index);
       }
     }
   }
 
-  if (index_v.empty())
+  if (index_v->empty())
   {
     error_ = "no available redis server";
     return false;
@@ -179,7 +174,7 @@ bool Redis2P::__get_keys_client(const string_vector_t& keys,
   return true;
 }
 
-bool Redis2P::__get_group_client(size_t_vector_t& index_v)
+bool Redis2P::__get_group_client(size_t_vector_t * index_v)
 {
   size_t host_num = redis2_sp_vector_.size() / groups_;
   size_t host_index = 0;
@@ -188,17 +183,17 @@ bool Redis2P::__get_group_client(size_t_vector_t& index_v)
   if (groups_>1)
     host_index = (__get_seed() % groups_) * host_num;
 
-  index_v.clear();
-  index_v.reserve(host_num);
+  index_v->clear();
+  index_v->reserve(host_num);
 
   for (size_t i=0; i<host_num; i++)
   {
     index = host_index + i;
     // if (is_invalid(index))
-    index_v.push_back(index);
+    index_v->push_back(index);
   }
 
-  if (index_v.empty())
+  if (index_v->empty())
   {
     error_ = "no available redis server";
     return false;
@@ -299,7 +294,7 @@ bool Redis2P::del(const string_vector_t& keys, int64_t * _return)
   CHECK_PTR_PARAM(_return);
 
   size_t_vector_vector_t index_vv;
-  if (!__get_keys_client(keys, index_vv))
+  if (!__get_keys_client(keys, &index_vv))
     return false;
 
   int64_t deleted;
@@ -364,7 +359,7 @@ bool Redis2P::keys(const std::string& pattern, mbulk_t * _return)
   mbulk_t mb;
 
   size_t_vector_t index_v;
-  if (!__get_group_client(index_v))
+  if (!__get_group_client(&index_v))
     return false;
 
   // for each host
@@ -426,7 +421,7 @@ bool Redis2P::randomkey(std::string * _return, bool * is_nil)
   CHECK_PTR_PARAM(is_nil);
 
   size_t_vector_t index_v;
-  if (!__get_group_client(index_v))
+  if (!__get_group_client(&index_v))
     return false;
 
   // for each host
@@ -551,7 +546,7 @@ bool Redis2P::mget(const string_vector_t& keys, mbulk_t * _return)
     }
     else
     {
-      tmp_value = new std::string;// may throw
+      tmp_value = new std::string;
       tmp_value->swap(value);
       _return->push_back(tmp_value);
     }

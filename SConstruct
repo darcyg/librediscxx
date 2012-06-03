@@ -24,7 +24,7 @@ if not env.GetOption('clean'):
         sys.exit()
     env = conf.Finish()
 
-#env.Append(CCFLAGS = Split('-Wall -g -O2 -std=c++98 -pedantic -Wno-variadic-macros'))
+#env.Append(CCFLAGS = Split('-Wall -g -std=c++98 -pedantic -Wno-variadic-macros'))
 env.Append(CCFLAGS = Split('-Wall -g -O2'))
 env.Append(CPPPATH = 'src')
 
@@ -32,14 +32,12 @@ env.Append(LIBS = [
     File('./libredis.a'),
     FindStaticLib('boost_thread'),
     FindStaticLib('boost_system'),
-    FindStaticLib('boost_date_time'),
     FindStaticLib('boost_program_options'),
     'pthread',
 ])
 
 LibrarySource = [
-    'src/blocking_tcp_client.cpp',
-    'src/host_resolver.cpp',
+    'src/tcp_client.cpp',
     'src/os.cpp',
     'src/redis_base.cpp',
     'src/redis_cmd.cpp',

@@ -10,4 +10,5 @@ Features:
 
 Build and Installation:
 1. librediscxx depends on boost(>=1.35).
-2. Building in linux requires SCons. While a solution of VS2008 is provided.
+2. Building in linux(only supported) requires SCons.
+3. Windows build is no longer maintained.

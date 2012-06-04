@@ -524,7 +524,7 @@ bool RedisProtocol::read_line(std::string * line)
 {
   int ec;
   *line = tcp_client_->read_line(s_redis_line_end,
-      blocking_mode_?0:timeout_, &ec);
+      blocking_mode_?(-1):timeout_, &ec);
 
   if (ec)
   {
@@ -548,7 +548,7 @@ bool RedisProtocol::read(size_t count, std::string * line)
 {
   int ec;
   *line = tcp_client_->read(count, s_redis_line_end,
-      blocking_mode_?0:timeout_, &ec);
+      blocking_mode_?(-1):timeout_, &ec);
 
   if (ec)
   {

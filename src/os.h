@@ -11,7 +11,6 @@
 #include "redis_common.h"
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <sys/time.h>
 #include <netinet/in.h>
 
 LIBREDIS_NAMESPACE_BEGIN
@@ -57,14 +56,16 @@ int is_open_fast(int fd);
  * return 1, readable
  * return 0, timeout, check errno
  * return -1, error, check errno
+ *
+ * NOTICE: all 'timeout' are in milliseconds, a negative value means to wait forever
  */
-int poll_read(int fd, struct timeval * timeout);
+int poll_read(int fd, int timeout);
 /**
  * return 1, writable
  * return 0, timeout, check errno
  * return -1, error, check errno
  */
-int poll_write(int fd, struct timeval * timeout);
+int poll_write(int fd, int timeout);
 /**
  * return 0, success
  * return -1, failure, check errno
@@ -72,25 +73,25 @@ int poll_write(int fd, struct timeval * timeout);
  */
 int timed_connect(int fd,
     const struct sockaddr * addr,
-    socklen_t addrlen, struct timeval * timeout);
+    socklen_t addrlen, int timeout);
 /**
  * return the read bytes
  * return 0, 'errno==ETIMEDOUT' means timeout, others meas EOF
  * return -1, failure, check errno
  */
-int timed_read(int fd, void * buf, size_t len, int flags, struct timeval * timeout);
+int timed_read(int fd, void * buf, size_t len, int flags, int timeout);
 /**
  * return the read bytes
  * return 0, 'errno==ETIMEDOUT' means timeout, others meas EOF
  * return -1, failure, check errno
  */
-int timed_readn(int fd, void * buf, size_t len, int flags, struct timeval * timeout);
+int timed_readn(int fd, void * buf, size_t len, int flags, int timeout);
 /**
  * return the written bytes
  * return 0, 'errno==ETIMEDOUT' means timeout, others meas EOF
  * return -1, failure, check errno
  */
-int timed_writen(int fd, const void * buf, size_t len, int flags, struct timeval * timeout);
+int timed_writen(int fd, const void * buf, size_t len, int flags, int timeout);
 /**
  * return 0, success
  * return -1, failure, check errno

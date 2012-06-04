@@ -311,21 +311,13 @@ class TcpClient::Impl
       struct sockaddr * addr = (struct sockaddr * )&endpoint.address.in4;
       socklen_t addrlen = sizeof(endpoint.address.in4);
 
-      struct timeval _timeout;
       // adjust timeout
       timeout /= kConnectTimeoutProportion;
       if (timeout<kMinConnectTimeout)
-      {
-        _timeout.tv_sec = 0;
-        _timeout.tv_usec = kMinConnectTimeout*1000;
-      }
-      else
-      {
-        _timeout.tv_sec = timeout/1000;
-        _timeout.tv_usec = (timeout%1000)*1000;
-      }
+        timeout = kMinConnectTimeout;
+
       // connect
-      if (timed_connect(fd, addr, addrlen, &_timeout)==-1)
+      if (timed_connect(fd, addr, addrlen, timeout)==-1)
       {
         safe_close(fd);
         *ec = errno;
@@ -342,11 +334,7 @@ class TcpClient::Impl
         size_t timeout,
         int * ec)
     {
-      struct timeval _timeout;
-      _timeout.tv_sec = timeout/1000;
-      _timeout.tv_usec = (timeout%1000)*1000;
-
-      if (timed_writen(fd_, &line[0], line.size(), 0, &_timeout)
+      if (timed_writen(fd_, &line[0], line.size(), 0, timeout)
           !=static_cast<int>(line.size()))
       {
         close();
@@ -370,8 +358,6 @@ class TcpClient::Impl
       size_t expect = size + delim_size;
       size_t to_read = expect - buffer_.read_size();
       int count;
-      struct timeval _timeout;
-      struct timeval * ptimeout = (timeout!=0)?&_timeout:0;
 
       for (;;)
       {
@@ -388,12 +374,7 @@ class TcpClient::Impl
         // try to read
         buffer_.prepare(to_read);
         std::pair<char *, size_t> to_read_buf = buffer_.get_to_read_buffer();
-        if (ptimeout)
-        {
-          _timeout.tv_sec = timeout/1000;
-          _timeout.tv_usec = (timeout%1000)*1000;
-        }
-        count = timed_read(fd_, to_read_buf.first, to_read_buf.second, 0, ptimeout);
+        count = timed_read(fd_, to_read_buf.first, to_read_buf.second, 0, timeout);
         if (count<=0)
         {
           close();
@@ -420,9 +401,6 @@ class TcpClient::Impl
       size_t search_offset = 0;
       size_t to_consume;
       int count;
-
-      struct timeval _timeout;
-      struct timeval * ptimeout = (timeout!=0)?&_timeout:0;
 
       for (;;)
       {
@@ -452,12 +430,7 @@ class TcpClient::Impl
         // try read
         buffer_.prepare();
         std::pair<char *, size_t> to_read_buf = buffer_.get_to_read_buffer();
-        if (ptimeout)
-        {
-          _timeout.tv_sec = timeout/1000;
-          _timeout.tv_usec = (timeout%1000)*1000;
-        }
-        count = timed_read(fd_, to_read_buf.first, to_read_buf.second, 0, ptimeout);
+        count = timed_read(fd_, to_read_buf.first, to_read_buf.second, 0, timeout);
         if (count<=0)
         {
           close();

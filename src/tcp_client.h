@@ -36,14 +36,14 @@ class TcpClient
         size_t timeout,
         int * ec);
 
-    // if 'timeout' is zero, block to read
+    // if 'timeout' is negative, block to read
     std::string read(
         size_t size,
         const std::string& delim,
         size_t timeout,
         int * ec);
 
-    // if 'timeout' is zero, block to read until 'delim'
+    // if 'timeout' is negative, block to read until 'delim'
     std::string read_line(
         const std::string& delim,
         size_t timeout,

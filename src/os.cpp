@@ -11,10 +11,29 @@
 #include <netdb.h>
 #include <sys/ioctl.h>
 #include <sys/syscall.h>
+#include <poll.h>
 #include <unistd.h>
+#include <signal.h>
 #include <string.h>
 
 LIBREDIS_NAMESPACE_BEGIN
+
+static class IgnoreSIGPIPE
+{
+  public:
+    IgnoreSIGPIPE()
+    {
+      prev_handler_ = signal(SIGPIPE, SIG_IGN);
+    }
+
+    ~IgnoreSIGPIPE()
+    {
+      signal(SIGPIPE, prev_handler_);
+    }
+
+  private:
+    sighandler_t prev_handler_;
+} s_ignore_sigpipe;
 
 int get_thread_id()
 {
@@ -102,17 +121,17 @@ int is_open_fast(int fd)
   return 1;
 }
 
-int poll_read(int fd, struct timeval * timeout)
+int poll_read(int fd, int timeout)
 {
-  fd_set fs_read;
+  struct pollfd pfd;
   int ret;
 
-  FD_ZERO(&fs_read);
-  FD_SET(fd, &fs_read);
-
-  do ret = select(fd+1, &fs_read, 0, 0, timeout);
+  pfd.fd = fd;
+  pfd.events = POLLIN;
+  do ret = poll(&pfd, 1, timeout);
   while (ret==-1 && errno==EINTR);
-  if (ret<0)
+
+  if (ret==-1)
   {
     return -1;
   }
@@ -127,17 +146,17 @@ int poll_read(int fd, struct timeval * timeout)
   }
 }
 
-int poll_write(int fd, struct timeval * timeout)
+int poll_write(int fd, int timeout)
 {
-  fd_set fs_write;
+  struct pollfd pfd;
   int ret;
 
-  FD_ZERO(&fs_write);
-  FD_SET(fd, &fs_write);
-
-  do ret = select(fd+1, 0, &fs_write, 0, timeout);
+  pfd.fd = fd;
+  pfd.events = POLLOUT;
+  do ret = poll(&pfd, 1, timeout);
   while (ret==-1 && errno==EINTR);
-  if (ret<0)
+
+  if (ret==-1)
   {
     return -1;
   }
@@ -154,9 +173,9 @@ int poll_write(int fd, struct timeval * timeout)
 
 int timed_connect(int fd,
     const struct sockaddr * addr,
-    socklen_t addrlen, struct timeval * timeout)
+    socklen_t addrlen, int timeout)
 {
-  fd_set fs_read, fs_write;
+  struct pollfd pfd;
   int ret;
 
   if (set_nonblock(fd)==-1)
@@ -170,14 +189,13 @@ int timed_connect(int fd,
   if (ret==-1 && errno!=EINPROGRESS)
     return -1;
 
-  FD_ZERO(&fs_read);
-  FD_SET(fd, &fs_read);
-  FD_ZERO(&fs_write);
-  FD_SET(fd, &fs_write);
+  pfd.fd = fd;
+  pfd.events = POLLIN | POLLOUT;
 
-  do ret = select(fd+1, &fs_read, &fs_write, 0, timeout);
+  do ret = poll(&pfd, 1, timeout);
   while (ret==-1 && errno==EINTR);
-  if (ret<0)
+
+  if (ret==-1)
   {
     return -1;
   }
@@ -203,7 +221,7 @@ int timed_connect(int fd,
   }
 }
 
-int timed_read(int fd, void * buf, size_t len, int flags, struct timeval * timeout)
+int timed_read(int fd, void * buf, size_t len, int flags, int timeout)
 {
   if (poll_read(fd, timeout)!=1)
     return -1;
@@ -211,23 +229,21 @@ int timed_read(int fd, void * buf, size_t len, int flags, struct timeval * timeo
   return recv(fd, buf, len, flags);
 }
 
-int timed_readn(int fd, void * cbuf, size_t len, int flags, struct timeval * timeout)
+int timed_readn(int fd, void * cbuf, size_t len, int flags, int timeout)
 {
   int left;
   int nread;
   char * buf = (char *)cbuf;
-  struct timeval _timeout;
 
   left = len;
 
   while (left>0)
   {
-    _timeout = *timeout;/* make a copy */
-    if (poll_read(fd, &_timeout)!=1)
+    if (poll_read(fd, timeout)!=1)
       break;
 
     nread = recv(fd, buf, left, flags);
-    if (nread<0)
+    if (nread==-1)
     {
       if (errno==EINTR)
         nread = 0;/* call recv() again */
@@ -248,23 +264,21 @@ int timed_readn(int fd, void * cbuf, size_t len, int flags, struct timeval * tim
   return len - left;
 }
 
-int timed_writen(int fd, const void * cbuf, size_t len, int flags, struct timeval * timeout)
+int timed_writen(int fd, const void * cbuf, size_t len, int flags, int timeout)
 {
   int left;
   int nwrite;
   const char * buf = (const char *)cbuf;
-  struct timeval _timeout;
 
   left = len;
 
   while (left>0)
   {
-    _timeout = *timeout;/* make a copy */
-    if (poll_write(fd, &_timeout)!=1)
+    if (poll_write(fd, timeout)!=1)
       break;
 
     nwrite = send(fd, buf, left, flags);
-    if (nwrite<0)
+    if (nwrite==-1)
     {
       if (errno==EINTR)
         nwrite = 0;/* call send() again */

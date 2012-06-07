@@ -12,7 +12,6 @@
 #include "redis_partition.h"
 #include "tss.h"
 #include <set>
-#include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
@@ -26,16 +25,17 @@ class RedisTss::Impl
     Impl(const std::string& host, int port,
         int db_index, int partitions,
         int timeout_ms, kRedisClientType type,
-        size_t pool_size, size_t check_interval);
+        size_t pool_size, size_t /* check_interval */);
 
     Impl(const std::string& host, const std::string& port,
         int db_index, int partitions,
         int timeout_ms, kRedisClientType type,
-        size_t pool_size, size_t check_interval);
+        size_t pool_size, size_t /* check_interval */);
 
     ~Impl();
 
-    RedisBase2 * get();
+    RedisBase2 * get(kTssFlag flag);
+    void put(RedisBase2 * redis, kTssFlag flag);
 
   private:
     const std::string host_;
@@ -81,6 +81,24 @@ class RedisTss::Impl
       return redis;
     }
 
+    RedisBase2 * get_free_or_create_redis()
+    {
+      RedisBase2 * redis_ptr = get_free_redis();
+      if (redis_ptr==NULL)
+      {
+        switch (type_)
+        {
+          case kNormal:
+            redis_ptr = new Redis2(host_, port_, db_index_, timeout_ms_);
+            break;
+          case kPartition:
+            redis_ptr = new Redis2P(host_, port_, db_index_, timeout_ms_, partitions_);
+            break;
+        }
+      }
+      return redis_ptr;
+    }
+
     void put_free_redis(RedisBase2 * redis)
     {
       if (redis==NULL)
@@ -102,7 +120,7 @@ class RedisTss::Impl
 RedisTss::Impl::Impl(const std::string& host, int port,
     int db_index, int partitions,
     int timeout_ms, kRedisClientType type,
-    size_t pool_size, size_t check_interval)
+    size_t pool_size, size_t /* check_interval */)
 : host_(host), port_(boost::lexical_cast<std::string>(port)),
   db_index_(db_index), timeout_ms_(timeout_ms),
   partitions_(partitions), type_(type),
@@ -115,7 +133,7 @@ RedisTss::Impl::Impl(const std::string& host, int port,
 RedisTss::Impl::Impl(const std::string& host, const std::string& port,
     int db_index, int partitions,
     int timeout_ms, kRedisClientType type,
-    size_t pool_size, size_t check_interval)
+    size_t pool_size, size_t /* check_interval */)
 : host_(host), port_(port),
   db_index_(db_index), timeout_ms_(timeout_ms),
   partitions_(partitions), type_(type),
@@ -130,29 +148,38 @@ RedisTss::Impl::~Impl()
   clear_free_redis();
 }
 
-RedisBase2 * RedisTss::Impl::get()
+RedisBase2 * RedisTss::Impl::get(kTssFlag flag)
 {
-  RedisBase2 * redis_ptr = client_.get();
-  if (redis_ptr==NULL)
+  RedisBase2 * redis_ptr;
+  if (flag==kThreadSpecific)
   {
-    redis_ptr = get_free_redis();
+    redis_ptr = client_.get();
     if (redis_ptr==NULL)
     {
-      switch (type_)
-      {
-        case kNormal:
-          redis_ptr = new Redis2(host_, port_, db_index_, timeout_ms_);
-          break;
-        case kPartition:
-          redis_ptr = new Redis2P(host_, port_, db_index_, timeout_ms_, partitions_);
-          break;
-      }
+      redis_ptr = get_free_or_create_redis();
+      client_.reset(redis_ptr);
     }
-
-    client_.reset(redis_ptr);
+  }
+  else
+  {
+    redis_ptr = get_free_or_create_redis();
   }
 
   return redis_ptr;
+}
+
+void RedisTss::Impl::put(RedisBase2 * redis, kTssFlag flag)
+{
+  if (redis==NULL)
+    return;
+
+  if (flag==kThreadSpecific)
+  {
+    if (client_.get()==redis)
+      client_.release();
+  }
+
+  put_free_redis(redis);
 }
 
 void RedisTss::Impl::inner_init()
@@ -186,9 +213,14 @@ RedisTss::~RedisTss()
   delete impl_;
 }
 
-RedisBase2 * RedisTss::get()
+RedisBase2 * RedisTss::get(kTssFlag flag)
 {
-  return impl_->get();
+  return impl_->get(flag);
+}
+
+void RedisTss::put(RedisBase2 * redis, kTssFlag flag)
+{
+  impl_->put(redis, flag);
 }
 
 LIBREDIS_NAMESPACE_END

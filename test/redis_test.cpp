@@ -992,15 +992,33 @@ namespace
     return 0;
   }
 
-  int redis_tss_test_thread(RedisTss * r)
+  int redis_tss_test_thread1(RedisTss * r)
   {
-    RedisBase2 * redis_handle = r->get();
+    RedisBase2 * redis_handle = r->get(kThreadSpecific);
     assert(redis_handle);
     redis_handle->set("a", "b");
     return 0;
   }
 
-  int redis_tss_test(RedisTss& r)
+  int redis_tss_test_thread2(RedisTss * r)
+  {
+    RedisBase2 * redis_handle = r->get(kThreadSpecific);
+    assert(redis_handle);
+    redis_handle->set("a", "b");
+    r->put(redis_handle, kThreadSpecific);
+    return 0;
+  }
+
+  int redis_tss_test_thread3(RedisTss * r)
+  {
+    RedisBase2 * redis_handle = r->get(kNotThreadSpecific);
+    assert(redis_handle);
+    redis_handle->set("a", "b");
+    r->put(redis_handle, kNotThreadSpecific);
+    return 0;
+  }
+
+  int redis_tss_test(RedisTss& r, int (*thread_func)(RedisTss * r))
   {
     cout << "redis_tss_test..." << endl;
 
@@ -1012,7 +1030,7 @@ namespace
       boost::thread_group tg;
       for (int j=0; j<thread_number; j++)
       {
-        tg.create_thread(boost::bind(redis_tss_test_thread, &r));
+        tg.create_thread(boost::bind(thread_func, &r));
       }
       tg.join_all();
     }
@@ -1076,7 +1094,9 @@ int main(int argc, char * argv[])
 
   {
     RedisTss r(host, port, db_index, 1, timeout, kNormal);
-    redis_tss_test(r);
+    redis_tss_test(r, redis_tss_test_thread1);
+    redis_tss_test(r, redis_tss_test_thread2);
+    redis_tss_test(r, redis_tss_test_thread3);
   }
 
   DUMP_TEST_RESULT();

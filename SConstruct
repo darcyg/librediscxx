@@ -31,7 +31,6 @@ env.Append(CPPPATH = 'src')
 env.Append(LIBS = [
     File('./libredis.a'),
     FindStaticLib('boost_thread'),
-    FindStaticLib('boost_system'),
     FindStaticLib('boost_program_options'),
     'pthread',
 ])
@@ -62,4 +61,5 @@ env.Program('redis_hash_test',
 
 env.Program('redis_monitor',
     Split('tools/redis_monitor.cpp'),
+    LIBS=env['LIBS'] + [FindStaticLib('boost_system')],
 )

@@ -21,8 +21,8 @@
 -e1793//pass temporary objects as parameters
 
 //our code
--esym(1788,guard)//scoped lock mode
 -esym(534,*safe_close)
+-esym(1788,guard)//scoped lock mode
 -sem(std::vector::push_back,1p,custodial(1))
 
 //libraries

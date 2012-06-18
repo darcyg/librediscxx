@@ -243,8 +243,8 @@ bool RedisProtocol::write_commandv(RedisCommand * command, const char * format, 
   }
 
   boost::trim(buf);
-  boost::split(command->in.args(), buf, boost::is_any_of(" "));
-  command->in.args().erase(std::remove_if(command->in.args().begin(),
+  (void)boost::split(command->in.args(), buf, boost::is_any_of(" "));
+  (void)command->in.args().erase(std::remove_if(command->in.args().begin(),
         command->in.args().end(), is_empty_string()), command->in.args().end());
 
   std::stringstream ss;
@@ -492,6 +492,7 @@ bool RedisProtocol::__read_reply(RedisCommand * command, RedisOutput * output,
 
           for (int64_t i=0; i<bulk_size; i++)
           {
+            //lint -e429
             RedisOutput * output_child = new RedisOutput;
             if (!__read_reply(command, output_child, false))
             {
@@ -511,6 +512,8 @@ bool RedisProtocol::__read_reply(RedisCommand * command, RedisOutput * output,
 
         return true;
       }
+    default:
+      break;
   }
 
   close();
@@ -617,7 +620,6 @@ bool RedisProtocol::read_bulk_2(const std::string& header,
 bool RedisProtocol::read_multi_bulk_2(const std::string& header,
     mbulk_t * mbulks, mbulk_t ** out_mbulks)
 {
-  std::string buf;
   int64_t i;
   if (!parse_integer(header, &i))
   {

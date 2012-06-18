@@ -90,7 +90,7 @@ int set_block(int fd)
   if ((flags = fcntl(fd, F_GETFL))==-1)
     return -1;
 
-  if ((flags & O_NONBLOCK)==1)
+  if ((flags & O_NONBLOCK)==O_NONBLOCK)
   {
     if (fcntl(fd, F_SETFL, flags & (~O_NONBLOCK))==-1)
       return -1;
@@ -235,14 +235,14 @@ int timed_readn(int fd, void * cbuf, size_t len, int flags, int timeout)
   int nread;
   char * buf = (char *)cbuf;
 
-  left = len;
+  left = (int)len;
 
   while (left>0)
   {
     if (poll_read(fd, timeout)!=1)
       break;
 
-    nread = recv(fd, buf, left, flags);
+    nread = recv(fd, buf, (size_t)left, flags);
     if (nread==-1)
     {
       if (errno==EINTR)
@@ -261,7 +261,7 @@ int timed_readn(int fd, void * cbuf, size_t len, int flags, int timeout)
     buf += nread;
   }
 
-  return len - left;
+  return (int)len - left;
 }
 
 int timed_writen(int fd, const void * cbuf, size_t len, int flags, int timeout)
@@ -270,14 +270,14 @@ int timed_writen(int fd, const void * cbuf, size_t len, int flags, int timeout)
   int nwrite;
   const char * buf = (const char *)cbuf;
 
-  left = len;
+  left = (int)len;
 
   while (left>0)
   {
     if (poll_write(fd, timeout)!=1)
       break;
 
-    nwrite = send(fd, buf, left, flags);
+    nwrite = send(fd, buf, (size_t)left, flags);
     if (nwrite==-1)
     {
       if (errno==EINTR)
@@ -296,7 +296,7 @@ int timed_writen(int fd, const void * cbuf, size_t len, int flags, int timeout)
     buf += nwrite;
   }
 
-  return len - left;
+  return (int)len - left;
 }
 
 int safe_close(int fd)
@@ -336,11 +336,13 @@ int resolve_host(const char * host, const char * service, struct net_endpoint * 
   if (result->ai_family==AF_INET)
   {
     ep->domain = AF_INET;
+    /*lint -e740 */
     ep->address.in4 = *(struct sockaddr_in *)result->ai_addr;
   }
   else if (result->ai_family==AF_INET6)
   {
     ep->domain = AF_INET6;
+    /*lint -e826 */
     ep->address.in6 = *(struct sockaddr_in6 *)result->ai_addr;
   }
 

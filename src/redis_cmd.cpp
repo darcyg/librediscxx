@@ -303,6 +303,7 @@ command_rev_map_t s_command_rev_map = boost::assign::map_list_of
 ("ZREVRANGEBYSCORE",ZREVRANGEBYSCORE)
 ("ZREVRANK",ZREVRANK)
 ("ZSCORE",ZSCORE)
+//lint -e64
 ("ZUNIONSTORE",ZUNIONSTORE);
 
 
@@ -359,7 +360,9 @@ void append_mbulks(mbulk_t * to, mbulk_t * from)
   if (to==NULL || from==NULL)
     return;
 
-  to->insert(to->end(), from->begin(), from->end());
+  mbulk_t::const_iterator first = from->begin();
+  mbulk_t::const_iterator last = from->end();
+  to->insert(to->end(), first, last);
   from->clear();
 }
 
@@ -409,7 +412,9 @@ void append_smbulks(smbulk_t * to, smbulk_t * from)
   if (to==NULL || from==NULL)
     return;
 
-  to->insert(to->end(), from->begin(), from->end());
+  smbulk_t::const_iterator first = from->begin();
+  smbulk_t::const_iterator last = from->end();
+  to->insert(to->end(), first, last);
   from->clear();
 }
 
@@ -484,6 +489,7 @@ uint32_t time33_hash_32(const void * key, size_t length)
   if (NULL==key || 0==length)
     return 0;
 
+  //lint -save -e737
   for (;length>=8;length -= 8)
   {
     // expand loop
@@ -499,15 +505,17 @@ uint32_t time33_hash_32(const void * key, size_t length)
 
   switch (length)
   {
-    case 7: hash = ((hash << 5) + hash) + *str++; /* fallthrough... */
-    case 6: hash = ((hash << 5) + hash) + *str++; /* fallthrough... */
-    case 5: hash = ((hash << 5) + hash) + *str++; /* fallthrough... */
-    case 4: hash = ((hash << 5) + hash) + *str++; /* fallthrough... */
-    case 3: hash = ((hash << 5) + hash) + *str++; /* fallthrough... */
-    case 2: hash = ((hash << 5) + hash) + *str++; /* fallthrough... */
+    case 7: hash = ((hash << 5) + hash) + *str++; /*lint -fallthrough */
+    case 6: hash = ((hash << 5) + hash) + *str++; /*lint -fallthrough */
+    case 5: hash = ((hash << 5) + hash) + *str++; /*lint -fallthrough */
+    case 4: hash = ((hash << 5) + hash) + *str++; /*lint -fallthrough */
+    case 3: hash = ((hash << 5) + hash) + *str++; /*lint -fallthrough */
+    case 2: hash = ((hash << 5) + hash) + *str++; /*lint -fallthrough */
     case 1: hash = ((hash << 5) + hash) + *str++; break;
     case 0: break;
+    default: break;
   }
+  //lint -restore
 
   return hash;
 }
@@ -527,6 +535,7 @@ RedisInput::RedisInput(kCommand cmd)
   : command_(cmd), command_info_(&s_command_map[cmd]) {}
 
 RedisInput::RedisInput(const std::string& cmd)
+  : command_(NOOP), command_info_(&s_command_map[NOOP])
 {
   set_command(cmd);
 }
@@ -541,7 +550,10 @@ void RedisInput::set_command(const std::string& cmd)
 {
   std::string upper_cmd = cmd;
   for (size_t i=0; i<upper_cmd.size(); i++)
-    upper_cmd[i] = ::toupper(upper_cmd[i]);
+  {
+    char& c = upper_cmd[i];
+    c = static_cast<char>(::toupper(c));
+  }
 
   command_rev_map_t::const_iterator iter
     = s_command_rev_map.find(upper_cmd);

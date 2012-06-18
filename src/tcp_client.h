@@ -28,25 +28,25 @@ class TcpClient
     void connect(
         const std::string& ip_or_host,
         const std::string& port_or_service,
-        size_t timeout,
+        int timeout,
         int * ec);
 
     void write(
         const std::string& line,
-        size_t timeout,
+        int timeout,
         int * ec);
 
     // if 'timeout' is negative, block to read
     std::string read(
         size_t size,
         const std::string& delim,
-        size_t timeout,
+        int timeout,
         int * ec);
 
     // if 'timeout' is negative, block to read until 'delim'
     std::string read_line(
         const std::string& delim,
-        size_t timeout,
+        int timeout,
         int * ec);
 
     void close();

@@ -46,7 +46,7 @@ namespace
       const bool enable_cache_;
 
     private:
-      void __resolve(
+      static void __resolve(
           const std::string& host,
           const std::string& service,
           net_endpoint * endpoint,
@@ -185,17 +185,17 @@ namespace
 
       inline size_t consumed_size()const
       {
-        return read_ - begin();
+        return static_cast<size_t>(read_ - begin());
       }
 
       inline size_t read_size()const
       {
-        return to_read_ - read_;
+        return static_cast<size_t>(to_read_ - read_);
       }
 
       inline size_t free_size()const
       {
-        return end() - to_read_;
+        return static_cast<size_t>(end() - to_read_);
       }
 
       inline void clear()
@@ -284,7 +284,7 @@ class TcpClient::Impl
     inline void connect(
         const std::string& ip_or_host,
         const std::string& port_or_service,
-        size_t timeout,
+        int timeout,
         int * ec)
     {
       close();
@@ -308,6 +308,7 @@ class TcpClient::Impl
       }
 
       // It is only IPv4, because redis-server binds a v4 address.
+      //lint -e740
       struct sockaddr * addr = (struct sockaddr * )&endpoint.address.in4;
       socklen_t addrlen = sizeof(endpoint.address.in4);
 
@@ -331,7 +332,7 @@ class TcpClient::Impl
 
     inline void write(
         const std::string& line,
-        size_t timeout,
+        int timeout,
         int * ec)
     {
       if (timed_writen(fd_, &line[0], line.size(), 0, timeout)
@@ -350,7 +351,7 @@ class TcpClient::Impl
     inline std::string read(
         size_t size,
         const std::string& delim,
-        size_t timeout,
+        int timeout,
         int * ec)
     {
       std::string line;
@@ -365,8 +366,8 @@ class TcpClient::Impl
         if (buffer_.read_size()>=expect)
         {
           std::pair<const char *, size_t> read_buf = buffer_.get_read_buffer();
-          line.assign(read_buf.first, read_buf.first + expect - delim_size);
-          buffer_.consume(expect);
+          (void)line.assign(read_buf.first, read_buf.first + expect - delim_size);
+          (void)buffer_.consume(expect);
           *ec = 0;
           return line;
         }
@@ -383,14 +384,14 @@ class TcpClient::Impl
         }
 
         // push to buffer_
-        buffer_.produce(count);
-        to_read -= count;
+        buffer_.produce(static_cast<size_t>(count));
+        to_read -= static_cast<size_t>(count);
       }
     }
 
     inline std::string read_line(
         const std::string& delim,
-        size_t timeout,
+        int timeout,
         int * ec)
     {
       std::string line;
@@ -418,9 +419,9 @@ class TcpClient::Impl
             if (::memcmp(delim.c_str(), search_curr, delim_size)==0)
             {
               // find delim in buffer_, grep it and return
-              to_consume = search_curr - search_begin + delim_size;
-              line.assign(read_buf.first, read_buf.first + to_consume - delim_size);
-              buffer_.consume(to_consume);
+              to_consume = static_cast<size_t>(search_curr - search_begin) + delim_size;
+              (void)line.assign(read_buf.first, read_buf.first + to_consume - delim_size);
+              (void)buffer_.consume(to_consume);
               *ec = 0;
               return line;
             }
@@ -439,7 +440,7 @@ class TcpClient::Impl
         }
 
         // push to buffer_
-        buffer_.produce(count);
+        buffer_.produce(static_cast<size_t>(count));
       }
     }
 
@@ -500,14 +501,14 @@ TcpClient::~TcpClient()
 
 void TcpClient::connect(const std::string& ip_or_host,
     const std::string& port_or_service,
-    size_t timeout,
+    int timeout,
     int * ec)
 {
   impl_->connect(ip_or_host, port_or_service, timeout, ec);
 }
 
 void TcpClient::write(const std::string& line,
-    size_t timeout,
+    int timeout,
     int * ec)
 {
   impl_->write(line, timeout, ec);
@@ -515,14 +516,14 @@ void TcpClient::write(const std::string& line,
 
 std::string TcpClient::read(size_t size,
     const std::string& delim,
-    size_t timeout,
+    int timeout,
     int * ec)
 {
   return impl_->read(size, delim, timeout, ec);
 }
 
 std::string TcpClient::read_line(const std::string& delim,
-    size_t timeout,
+    int timeout,
     int * ec)
 {
   return impl_->read_line(delim, timeout, ec);

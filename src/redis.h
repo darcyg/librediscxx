@@ -25,7 +25,7 @@ class Redis2 : public RedisBase2Single
     RedisProtocol * proto_;
 
     void on_reset();
-    void on_reply_type_error(RedisCommand * command);
+    void on_reply_type_error(const RedisCommand * command);
 
     bool bxpop(
         bool is_blpop, const string_vector_t& keys, int64_t timeout,

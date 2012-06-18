@@ -45,7 +45,6 @@ class RedisTss::Impl
     const int partitions_;
     const kRedisClientType type_;
     const size_t pool_size_;
-    const size_t check_interval_;
 
     std::vector<std::string> redis_hosts_;
 
@@ -124,7 +123,7 @@ RedisTss::Impl::Impl(const std::string& host, int port,
 : host_(host), port_(boost::lexical_cast<std::string>(port)),
   db_index_(db_index), timeout_ms_(timeout_ms),
   partitions_(partitions), type_(type),
-  pool_size_(pool_size), check_interval_(check_interval_),
+  pool_size_(pool_size),
   client_(boost::bind(&RedisTss::Impl::put_free_redis, this, _1))
 {
   inner_init();
@@ -137,7 +136,7 @@ RedisTss::Impl::Impl(const std::string& host, const std::string& port,
 : host_(host), port_(port),
   db_index_(db_index), timeout_ms_(timeout_ms),
   partitions_(partitions), type_(type),
-  pool_size_(pool_size), check_interval_(check_interval_),
+  pool_size_(pool_size),
   client_(boost::bind(&RedisTss::Impl::put_free_redis, this, _1))
 {
   inner_init();
@@ -176,7 +175,7 @@ void RedisTss::Impl::put(RedisBase2 * redis, kTssFlag flag)
   if (flag==kThreadSpecific)
   {
     if (client_.get()==redis)
-      client_.release();
+      (void)client_.release();
   }
 
   put_free_redis(redis);
@@ -184,7 +183,7 @@ void RedisTss::Impl::put(RedisBase2 * redis, kTssFlag flag)
 
 void RedisTss::Impl::inner_init()
 {
-  boost::split(redis_hosts_, host_, boost::is_any_of(","));
+  (void)boost::split(redis_hosts_, host_, boost::is_any_of(","));
 }
 
 /************************************************************************/

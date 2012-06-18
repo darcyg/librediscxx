@@ -113,7 +113,7 @@ class RedisProtocol
     const std::string port_;
     std::string error_;
     TcpClient * tcp_client_;
-    size_t timeout_;
+    int timeout_;
 
     // Commands like BLPOP,SUBSCRIBE may block clients,
     // so in reading operations 'timeout_' is not used.

@@ -58,7 +58,7 @@ static inline size_t __get_seed()
   return static_cast<size_t>(get_thread_id());
 }
 
-bool Redis2P::__inner_init()
+bool Redis2P::inner_init()
 {
   if (partitions_==0)
   {
@@ -227,10 +227,11 @@ Redis2P::Redis2P(const std::string& host_list,
     int partitions,
     key_hasher fn)
 : RedisBase2Multi(host_list, port_list, db_index, timeout_ms),
-  partitions_(partitions),
-  hash_fn_(fn)
+  partitions_(static_cast<size_t>(partitions)),
+  hash_fn_(fn),
+  groups_(0)
 {
-  if (!__inner_init())
+  if (!inner_init())
   {
     throw RedisException(error_);
   }
@@ -297,7 +298,7 @@ bool Redis2P::del(const string_vector_t& keys, int64_t * _return)
   if (!__get_keys_client(keys, &index_vv))
     return false;
 
-  int64_t deleted;
+  int64_t deleted = 0;
   int64_t total_deleted = 0;
   bool ret = true;
 
@@ -546,6 +547,7 @@ bool Redis2P::mget(const string_vector_t& keys, mbulk_t * _return)
     }
     else
     {
+      //lint -e429
       tmp_value = new std::string;
       tmp_value->swap(value);
       _return->push_back(tmp_value);

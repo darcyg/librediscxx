@@ -11,30 +11,32 @@
 #include <boost/format.hpp>
 
 #define CHECK_PTR_PARAM(ptr) \
-  if (ptr==NULL) {last_error("EINVAL");return false;}
+  do {if (ptr==NULL) {last_error("EINVAL");return false;}} while(0)
 
 #define CHECK_EXPR(exp) \
-  if (!(exp)) {last_error("EINVAL");return false;}
+  do {if (!(exp)) {last_error("EINVAL");return false;}} while(0)
 
 #define CHECK_STATUS_OK() \
-  if (c.out.is_status_ok()) return true;else {on_reply_type_error(&c);return false;}
+  do {if (c.out.is_status_ok()) return true;else {on_reply_type_error(&c);return false;}} while(0)
 
 #define CHECK_STATUS_PONG() \
-  if (c.out.is_status_pong()) return true;else {on_reply_type_error(&c);return false;}
+  do {if (c.out.is_status_pong()) return true;else {on_reply_type_error(&c);return false;}} while(0)
 
 #define GET_INTEGER_REPLY() \
-  if (c.out.get_i(_return)) return true;else {on_reply_type_error(&c);return false;}
+  do {if (c.out.get_i(_return)) return true;else {on_reply_type_error(&c);return false;}} while(0)
 
 #define GET_BULK_REPLY() \
-  if (c.out.get_bulk(_return)) {*is_nil = false;return true;} \
-else if (c.out.is_nil_bulk()) {*is_nil = true;return true;} \
-else {on_reply_type_error(&c);return false;}
+  do { \
+    if (c.out.get_bulk(_return)) {*is_nil = false;return true;} \
+    else if (c.out.is_nil_bulk()) {*is_nil = true;return true;} \
+    else {on_reply_type_error(&c);return false;} \
+  } while(0)
 
 #define GET_BULK_REPLY2() \
-  if (c.out.get_bulk(_return)) return true;else {on_reply_type_error(&c);return false;}
+  do {if (c.out.get_bulk(_return)) return true;else {on_reply_type_error(&c);return false;}} while(0)
 
 #define GET_MBULKS_REPLY() \
-  if (c.out.get_mbulks(_return)) return true;else {on_reply_type_error(&c);return false;}
+  do {if (c.out.get_mbulks(_return)) return true;else {on_reply_type_error(&c);return false;}} while(0)
 
 LIBREDIS_NAMESPACE_BEGIN
 
@@ -45,7 +47,7 @@ void Redis2::on_reset()
   clear_commands(&transaction_cmds_);
 }
 
-void Redis2::on_reply_type_error(RedisCommand * command)
+void Redis2::on_reply_type_error(const RedisCommand * command)
 {
   last_error(str(boost::format("expect %s, but got %s")
         % to_string(command->in.command_info().reply_type)
@@ -2212,7 +2214,7 @@ bool Redis2::exec(redis_command_vector_t * commands)
           && convertible_2_mbulks(*out.ptr.smbulks))
       {
         mbulk_t mb;
-        convert(out.ptr.smbulks, &mb);
+        (void)convert(out.ptr.smbulks, &mb);
         out.set_mbulks(&mb);
       }
     }

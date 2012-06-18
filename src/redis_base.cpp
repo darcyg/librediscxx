@@ -8,7 +8,6 @@
 #include "redis_base.h"
 #include <assert.h>
 #include <boost/algorithm/string.hpp>
-#include <boost/foreach.hpp>
 #include <boost/format.hpp>
 
 LIBREDIS_NAMESPACE_BEGIN
@@ -147,7 +146,7 @@ bool RedisBase2::hgetall(const std::string& key, string_map_t * fields_and_value
     for (size_t i=0; i<size; i++)
     {
       assert(_return[i*2] && _return[i*2+1]);
-      fields_and_values->insert(std::make_pair(*_return[i*2], *_return[i*2+1]));
+      (void)fields_and_values->insert(std::make_pair(*_return[i*2], *_return[i*2+1]));
     }
 
     clear_mbulks(&_return);
@@ -160,8 +159,10 @@ bool RedisBase2::hmset(const std::string& key, const string_pair_vector_t& field
 {
   string_vector_t fields, values;
 
-  BOOST_FOREACH(const string_pair_t& fv, fields_and_values)
+  size_t s = fields_and_values.size();
+  for (size_t i=0; i<s; i++)
   {
+    const string_pair_t& fv = fields_and_values[i];
     fields.push_back(fv.first);
     values.push_back(fv.second);
   }
@@ -173,8 +174,11 @@ bool RedisBase2::hmset(const std::string& key, const string_map_t& fields_and_va
 {
   string_vector_t fields, values;
 
-  BOOST_FOREACH(const string_map_t::value_type& fv, fields_and_values)
+  string_map_t::const_iterator first = fields_and_values.begin();
+  string_map_t::const_iterator last = fields_and_values.end();
+  for (; first!=last; ++first)
   {
+    const string_pair_t& fv = (*first);
     fields.push_back(fv.first);
     values.push_back(fv.second);
   }
@@ -193,8 +197,8 @@ RedisBase2Single::~RedisBase2Single() {}
 bool RedisBase2Multi::__inner_init()
 {
   // parse host and port
-  boost::split(hosts_, host_list_, boost::is_any_of(","));
-  boost::split(ports_, port_list_, boost::is_any_of(","));
+  (void)boost::split(hosts_, host_list_, boost::is_any_of(","));
+  (void)boost::split(ports_, port_list_, boost::is_any_of(","));
 
   if (hosts_.size()!=ports_.size() && ports_.size()!=1)
   {

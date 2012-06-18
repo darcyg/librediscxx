@@ -17,7 +17,7 @@ LIBREDIS_NAMESPACE_BEGIN
 class Redis2P : public RedisBase2Multi
 {
   private:
-    bool __inner_init();
+    bool inner_init();
     // bool is_invalid(size_t index)const;
 
     bool __get_key_client(const std::string& key,

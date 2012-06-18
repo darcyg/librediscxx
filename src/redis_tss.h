@@ -73,7 +73,10 @@ class RedisScopedPtr
     ~RedisScopedPtr()
     {
       if (ptr_)
+      {
         tss_->put(ptr_, flag_);
+        ptr_ = NULL;
+      }
     }
 
     RedisBase2 * get()

@@ -44,8 +44,8 @@ template <typename T>
 class thread_specific_ptr
 {
   private:
-    thread_specific_ptr(thread_specific_ptr&);
-    thread_specific_ptr& operator=(thread_specific_ptr&);
+    thread_specific_ptr(const thread_specific_ptr&);
+    thread_specific_ptr& operator=(const thread_specific_ptr&);
 
   public:
     typedef T element_type;
@@ -54,7 +54,7 @@ class thread_specific_ptr
 
   private:
     struct delete_data
-      : boost::detail::tss_cleanup_function
+      : public boost::detail::tss_cleanup_function
     {
       void operator()(void * data)
       {
@@ -63,7 +63,7 @@ class thread_specific_ptr
     };
 
     struct custom_cleanup_function_ptr
-      : boost::detail::tss_cleanup_function
+      : public boost::detail::tss_cleanup_function
     {
       private:
         cleanup_function_ptr_type cleanup_function_;
@@ -79,7 +79,7 @@ class thread_specific_ptr
     };
 
     struct custom_cleanup_function_obj
-      : boost::detail::tss_cleanup_function
+      : public boost::detail::tss_cleanup_function
     {
       private:
         cleanup_function_obj_type cleanup_function_;
@@ -144,7 +144,7 @@ class thread_specific_ptr
       return *get();
     }
 
-    T * release()
+    T * release()const
     {
       T * const temp = get();
       boost::detail::set_tss_data(this,
@@ -152,7 +152,7 @@ class thread_specific_ptr
       return temp;
     }
 
-    void reset(T * new_value = NULL)
+    void reset(T * new_value = NULL)const
     {
       T * const current_value = get();
       if (current_value!=new_value)

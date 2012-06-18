@@ -308,8 +308,7 @@ class TcpClient::Impl
       }
 
       // It is only IPv4, because redis-server binds a v4 address.
-      //lint -e740
-      struct sockaddr * addr = (struct sockaddr * )&endpoint.address.in4;
+      struct sockaddr * addr = /*lint -e(740) */(struct sockaddr * )&endpoint.address.in4;
       socklen_t addrlen = sizeof(endpoint.address.in4);
 
       // adjust timeout

@@ -336,14 +336,12 @@ int resolve_host(const char * host, const char * service, struct net_endpoint * 
   if (result->ai_family==AF_INET)
   {
     ep->domain = AF_INET;
-    /*lint -e740 */
-    ep->address.in4 = *(struct sockaddr_in *)result->ai_addr;
+    ep->address.in4 = /*lint -e(740) */ *(struct sockaddr_in *)result->ai_addr;
   }
   else if (result->ai_family==AF_INET6)
   {
     ep->domain = AF_INET6;
-    /*lint -e826 */
-    ep->address.in6 = *(struct sockaddr_in6 *)result->ai_addr;
+    ep->address.in6 = /*lint -e(740) -e(826) */ *(struct sockaddr_in6 *)result->ai_addr;
   }
 
   freeaddrinfo(result);

@@ -4,14 +4,6 @@
 -e457//thread
 -e459//thread
 
--e10//expecting identifier or other declarator(boost)
--e39//redefinition of symbol(boost)
--e54//division by 0(boost)
--e78//symbol 'T' typedef'ed at location unknown used in expression(boost)
--e84//sizeof object is zero or object is undefined(boost)
--e506//constant value boolean
--e1703//function arbitrarily selected(boost)
-
 -e578//symbol hides symbol
 -e641//converting enum to int
 -e655//bit-wise operation of enum
@@ -28,20 +20,29 @@
 -e1736//redundant access specifier
 -e1793//pass temporary objects as parameters
 
+//our code
 -esym(1788,guard)//scoped lock mode
--esym(534,com::langtaojin::adgaga::safe_close)
+-esym(534,*safe_close)
+-sem(std::vector::push_back,1p,custodial(1))
 
-//library function with trivial return values
--esym(534,gettimeofday)
--esym(534,gethostname)
--esym(534,signal)
--esym(534,time)
-
-//library function
+//libraries
+-e10//expecting identifier or other declarator(boost)
+-e54//division by 0(boost)
+-e78//symbol 'T' typedef'ed at location unknown used in expression(boost)
+-e84//sizeof object is zero or object is undefined(boost)
+-e506//constant value boolean
+-e1703//function arbitrarily selected(boost)
+-esym(39,boost::detail::exact_signed_base_helper<*>,boost::detail::exact_unsigned_base_helper<*>)
+-esym(526,*__builtin_va_start)
+-emacro(530,va_start)
+-emacro(534,va_start)
+-esym(534,gettimeofday,gethostname,signal,time)
+-esym(628,*__builtin_va_start)
 -esym(665,BOOST_FOREACH)
 -esym(666,BOOST_FOREACH*)
+-esym(666,assert)
 -esym(1023,boost::foreach_detail_::is_const_)
--esym(1023,boost::basic_format<*>::operator%)
+-esym(1023,boost::basic_format<char>::operator%)
 -esym(1075,*::_1)
 -esym(1075,*::_2)
 -esym(1075,*::_3)
@@ -50,11 +51,6 @@
 -esym(1075,*::_6)
 -esym(1702,operator==)
 -esym(1702,operator!=)
--esym(666,assert)
--emacro(530,va_start)
--emacro(534,va_start)
--esym(628,*__builtin_va_start)
--esym(526,*__builtin_va_start)
 
 //multi files
 -esym(14,main)

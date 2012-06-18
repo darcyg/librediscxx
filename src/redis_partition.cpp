@@ -547,7 +547,6 @@ bool Redis2P::mget(const string_vector_t& keys, mbulk_t * _return)
     }
     else
     {
-      //lint -e429
       tmp_value = new std::string;
       tmp_value->swap(value);
       _return->push_back(tmp_value);

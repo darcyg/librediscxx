@@ -167,7 +167,7 @@ static const CommandInfo s_command_map[] =
 };
 
 typedef std::map<std::string, kCommand> command_rev_map_t;
-command_rev_map_t s_command_rev_map = boost::assign::map_list_of
+command_rev_map_t s_command_rev_map = /*lint --e(64) */boost::assign::map_list_of
 ("APPEND",APPEND)
 ("AUTH",AUTH)
 ("BGREWRITEAOF",BGREWRITEAOF)
@@ -303,7 +303,6 @@ command_rev_map_t s_command_rev_map = boost::assign::map_list_of
 ("ZREVRANGEBYSCORE",ZREVRANGEBYSCORE)
 ("ZREVRANK",ZREVRANK)
 ("ZSCORE",ZSCORE)
-//lint -e64
 ("ZUNIONSTORE",ZUNIONSTORE);
 
 
@@ -489,7 +488,7 @@ uint32_t time33_hash_32(const void * key, size_t length)
   if (NULL==key || 0==length)
     return 0;
 
-  //lint -save -e737
+  /*lint -save -e737 */
   for (;length>=8;length -= 8)
   {
     // expand loop
@@ -515,7 +514,7 @@ uint32_t time33_hash_32(const void * key, size_t length)
     case 0: break;
     default: break;
   }
-  //lint -restore
+  /*lint -restore */
 
   return hash;
 }

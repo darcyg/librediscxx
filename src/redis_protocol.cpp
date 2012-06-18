@@ -21,6 +21,9 @@
 #define CHECK_PTR_PARAM(ptr) \
   if (ptr==NULL) {error_ = "EINVAL";return false;}
 
+//lint -e429
+//I am sure, this is a lint bug
+
 LIBREDIS_NAMESPACE_BEGIN
 
 static const std::string s_redis_line_end("\r\n");
@@ -492,7 +495,6 @@ bool RedisProtocol::__read_reply(RedisCommand * command, RedisOutput * output,
 
           for (int64_t i=0; i<bulk_size; i++)
           {
-            //lint -e429
             RedisOutput * output_child = new RedisOutput;
             if (!__read_reply(command, output_child, false))
             {

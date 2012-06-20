@@ -372,8 +372,7 @@ class RedisInput
 
     string_vector_t& args()
     {
-      //lint -e(1536)
-      return args_;
+      return /*lint -e(1536) */args_;
     }
 
     const string_vector_t& args()const

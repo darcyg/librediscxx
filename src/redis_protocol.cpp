@@ -21,8 +21,7 @@
 #define CHECK_PTR_PARAM(ptr) \
   if (ptr==NULL) {error_ = "EINVAL";return false;}
 
-//lint -e429
-//I am sure, this is a lint bug
+//lint -e429 I am sure this is a lint bug
 
 LIBREDIS_NAMESPACE_BEGIN
 

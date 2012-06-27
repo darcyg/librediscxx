@@ -710,6 +710,7 @@ bool RedisProtocol::parse_integer(const std::string& line, int64_t * i)
 
 bool RedisProtocol::check_argc(RedisCommand * command, int given_argc)
 {
+  bool err = false;
   int argc = command->in.command_info().argc;
 
   switch (argc)
@@ -720,23 +721,23 @@ bool RedisProtocol::check_argc(RedisCommand * command, int given_argc)
       if (argc>=0)
       {
         if (argc!=given_argc)
-          goto err;
+          err = true;
       }
       else
       {
         if (given_argc<-argc)
-          goto err;
+          err = true;
       }
       break;
   }
 
-  return true;
-
-err:
-  error_ = str(boost::format("argc not matched, expect %d, given %d")
-      % argc % given_argc);
-  command->out.set_error(error_);
-  return false;
+  if (err)
+  {
+    error_ = str(boost::format("argc not matched, expect %d, given %d")
+        % argc % given_argc);
+    command->out.set_error(error_);
+  }
+  return !err;
 }
 
 LIBREDIS_NAMESPACE_END

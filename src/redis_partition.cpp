@@ -314,7 +314,7 @@ bool Redis2P::del(const string_vector_t& keys, int64_t * _return)
       if (!ret)
       {
         __set_index_error(index_v[j]);
-        goto error;
+        return false;
       }
     }
     total_deleted += deleted;
@@ -322,8 +322,6 @@ bool Redis2P::del(const string_vector_t& keys, int64_t * _return)
 
   if (ret)
     *_return = total_deleted;
-
-error:
   return ret;
 }
 

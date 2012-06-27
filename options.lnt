@@ -9,7 +9,6 @@
 -e655//bit-wise operation of enum
 -e717//do ... while(0)
 -e788//not all enum constants are used within defaulted switch
--e801//goto
 -e1550//exception lists do not match
 -e1551//potential exception by dtor
 -e1704//private copy ctor and operator=

@@ -20,6 +20,8 @@
 #undef setbit
 #endif
 
+//lint -esym(148,*push_arg)
+
 LIBREDIS_NAMESPACE_BEGIN
 
 enum kCommand

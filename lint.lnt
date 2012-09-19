@@ -1,6 +1,12 @@
 //options
 options.lnt
 
+//our code
+-e578
+-e767
+-esym(534,*safe_close)
+-esym(1788,guard)
+
 //source files
 src/os.cpp
 src/redis_base.cpp

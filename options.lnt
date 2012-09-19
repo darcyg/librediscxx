@@ -1,68 +1,77 @@
--e451//header guard
--e537//header re-included
+-e451
+-e537
 
--e457//thread
--e459//thread
+-e457
+-e459
 
--e578//symbol hides symbol
--e641//converting enum to int
--e655//bit-wise operation of enum
--e717//do ... while(0)
--e788//not all enum constants are used within defaulted switch
--e1550//exception lists do not match
--e1551//potential exception by dtor
--e1704//private copy ctor and operator=
--e1705//static class members may be accessed by ->
--e1712//no default ctor
--e1732//new in constructor for class which has no assignment operator
--e1733//new in constructor for class which has no copy constructor
--e1736//redundant access specifier
--e1793//pass temporary objects as parameters
+-e641
+-e655
+-e717
+-e788
+-e1550
+-e1551
+-e1704
+-e1705
+-e1712
+-e1725
+-e1732
+-e1733
+-e1736
+-e1793
 
-//our code
--esym(534,*safe_close)
--esym(1788,guard)//scoped lock mode
--sem(std::vector::push_back,1p,custodial(1))
-
-//libraries
--e10//expecting identifier or other declarator(boost)
--e54//division by 0(boost)
--e78//symbol 'T' typedef'ed at location unknown used in expression(boost)
--e84//sizeof object is zero or object is undefined(boost)
--e506//constant value boolean
--e1703//function arbitrarily selected(boost)
--esym(39,boost::detail::exact_signed_base_helper<*>,boost::detail::exact_unsigned_base_helper<*>)
--esym(526,*__builtin_va_start)
+//libc
 -emacro(530,va_start)
 -emacro(534,va_start)
--esym(534,gettimeofday,gethostname,signal,time)
+-esym(526,*__builtin_va_start)
 -esym(628,*__builtin_va_start)
--esym(665,BOOST_FOREACH)
--esym(666,BOOST_FOREACH*)
 -esym(666,assert)
--esym(1023,boost::foreach_detail_::is_const_)
--esym(1023,boost::basic_format<char>::operator%)
+-esym(534,gettimeofday,gethostname,localtime_r,fflush,signal,time,clock_gettime)
+
+//libstdc++
+-esym(18,std::*)
+-esym(1023,*operator*)
+-esym(534,std::set_new_handler)
+-sem(std::vector::push_back,1p,custodial(1))
+
+//boost
+-e10
+-e54
+-e78
+-e84
+-e506
+-e1048
+-e1702
+-e1703
+-esym(18,boost::*)
+-esym(39,boost::*)
+-esym(114,boost::*)
+-esym(665,BOOST_FOREACH*)
+-esym(666,BOOST_FOREACH*)
+-esym(1023,boost::*)
 -esym(1075,*::_1)
 -esym(1075,*::_2)
 -esym(1075,*::_3)
 -esym(1075,*::_4)
 -esym(1075,*::_5)
 -esym(1075,*::_6)
--esym(1702,operator==)
--esym(1702,operator!=)
+-esym(1509,*noncopyable)
+-sem(boost::thread_specific_ptr::reset,1p,custodial(1))
 
 //multi files
 -esym(14,main)
+-e526
 -e714
--e755
+-e754
 -e756
 -e757
 -e758
--e767
+-e759
+-e765
 -e768
 -e769
--e830
 -e1526
+-e1527
 -e1714
+-e1715
 -e1716
 -e1795
